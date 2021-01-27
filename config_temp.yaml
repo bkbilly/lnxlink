@@ -1,0 +1,33 @@
+mqtt:
+  prefix: 'iotlink/workgroup'
+  clientId: 'DESKTOP-PC'
+  server: '192.168.1.1'
+  port: 1883
+  auth:
+    user: 'user'
+    pass: 'pass'
+  discovery:
+    enabled: true
+  lwt:
+    enabled: true
+    qos: 1
+    retain: true
+    connectMsg: "ON"
+    disconnectMsg: "OFF"
+addons:
+  - power:
+    enabled: true
+  - media:
+    enabled: true
+  - send-keys:
+    enabled: true
+  - run:
+    enabled: true
+  - notify:
+    enabled: true
+  - monitoring:
+    enabled: true
+    services:
+      - CPU
+      - RAM
+      - Network
