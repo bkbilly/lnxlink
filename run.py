@@ -5,85 +5,9 @@ import paho.mqtt.client as mqtt
 import time
 import signal
 import notify2
-
-
-import psutil
-class AddonCPU():
-    service = 'CPU Usage'
-    icon = 'mdi:cpu'
-
-    def getInfo(self):
-        return psutil.cpu_percent()
-
-import psutil
-class AddonMemory():
-    service = 'Memory Usage'
-    icon = 'mdi:memory'
-
-    def getInfo(self):
-        return psutil.virtual_memory().percent
-
-
-import psutil
-from datetime import datetime
-class AddonNetwork():
-    service = 'Network Info'
-    icon = 'mdi:network'
-
-    def __init__(self):
-        self.timeOld = datetime.now()
-        self.sentOld = psutil.net_io_counters().bytes_sent
-        self.recvOld = psutil.net_io_counters().bytes_recv
-
-    def getInfo(self):
-        timeNew = datetime.now()
-        sentNew = psutil.net_io_counters().bytes_sent
-        recvNew = psutil.net_io_counters().bytes_recv
-
-
-        timeDiff = (timeNew - self.timeOld).total_seconds()
-        sentDiff = sentNew - self.sentOld
-        recvDiff = recvNew - self.recvOld
-        
-        self.timeOld = timeNew
-        self.sentOld = sentNew
-        self.recvOld = recvNew
-
-        sentBPS = round(sentDiff / timeDiff, 2)
-        recvBPS = round(recvDiff / timeDiff, 2)
-
-        return sentBPS, recvBPS
-
-import mpris2
-from dbus.mainloop.glib import DBusGMainLoop
-from mpris2 import get_players_uri
-from mpris2 import Player
-class AddonMedia():
-    service = 'Media Info'
-    icon = 'mdi:media'
-
-
-    def getInfo(self):
-        DBusGMainLoop(set_as_default=True)
-        players = []
-        for uri in get_players_uri():
-            player = Player(dbus_interface_info={'dbus_uri': uri})
-            p_status = player.PlaybackStatus
-            title = player.Metadata.get('xesam:title')
-            artist = player.Metadata.get('xesam:artist')
-            album = player.Metadata.get('xesam:album')
-            if title is not None:
-                artist_str = ''
-                if artist is not None:
-                    artist_str = ','.join(artist)
-                players.append({
-                    'status': p_status,
-                    'title': str(title),
-                    'artist': artist_str,
-                    'album': '' if album is None else str(album)
-                })
-        return players
-
+import threading
+import json
+import modules
 
 
 class GracefulKiller:
@@ -92,8 +16,10 @@ class GracefulKiller:
     signal.signal(signal.SIGINT, self.exit_gracefully)
     signal.signal(signal.SIGTERM, self.exit_gracefully)
 
-  def exit_gracefully(self,signum, frame):
+  def exit_gracefully(self, signum, frame):
     self.kill_now = True
+
+
 
 
 class LNXlink():
@@ -103,6 +29,22 @@ class LNXlink():
     def __init__(self, config_path):
         self.config = self.read_config(config_path)
         self.setup_mqtt()
+        self.Addons = {}
+        for service, addon in modules.modules.items():
+            self.Addons[addon.service] = addon()
+
+    def monitor_run(self):
+        # for addon in self.Addons:
+        if self.config['monitoring'] is not None:
+            for service in self.config['monitoring']:
+                addon = self.Addons[service]
+                subtopic = addon.name.lower().replace(' ', '/')
+                topic = f"{self.pref_topic}/{self.config['mqtt']['statsPrefix']}/{subtopic}"
+                pub_data = addon.getInfo()
+                print(topic, pub_data)
+                # client.publish(topic, pub_data)
+        self.monitor = threading.Timer(5.0, self.monitor_run)
+        self.monitor.start()
 
     def setup_mqtt(self):
         self.client = mqtt.Client()
@@ -125,27 +67,39 @@ class LNXlink():
     def on_connect(self, client, userdata, flags, rc):
         print("Connected with result code "+str(rc))
         client.subscribe(f"{self.pref_topic}/commands/#")
-        client.publish(f"{self.pref_topic}/lwt", "ON")
+        # client.publish(f"{self.pref_topic}/lwt", "ON")
 
     def disconnect(self):
         print("Disconnected.")
-        self.client.publish(f"{self.pref_topic}/lwt", "OFF")
+        # self.client.publish(f"{self.pref_topic}/lwt", "OFF")
+        try:
+            self.monitor.cancel()
+        except Exception as e:
+            pass
         self.client.disconnect()
 
     def on_message(self, client, userdata, msg):
-        print(msg.topic+" "+str(msg.payload))
+        topic = msg.topic.replace(f"{self.pref_topic}/commands/", "")
+        message = msg.payload
+        try:
+            message = json.loads(message)
+        except Exception as e:
+            pass
+
+        select_service = topic.split('/')
+        control = self.Addons.get(select_service[0])
+        if select_service[0] in self.config['control'] and control is not None:
+            try:
+                control.startControl(select_service, message)
+            except Exception as e:
+                raise e
 
 
-# if __name__ == '__main__':
-#     lnxlink = LNXlink('config.yaml')
-#     killer = GracefulKiller()
-#     while not killer.kill_now:
-#         time.sleep(1)
-#     lnxlink.disconnect()
+if __name__ == '__main__':
+    lnxlink = LNXlink('config.yaml')
+    lnxlink.monitor_run()
 
-a = AddonMedia().getInfo()
-print(a)
-# AddonCPU
-# AddonMemory
-# AddonNetwork
-# AddonMedia
+    killer = GracefulKiller()
+    while not killer.kill_now:
+        time.sleep(1)
+    lnxlink.disconnect()
