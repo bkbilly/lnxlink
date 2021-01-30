@@ -2,6 +2,7 @@ import mpris2
 from dbus.mainloop.glib import DBusGMainLoop
 from mpris2 import get_players_uri
 from mpris2 import Player
+import json
 
 class Addon():
     service = 'media'
@@ -28,4 +29,4 @@ class Addon():
                     'artist': artist_str,
                     'album': '' if album is None else str(album)
                 })
-        return players
+        return json.dumps(players)

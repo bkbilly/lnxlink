@@ -4,7 +4,6 @@ import yaml
 import paho.mqtt.client as mqtt
 import time
 import signal
-import notify2
 import threading
 import json
 import modules
@@ -42,7 +41,8 @@ class LNXlink():
                 topic = f"{self.pref_topic}/{self.config['mqtt']['statsPrefix']}/{subtopic}"
                 pub_data = addon.getInfo()
                 print(topic, pub_data)
-                # client.publish(topic, pub_data)
+                self.client.publish(topic, payload=pub_data)
+
         self.monitor = threading.Timer(5.0, self.monitor_run)
         self.monitor.start()
 
@@ -67,11 +67,22 @@ class LNXlink():
     def on_connect(self, client, userdata, flags, rc):
         print("Connected with result code "+str(rc))
         client.subscribe(f"{self.pref_topic}/commands/#")
-        # client.publish(f"{self.pref_topic}/lwt", "ON")
+        if self.config['mqtt']['lwt']['enabled']:
+            self.client.publish(f"{self.pref_topic}/lwt",
+                payload=self.config['mqtt']['lwt']['connectMsg'],
+                qos=self.config['mqtt']['lwt']['qos'],
+                retain=self.config['mqtt']['lwt']['retain']
+            )
+
 
     def disconnect(self):
         print("Disconnected.")
-        # self.client.publish(f"{self.pref_topic}/lwt", "OFF")
+        if self.config['mqtt']['lwt']['enabled']:
+            self.client.publish(f"{self.pref_topic}/lwt",
+                payload=self.config['mqtt']['lwt']['disconnectMsg'],
+                qos=self.config['mqtt']['lwt']['qos'],
+                retain=self.config['mqtt']['lwt']['retain']
+            )
         try:
             self.monitor.cancel()
         except Exception as e:

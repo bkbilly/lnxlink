@@ -1,5 +1,6 @@
 import psutil
 from datetime import datetime
+
 class Addon():
     service = 'network'
     name = 'Network 0 Speed'
@@ -29,4 +30,4 @@ class Addon():
         sentsSpeed = round(sentDiff * 8 / timeDiff / 1024 / 1024, 2)
         recvSpeed = round(recvDiff * 8 / timeDiff / 1024 / 1024, 2)
 
-        return recvSpeed, sentsSpeed
+        return f"{recvSpeed}, {sentsSpeed}"
