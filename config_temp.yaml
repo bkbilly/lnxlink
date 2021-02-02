@@ -16,7 +16,7 @@ mqtt:
     connectMsg: "ON"
     disconnectMsg: "OFF"
 control:
-  - power
+  - shutdown
   - send-keys
   - run
   - notify
