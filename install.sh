@@ -28,6 +28,7 @@ fi
 if [ ! -d $basedir ]; then
     echo -e "\e[35mDownloading from GitHub...\e[0m"
     sudo git clone https://github.com/bkbilly/lnxlink.git $basedir
+    cp $basedir/config_template.yaml $basedir/config.yaml
 else
     echo -e "\e[35mAlready exists, updating...\e[0m"
     sudo git -C $basedir pull origin master
@@ -37,6 +38,7 @@ fi
 # Install Python requirements
 echo -e "\e[35mInstalling Python requirements...\e[0m"
 sudo pip3 install -r $basedir/requirements.txt
+sudo apt install python3-alsaaudio
 
 # Install as a service
 echo -e "\e[35mInstalling as a service...\e[0m"

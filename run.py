@@ -10,15 +10,14 @@ import modules
 
 
 class GracefulKiller:
-  kill_now = False
-  def __init__(self):
-    signal.signal(signal.SIGINT, self.exit_gracefully)
-    signal.signal(signal.SIGTERM, self.exit_gracefully)
+    kill_now = False
 
-  def exit_gracefully(self, signum, frame):
-    self.kill_now = True
+    def __init__(self):
+        signal.signal(signal.SIGINT, self.exit_gracefully)
+        signal.signal(signal.SIGTERM, self.exit_gracefully)
 
-
+    def exit_gracefully(self, signum, frame):
+        self.kill_now = True
 
 
 class LNXlink():
@@ -40,7 +39,7 @@ class LNXlink():
                 subtopic = addon.name.lower().replace(' ', '/')
                 topic = f"{self.pref_topic}/{self.config['mqtt']['statsPrefix']}/{subtopic}"
                 pub_data = addon.getInfo()
-                print(topic, pub_data, type(pub_data))
+                # print(topic, pub_data, type(pub_data))
                 if type(pub_data) in [dict, list]:
                     pub_data = json.dumps(pub_data)
                 self.client.publish(topic, payload=pub_data)
@@ -67,20 +66,21 @@ class LNXlink():
         return config
 
     def on_connect(self, client, userdata, flags, rc):
-        print("Connected with result code "+str(rc))
+        print("Connected with result code " + str(rc))
         client.subscribe(f"{self.pref_topic}/commands/#")
         if self.config['mqtt']['lwt']['enabled']:
-            self.client.publish(f"{self.pref_topic}/lwt",
+            self.client.publish(
+                f"{self.pref_topic}/lwt",
                 payload=self.config['mqtt']['lwt']['connectMsg'],
                 qos=self.config['mqtt']['lwt']['qos'],
                 retain=self.config['mqtt']['lwt']['retain']
             )
 
-
     def disconnect(self):
         print("Disconnected.")
         if self.config['mqtt']['lwt']['enabled']:
-            self.client.publish(f"{self.pref_topic}/lwt",
+            self.client.publish(
+                f"{self.pref_topic}/lwt",
                 payload=self.config['mqtt']['lwt']['disconnectMsg'],
                 qos=self.config['mqtt']['lwt']['qos'],
                 retain=self.config['mqtt']['lwt']['retain']

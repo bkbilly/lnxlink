@@ -17,6 +17,10 @@ class Addon():
         print(topic, data)
         if topic[1] == 'volume_set':
             mixer = alsaaudio.Mixer()
+            if data < 1:
+                data *= 100
+            if data > 100:
+                data = 100
             mixer.setvolume(int(data))
         elif topic[1] == 'playpause':
             if len(self.players) > 0:
@@ -35,7 +39,7 @@ class Addon():
             'title': '',
             'artist': '',
             'album': '',
-            'status': '',
+            'status': 'idle',
             'volume': self.__getVolume(),
             'playing': False
         }
