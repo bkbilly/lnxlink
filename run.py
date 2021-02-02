@@ -7,6 +7,7 @@ import signal
 import threading
 import json
 import modules
+import traceback
 
 
 class GracefulKiller:
@@ -97,7 +98,7 @@ class LNXlink():
         try:
             message = json.loads(message)
         except Exception as e:
-            pass
+            traceback.print_exc()
 
         select_service = topic.split('/')
         control = self.Addons.get(select_service[0])
@@ -105,7 +106,7 @@ class LNXlink():
             try:
                 control.startControl(select_service, message)
             except Exception as e:
-                raise e
+                traceback.print_exc()
 
 
 if __name__ == '__main__':
