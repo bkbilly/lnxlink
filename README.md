@@ -9,8 +9,5 @@ LNX Link is inspired by [IOT Link](https://iotlink.gitlab.io/).
 
 # Installation
 ```shell
-git clone https://github.com/bkbilly/lnxlink.git
-cd lnxlink/
-pip install -r requirements.txt
-python3 run.py
+bash <(curl -s "https://raw.githubusercontent.com/bkbilly/lnxlink/master/install.sh")
 ```

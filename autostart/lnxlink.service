@@ -1,0 +1,13 @@
+[Unit]
+Description=LNXLink
+After=network-online.target
+ 
+[Service]
+Type=simple
+
+WorkingDirectory=/opt/lnxlink
+ExecStart=/usr/bin/python3 /opt/lnxlink/run.py
+ 
+[Install]
+WantedBy=default.target
+
