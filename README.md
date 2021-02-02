@@ -52,3 +52,19 @@ bash <(curl -s "https://raw.githubusercontent.com/bkbilly/lnxlink/master/install
     - **Topic:** {prefix}/{clientId}/{statsPrefix}/media/info
     - **Payload Type:** JSON
     - **Example:**: {"title": "Hakuna Matata", "artist": "disney", "album": "", "status": "playing", "volume": 51, "playing": true}
+
+# Expanding
+To expand the supported features, create a new python file on **modules** folder and use this template:
+```python
+class Addon():
+    service = 'example'
+    name = 'Example'
+
+    def startControl(self, topic, data):
+        ''' topic is a list with all topics after commands '''
+        print(topic, data)
+    
+    def getInfo(self):
+        ''' Returns any type that can be converted to JSON '''
+        return 15
+```
