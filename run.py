@@ -40,7 +40,9 @@ class LNXlink():
                 subtopic = addon.name.lower().replace(' ', '/')
                 topic = f"{self.pref_topic}/{self.config['mqtt']['statsPrefix']}/{subtopic}"
                 pub_data = addon.getInfo()
-                print(topic, pub_data)
+                print(topic, pub_data, type(pub_data))
+                if type(pub_data) in [dict, list]:
+                    pub_data = json.dumps(pub_data)
                 self.client.publish(topic, payload=pub_data)
 
         self.monitor = threading.Timer(5.0, self.monitor_run)

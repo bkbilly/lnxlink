@@ -1,6 +1,6 @@
-# lnxlink
-It's a Linux service for integrating your system with an external application like Home Assistant using MQTT.
-LNX Link is inspired by [IOT Link](https://iotlink.gitlab.io/).
+# LNX Link
+LNX Link is a Linux service for integrating your system with an external application like Home Assistant using MQTT.
+It is inspired by [IOT Link](https://iotlink.gitlab.io/).
 
 # Features
  - **System control** Shutdown, Media, Notifications.

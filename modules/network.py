@@ -30,4 +30,4 @@ class Addon():
         sentsSpeed = round(sentDiff * 8 / timeDiff / 1024 / 1024, 2)
         recvSpeed = round(recvDiff * 8 / timeDiff / 1024 / 1024, 2)
 
-        return f"{recvSpeed}, {sentsSpeed}"
+        return {'download': recvSpeed, 'upload': sentsSpeed}
