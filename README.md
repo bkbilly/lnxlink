@@ -3,14 +3,19 @@ LNX Link is a Linux service for integrating your system with an external applica
 It is inspired by [IOT Link](https://iotlink.gitlab.io/).
 
 # Features
- - **System control:** Shutdown, Media, Notifications.
+ - **System control:** Shutdown, Send Keys, Notify, Media.
  - **System monitor:** CPU, Ram, Network, Media.
  - **No sudo required:** No need to be root user to install and use.
  - **Easily expanded:** Any new module is automatically imported as long as it meets the required format.
 
 # Installation
+One command install:
 ```shell
 bash <(curl -s "https://raw.githubusercontent.com/bkbilly/lnxlink/master/install.sh")
+```
+To restart use systemctl:
+```shell
+systemctl --user restart lnxlink.service
 ```
 
 # Commands
