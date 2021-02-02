@@ -27,7 +27,7 @@ fi
 # Download from GitHub
 if [ ! -d $basedir ]; then
     echo -e "\e[35mDownloading from GitHub...\e[0m"
-    sudo git clone https://github.com/bkbilly/lnxlink.git
+    sudo git clone https://github.com/bkbilly/lnxlink.git $basedir
 else
     echo -e "\e[35mAlready exists, updating...\e[0m"
     sudo git -C $basedir pull origin master
