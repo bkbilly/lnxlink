@@ -1,10 +1,11 @@
 [Unit]
 Description=LNXLink
-After=network-online.target
+After=network-online.target multi-user.target graphical.target
  
 [Service]
 Type=simple
 
+ExecStartPre=/bin/sleep 10
 WorkingDirectory=/opt/lnxlink
 ExecStart=/usr/bin/python3 /opt/lnxlink/run.py
  
