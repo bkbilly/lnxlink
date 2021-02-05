@@ -33,7 +33,6 @@ class LNXlink():
             self.Addons[addon.service] = addon()
 
     def monitor_run(self):
-        # for addon in self.Addons:
         if self.config['monitoring'] is not None:
             for service in self.config['monitoring']:
                 addon = self.Addons[service]
@@ -45,7 +44,10 @@ class LNXlink():
                     pub_data = json.dumps(pub_data)
                 self.client.publish(topic, payload=pub_data)
 
-        self.monitor = threading.Timer(5.0, self.monitor_run)
+    def monitor_run_thread(self):
+        self.monitor_run()
+
+        self.monitor = threading.Timer(5.0, self.monitor_run_thread)
         self.monitor.start()
 
     def setup_mqtt(self):
@@ -105,13 +107,14 @@ class LNXlink():
         if select_service[0] in self.config['control'] and control is not None:
             try:
                 control.startControl(select_service, message)
+                self.monitor_run()
             except Exception as e:
                 traceback.print_exc()
 
 
 if __name__ == '__main__':
     lnxlink = LNXlink('config.yaml')
-    lnxlink.monitor_run()
+    lnxlink.monitor_run_thread()
 
     killer = GracefulKiller()
     while not killer.kill_now:
