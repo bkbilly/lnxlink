@@ -35,14 +35,17 @@ class LNXlink():
     def monitor_run(self):
         if self.config['monitoring'] is not None:
             for service in self.config['monitoring']:
-                addon = self.Addons[service]
-                subtopic = addon.name.lower().replace(' ', '/')
-                topic = f"{self.pref_topic}/{self.config['mqtt']['statsPrefix']}/{subtopic}"
-                pub_data = addon.getInfo()
-                # print(topic, pub_data, type(pub_data))
-                if type(pub_data) in [dict, list]:
-                    pub_data = json.dumps(pub_data)
-                self.client.publish(topic, payload=pub_data)
+                try:
+                    addon = self.Addons[service]
+                    subtopic = addon.name.lower().replace(' ', '/')
+                    topic = f"{self.pref_topic}/{self.config['mqtt']['statsPrefix']}/{subtopic}"
+                    pub_data = addon.getInfo()
+                    # print(topic, pub_data, type(pub_data))
+                    if type(pub_data) in [dict, list]:
+                        pub_data = json.dumps(pub_data)
+                    self.client.publish(topic, payload=pub_data)
+                except Exception as e:
+                    traceback.print_exc()
 
     def monitor_run_thread(self):
         self.monitor_run()
