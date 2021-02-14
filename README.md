@@ -1,4 +1,5 @@
-# LNX Link
+<img src="https://github.com/bkbilly/lnxlink/blob/master/logo.png?raw=true" height="250">
+
 LNX Link is a Linux service for integrating your system with an external application like Home Assistant using MQTT.
 It is inspired by [IOT Link](https://iotlink.gitlab.io/).
 
