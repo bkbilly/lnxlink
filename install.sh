@@ -39,13 +39,17 @@ echo -e "\e[35mInstalling Python requirements...\e[0m"
 sudo pip3 install -r $basedir/requirements.txt
 sudo apt install python3-alsaaudio
 
+# User config
+echo -e "\e[35mUser configuration setup...\e[0m"
+sudo $basedir/config.py $basedir/config.yaml
+
 # Install as a service
 echo -e "\e[35mInstalling as a service...\e[0m"
 mkdir -p ~/.config/systemd/user/
 cp $basedir/autostart/lnxlink.service ~/.config/systemd/user/lnxlink.service
 chmod +x ~/.config/systemd/user/lnxlink.service
 systemctl --user enable lnxlink.service
-systemctl --user start lnxlink.service
+systemctl --user restart lnxlink.service
 
 
 # Done

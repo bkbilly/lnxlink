@@ -14,7 +14,7 @@ One command install:
 ```shell
 bash <(curl -s "https://raw.githubusercontent.com/bkbilly/lnxlink/master/install.sh")
 ```
-Edit the configuration `/opt/lnxlink/config.yaml` and restart the service with the use of systemctl:
+You can manually update the configuration file `/opt/lnxlink/config.yaml` and restart the service with the use of systemctl:
 ```shell
 systemctl --user restart lnxlink.service
 ```
