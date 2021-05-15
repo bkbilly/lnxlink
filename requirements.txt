@@ -1,5 +1,6 @@
-PyYAML==5.3.1
-paho-mqtt==1.5.1
-notify2==0.3.1
-psutil==5.8.0
-mpris2==1.0.2
+PyYAML>=5.3.1
+paho-mqtt>=1.5.1
+notify2>=0.3.1
+psutil>=5.8.0
+mpris2>=1.0.2
+pynput>=1.7.3
