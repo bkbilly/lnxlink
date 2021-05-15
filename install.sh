@@ -28,12 +28,11 @@ fi
 if [ ! -d $basedir ]; then
     echo -e "\e[35mDownloading from GitHub...\e[0m"
     sudo git clone https://github.com/bkbilly/lnxlink.git $basedir
-    cp $basedir/config_template.yaml $basedir/config.yaml
+    cp $basedir/config_temp.yaml $basedir/config.yaml
 else
     echo -e "\e[35mAlready exists, updating...\e[0m"
     sudo git -C $basedir pull origin master
 fi
-
 
 # Install Python requirements
 echo -e "\e[35mInstalling Python requirements...\e[0m"
@@ -45,7 +44,7 @@ echo -e "\e[35mInstalling as a service...\e[0m"
 mkdir -p ~/.config/systemd/user/
 cp $basedir/autostart/lnxlink.service ~/.config/systemd/user/lnxlink.service
 chmod +x ~/.config/systemd/user/lnxlink.service
-systemctl --user start lnxlink.service
+systemctl --user enable lnxlink.service
 systemctl --user start lnxlink.service
 
 
