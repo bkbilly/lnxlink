@@ -3,10 +3,33 @@
 import yaml
 import sys
 
+def query_true_false(question, default="false"):
+    valid = {"true": True, "t": True, "yes": True, True: True, "false": False, "f": False, "no": False, False:False}
+    if default is None:
+        prompt = "[true/false]"
+    elif default == True:
+        prompt = "[True/false]"
+    elif default == False:
+        prompt = "[true/False]"
+    else:
+        raise ValueError("invalid default answer: '%s'" % default)
+
+    while True:
+        choice = input(f" {question} {prompt}: ").lower()
+        if default is not None and choice == "":
+            return valid[default]
+        elif choice in valid:
+            return valid[choice]
+        else:
+            print("Please respond with 'true' or 'false' " "(or 't' or 'f').")
+
+
 # config_file = 'config_temp.yaml'
 config_file = sys.argv[1]
 with open(config_file) as f:
     y = yaml.safe_load(f)
+
+    # Print config
     print('This will update the MQTT credentials and topics, these are the default topics:')
     print(" MQTT Topic prefix for for monitoring: {}/{}/{}/...".format(
         y['mqtt']['prefix'],
@@ -20,6 +43,8 @@ with open(config_file) as f:
 
     print("\nLeave empty for default")
 
+    # Change default values
+    y['mqtt']['discovery']['enabled'] = query_true_false("Change statsPrefix", y['mqtt']['discovery']['enabled'])
     y['mqtt']['server'] = input(f" MQTT server [{y['mqtt']['server']}]: ") or y['mqtt']['server']
     y['mqtt']['port'] = input(f" MQTT port [{y['mqtt']['port']}]: ") or y['mqtt']['port']
     y['mqtt']['auth']['user'] = input(f" MQTT username [{y['mqtt']['auth']['user']}]: ") or y['mqtt']['auth']['user']
@@ -28,6 +53,7 @@ with open(config_file) as f:
     y['mqtt']['prefix'] = input(f" Change prefix [{y['mqtt']['prefix']}]: ") or y['mqtt']['prefix']
     y['mqtt']['clientId'] = input(f" Change clientId [{y['mqtt']['clientId']}]: ") or y['mqtt']['clientId']
     y['mqtt']['statsPrefix'] = input(f" Change statsPrefix [{y['mqtt']['statsPrefix']}]: ") or y['mqtt']['statsPrefix']
+
 
 with open(config_file, 'w') as fw:
     fw.write(yaml.dump(y, default_flow_style=False, sort_keys=False))

@@ -59,6 +59,22 @@ systemctl --user restart lnxlink.service
     - **Payload Type:** JSON
     - **Example:**: {"title": "Hakuna Matata", "artist": "disney", "album": "", "status": "playing", "volume": 51, "playing": true}
 
+# Home Assistant integration
+LNX Link is using MQTT Autodiscovery to create entities to the frontend.
+
+Supported entities:
+  - switch.shutdown
+  - sensor.cpu_usage
+  - sensor.memory_usage
+  - sensor.network_download
+  - sensor.network_upload
+
+Unsupported entities that need manual configuration:
+  - media (check this: [mqtt-mediaplayer](https://github.com/bkbilly/hass-mqtt-mediaplayer))
+  - notify
+  - send-keys
+  - run
+
 # Expanding
 To expand the supported features, create a new python file on **modules** folder and use this template:
 ```python

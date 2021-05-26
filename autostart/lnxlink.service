@@ -1,9 +1,11 @@
 [Unit]
 Description=LNXLink
 After=network-online.target multi-user.target graphical.target
+PartOf=graphical-session.target
  
 [Service]
 Type=simple
+Restart=always
 
 WorkingDirectory=/opt/lnxlink
 ExecStart=/usr/bin/python3 /opt/lnxlink/run.py

@@ -3,7 +3,7 @@ from datetime import datetime
 
 class Addon():
     service = 'network'
-    name = 'Network 0 Speed'
+    name = 'Network'
     icon = 'mdi:speedometer'
     unit = 'Mbps'
 
