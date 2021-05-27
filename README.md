@@ -33,7 +33,6 @@ Unsupported entities that need manual configuration:
   - media (check this: [mqtt-mediaplayer](https://github.com/bkbilly/hass-mqtt-mediaplayer))
   - notify
   - send-keys
-  - run
 
 # Commands
   - **Shutdown System**
