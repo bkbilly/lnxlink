@@ -3,7 +3,7 @@ import psutil
 class Addon():
     service = 'cpu'
     name = 'CPU Usage'
-    icon = 'mdi:cpu'
+    icon = 'mdi:speedometer'
     unit = '%'
 
     def getInfo(self):

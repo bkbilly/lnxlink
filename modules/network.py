@@ -4,8 +4,8 @@ from datetime import datetime
 class Addon():
     service = 'network'
     name = 'Network'
-    icon = 'mdi:speedometer'
-    unit = 'Mbps'
+    icon = 'mdi:access-point-network'
+    unit = 'Mbit/s'
 
     def __init__(self):
         self.timeOld = datetime.now()
