@@ -131,9 +131,6 @@ class LNXlink():
                         "model": self.config['mqtt']['prefix'],
                         "manufacturer": "LNXLink 0.3"
                     },
-                    "name": "DESKTOP-1N85K9V CPU Usage",
-                    "unique_id": "desktop-1n85k9v_cpu_usage",
-                    "icon": "mdi:speedometer",
                 }
                 addon = self.Addons[service]
                 subtopic = addon.name.lower().replace(' ', '/')
@@ -142,25 +139,14 @@ class LNXlink():
                 discovery_template['name'] = addon.name.lower().replace(' ', '_')
                 discovery_template['unique_id'] = f"{self.config['mqtt']['clientId']}_{service}"
                 discovery_template['state_topic'] = topic
-                if service == 'cpu':
-                    discovery_template['icon'] = "mdi:speedometer"
-                    discovery_template['unit_of_measurement'] = "%"
-                    self.client.publish(
-                        f"homeassistant/sensor/lnxlink/{discovery_template['unique_id']}/config",
-                        payload=json.dumps(discovery_template),
-                        retain=False
-                    )
-                elif service == 'memory':
-                    discovery_template['icon'] = "mdi:memory"
-                    discovery_template['unit_of_measurement'] = "%"
-                    self.client.publish(
-                        f"homeassistant/sensor/lnxlink/{discovery_template['unique_id']}/config",
-                        payload=json.dumps(discovery_template),
-                        retain=False
-                    )
-                elif service == 'network':
-                    discovery_template['icon'] = "mdi:access-point-network"
-                    discovery_template['unit_of_measurement'] = "Mbit/s"
+                discovery_template['icon'] = addon.icon
+                if addon.unit:
+                    discovery_template['unit_of_measurement'] = addon.unit
+                if hasattr(addon, 'device_class'):
+                    print(addon.device_class)
+                    discovery_template['device_class'] = addon.device_class
+
+                if service == 'network':
                     discovery_template['json_attributes_topic'] = topic
                     discovery_template['name'] = f"{addon.name.lower().replace(' ', '_')}_download"
                     discovery_template['unique_id'] = f"{self.config['mqtt']['clientId']}_{service}_download"
@@ -173,11 +159,14 @@ class LNXlink():
                     discovery_template['name'] = f"{addon.name.lower().replace(' ', '_')}_upload"
                     discovery_template['unique_id'] = f"{self.config['mqtt']['clientId']}_{service}_upload"
                     discovery_template['value_template'] = "{{ value_json.upload }}"
-                    self.client.publish(
-                        f"homeassistant/sensor/lnxlink/{discovery_template['unique_id']}/config",
-                        payload=json.dumps(discovery_template),
-                        retain=False
-                    )
+
+                sensor_type = getattr(addon, 'sensor_type', 'sensor')
+                print(service, sensor_type)
+                self.client.publish(
+                    f"homeassistant/{sensor_type}/lnxlink/{discovery_template['unique_id']}/config",
+                    payload=json.dumps(discovery_template),
+                    retain=False
+                )
             if 'shutdown' in self.config['control']:
                 discovery_template = {
                     "availability": {
