@@ -39,6 +39,9 @@ echo -e "\e[35mInstalling Python requirements...\e[0m"
 sudo pip3 install -r $basedir/requirements.txt
 sudo apt install python3-alsaaudio
 
+# Set config.yaml
+[ ! -f $basedir/config.yaml ] && sudo $basedir/config_temp.yaml $basedir/config.yaml
+
 # User config
 echo -e "\e[35mUser configuration setup...\e[0m"
 sudo $basedir/config.py $basedir/config.yaml
