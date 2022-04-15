@@ -43,7 +43,11 @@ class LNXlink():
                     # print(topic, pub_data, type(pub_data))
                     if type(pub_data) in [dict, list]:
                         pub_data = json.dumps(pub_data)
-                    self.client.publish(topic, payload=pub_data)
+                    self.client.publish(
+                        topic,
+                        payload=pub_data,
+                        retain=self.config['mqtt']['lwt']['retain']
+                    )
                 except Exception as e:
                     traceback.print_exc()
 
@@ -154,7 +158,7 @@ class LNXlink():
                     self.client.publish(
                         f"homeassistant/sensor/lnxlink/{discovery_template['unique_id']}/config",
                         payload=json.dumps(discovery_template),
-                        retain=False
+                        retain=self.config['mqtt']['lwt']['retain']
                     )
                     discovery_template['name'] = f"{addon.name.lower().replace(' ', '_')}_upload"
                     discovery_template['unique_id'] = f"{self.config['mqtt']['clientId']}_{service}_upload"
@@ -165,7 +169,7 @@ class LNXlink():
                 self.client.publish(
                     f"homeassistant/{sensor_type}/lnxlink/{discovery_template['unique_id']}/config",
                     payload=json.dumps(discovery_template),
-                    retain=False
+                    retain=self.config['mqtt']['lwt']['retain']
                 )
             if 'shutdown' in self.config['control']:
                 discovery_template = {
@@ -191,7 +195,7 @@ class LNXlink():
                 self.client.publish(
                     f"homeassistant/switch/lnxlink/{discovery_template['unique_id']}/config",
                     payload=json.dumps(discovery_template),
-                    retain=False
+                    retain=self.config['mqtt']['lwt']['retain']
                 )
 
 
