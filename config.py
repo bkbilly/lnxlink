@@ -5,12 +5,11 @@ import sys
 
 def query_true_false(question, default="false"):
     valid = {"true": True, "t": True, "yes": True, True: True, "false": False, "f": False, "no": False, False:False}
-    if default is None:
-        prompt = "[true/false]"
-    elif default == True:
-        prompt = "[True/false]"
-    elif default == False:
-        prompt = "[true/False]"
+
+    if default == True:
+        prompt = "(True/False) [True]"
+    elif default == False or default is None:
+        prompt = "(True/False) [False]"
     else:
         raise ValueError("invalid default answer: '%s'" % default)
 
@@ -21,7 +20,7 @@ def query_true_false(question, default="false"):
         elif choice in valid:
             return valid[choice]
         else:
-            print("Please respond with 'true' or 'false' " "(or 't' or 'f').")
+            print("Please respond with 'true' or 'false' (or 't' or 'f').")
 
 
 # config_file = 'config_temp.yaml'
@@ -44,7 +43,7 @@ with open(config_file) as f:
     print("\nLeave empty for default")
 
     # Change default values
-    y['mqtt']['discovery']['enabled'] = query_true_false("Change statsPrefix", y['mqtt']['discovery']['enabled'])
+    y['mqtt']['discovery']['enabled'] = query_true_false("Enable MQTT automatic discovery", y['mqtt']['discovery']['enabled'])
     y['mqtt']['server'] = input(f" MQTT server [{y['mqtt']['server']}]: ") or y['mqtt']['server']
     y['mqtt']['port'] = input(f" MQTT port [{y['mqtt']['port']}]: ") or y['mqtt']['port']
     y['mqtt']['auth']['user'] = input(f" MQTT username [{y['mqtt']['auth']['user']}]: ") or y['mqtt']['auth']['user']
