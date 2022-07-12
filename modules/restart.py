@@ -7,5 +7,4 @@ class Addon():
     unit = 'json'
 
     def startControl(self, topic, data):
-        print(topic, data)
         subprocess.call(["shutdown", "-r", "now"])

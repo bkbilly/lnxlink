@@ -14,7 +14,6 @@ class Addon():
         self.players = []
 
     def startControl(self, topic, data):
-        print(topic, data)
         if topic[1] == 'volume_set':
             mixer = alsaaudio.Mixer()
             if data < 1:

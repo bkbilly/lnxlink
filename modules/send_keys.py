@@ -8,7 +8,6 @@ class Addon():
     unit = None
 
     def startControl(self, topic, data):
-        print(topic, data)
         if type(data) == str:
             self.__presskeys(data)
         else:

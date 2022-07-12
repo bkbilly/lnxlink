@@ -10,6 +10,9 @@ import modules
 import traceback
 
 
+version = "0.4"
+
+
 class GracefulKiller:
     kill_now = False
 
@@ -18,6 +21,7 @@ class GracefulKiller:
         signal.signal(signal.SIGTERM, self.exit_gracefully)
 
     def exit_gracefully(self, signum, frame):
+        print("LNXLink stopped by user")
         self.kill_now = True
 
 
@@ -49,6 +53,7 @@ class LNXlink():
                         retain=self.config['mqtt']['lwt']['retain']
                     )
                 except Exception as e:
+                    print(f"Can't load addon: {service}")
                     traceback.print_exc()
 
     def monitor_run_thread(self):
@@ -76,7 +81,7 @@ class LNXlink():
         return config
 
     def on_connect(self, client, userdata, flags, rc):
-        print("Connected with result code " + str(rc))
+        print(f"Connected to MQTT with code {rc}")
         client.subscribe(f"{self.pref_topic}/commands/#")
         if self.config['mqtt']['lwt']['enabled']:
             self.client.publish(
@@ -89,7 +94,7 @@ class LNXlink():
             self.setup_discovery()
 
     def disconnect(self):
-        print("Disconnected.")
+        print("Disconnected from MQTT.")
         if self.config['mqtt']['lwt']['enabled']:
             self.client.publish(
                 f"{self.pref_topic}/lwt",
@@ -106,9 +111,11 @@ class LNXlink():
     def on_message(self, client, userdata, msg):
         topic = msg.topic.replace(f"{self.pref_topic}/commands/", "")
         message = msg.payload
+        print(f"Message received: {topic}")
         try:
             message = json.loads(message)
         except Exception as e:
+            print("String could not be converted to JSON")
             traceback.print_exc()
 
         select_service = topic.split('/')
@@ -133,7 +140,7 @@ class LNXlink():
                         "identifiers": [self.config['mqtt']['clientId']],
                         "name": self.config['mqtt']['clientId'],
                         "model": self.config['mqtt']['prefix'],
-                        "manufacturer": "LNXLink 0.3"
+                        "manufacturer": f"LNXLink {version}"
                     },
                 }
                 addon = self.Addons[service]
@@ -147,7 +154,7 @@ class LNXlink():
                 if addon.unit:
                     discovery_template['unit_of_measurement'] = addon.unit
                 if hasattr(addon, 'device_class'):
-                    print(addon.device_class)
+                    # print(addon.device_class)
                     discovery_template['device_class'] = addon.device_class
 
                 if service == 'network':
@@ -165,7 +172,6 @@ class LNXlink():
                     discovery_template['value_template'] = "{{ value_json.upload }}"
 
                 sensor_type = getattr(addon, 'sensor_type', 'sensor')
-                print(service, sensor_type)
                 self.client.publish(
                     f"homeassistant/{sensor_type}/lnxlink/{discovery_template['unique_id']}/config",
                     payload=json.dumps(discovery_template),
@@ -182,7 +188,7 @@ class LNXlink():
                         "identifiers": [self.config['mqtt']['clientId']],
                         "name": self.config['mqtt']['clientId'],
                         "model": self.config['mqtt']['prefix'],
-                        "manufacturer": "LNXLink 0.3"
+                        "manufacturer": f"LNXLink {version}"
                     },
                     "name": "Shutdown",
                     "unique_id": f"{self.config['mqtt']['clientId']}_shutdown",
@@ -208,7 +214,7 @@ class LNXlink():
                         "identifiers": [self.config['mqtt']['clientId']],
                         "name": self.config['mqtt']['clientId'],
                         "model": self.config['mqtt']['prefix'],
-                        "manufacturer": "LNXLink 0.3"
+                        "manufacturer": f"LNXLink {version}"
                     },
                     "name": "Restart",
                     "unique_id": f"{self.config['mqtt']['clientId']}_restart",

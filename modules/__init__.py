@@ -15,7 +15,10 @@ for (_, module_name, _) in iter_modules([package_dir]):
             addons = getattr(import_module(f"{__name__}.{module_name}"), 'Addon')
             modules[module_name] = addons
             retries = -1
+            print(f"Successfully loaded addon: {module_name}")
+            
         except Exception as e:
+            print(f"Error with module: {module_name}")
             traceback.print_exc()
             time.sleep(2)
             retries -= 1
