@@ -192,6 +192,11 @@ class LNXlink():
                     "payload_off": "OFF",
                     "payload_on": "ON",
                 }
+                self.client.publish(
+                    f"homeassistant/switch/lnxlink/{discovery_template['unique_id']}/config",
+                    payload=json.dumps(discovery_template),
+                    retain=self.config['mqtt']['lwt']['retain']
+                )
             if 'restart' in self.config['control']:
                 discovery_template = {
                     "availability": {
