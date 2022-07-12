@@ -43,6 +43,7 @@ if [ ! -d $basedir ]; then
     sudo cp $basedir/config_temp.yaml $basedir/config.yaml
 else
     echo -e "\e[35mAlready exists, updating...\e[0m"
+    sudo git -C $basdir stash
     sudo git -C $basedir pull origin master
 fi
 

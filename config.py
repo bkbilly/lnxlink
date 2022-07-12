@@ -45,7 +45,7 @@ with open(config_file) as f:
     # Change default values
     y['mqtt']['discovery']['enabled'] = query_true_false("Enable MQTT automatic discovery", y['mqtt']['discovery']['enabled'])
     y['mqtt']['server'] = input(f" MQTT server [{y['mqtt']['server']}]: ") or y['mqtt']['server']
-    y['mqtt']['port'] = input(f" MQTT port [{y['mqtt']['port']}]: ") or y['mqtt']['port']
+    y['mqtt']['port'] = int(input(f" MQTT port [{y['mqtt']['port']}]: ")) or y['mqtt']['port']
     y['mqtt']['auth']['user'] = input(f" MQTT username [{y['mqtt']['auth']['user']}]: ") or y['mqtt']['auth']['user']
     y['mqtt']['auth']['pass'] = input(f" MQTT password [{y['mqtt']['auth']['pass']}]: ") or y['mqtt']['auth']['pass']
 
