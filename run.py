@@ -30,6 +30,7 @@ class LNXlink():
     pref_topic = 'lnxlink'
 
     def __init__(self, config_path):
+        print("LNXLink started")
         self.config = self.read_config(config_path)
         self.setup_mqtt()
         self.Addons = {}
