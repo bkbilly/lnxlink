@@ -4,7 +4,7 @@ LNX Link is a Linux service for integrating your system with an external applica
 It is inspired by [IOT Link](https://iotlink.gitlab.io/).
 
 # Features
- - **System control:** Shutdown, Send Keys, Notify, Media.
+ - **System control:** Shutdown, Restart, Send Keys, Notify, Media.
  - **System monitor:** CPU, Ram, Network, Media.
  - **No sudo required:** No need to be root user to install and use.
  - **Easily expanded:** Any new module is automatically imported as long as it meets the required format.
@@ -24,6 +24,7 @@ LNX Link is using MQTT Autodiscovery to create entities to the frontend.
 
 Supported entities:
   - switch.shutdown
+  - switch.restart
   - sensor.cpu_usage
   - sensor.memory_usage
   - sensor.network_download
@@ -37,6 +38,8 @@ Unsupported entities that need manual configuration:
 # Commands
   - **Shutdown System**
     - **Topic:** {prefix}/{clientId}/commands/shutdown
+  - **Restart System**
+    - **Topic:** {prefix}/{clientId}/commands/restart
   - **Send Keys**
     - **Topic:** {prefix}/{clientId}/commands/send-keys
     - **Payload Type:** List or String
