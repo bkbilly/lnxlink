@@ -43,7 +43,7 @@ Unsupported entities that need manual configuration:
   - **Send Keys**
     - **Topic:** {prefix}/{clientId}/commands/send-keys
     - **Payload Type:** List or String
-    - **Payload:** Each string can contain special keys '<ALT>+<CTRL>+<DELTE>', '<CTRL>+c'
+    - **Payload:** Each string can contain special keys '\<ALT>+\<CTRL>+\<DELTE>', '\<CTRL>+c'
   - **Notify**
     - **Topic:** {prefix}/{clientId}/commands/notify
     - **Payload Type:** JSON
