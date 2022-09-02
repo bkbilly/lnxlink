@@ -50,6 +50,7 @@ Unsupported entities that need manual configuration:
     - **Payload:**
       - **title:** String
       - **message:** String
+      - **iconUrl:** String
   - **Media**
     - **Topic:** {prefix}/{clientId}/commands/media/{media_action}
     - **media_action:**
