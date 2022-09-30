@@ -35,6 +35,28 @@ Unsupported entities that need manual configuration:
   - notify
   - send-keys
 
+# Examples
+
+Send a series of keys:
+```yaml
+service: mqtt.publish
+data:
+  topic: {prefix}/{clientId}/commands/send-keys
+  payload: "<CTRL>+t"
+```
+
+Send a notification with an image as a preview:
+```yaml
+service: mqtt.publish
+data:
+  topic: {prefix}/{clientId}/commands/notify
+  payload: >-
+    { "title": "Notification Title",
+      "message": "Testing notification",
+      "iconUrl": "http://hass.local:8123/local/myimage.jpg" }
+```
+
+
 # Commands
   - **Shutdown System**
     - **Topic:** {prefix}/{clientId}/commands/shutdown
@@ -88,7 +110,7 @@ class Addon():
     def startControl(self, topic, data):
         ''' topic is a list with all topics after commands '''
         print(topic, data)
-    
+
     def getInfo(self):
         ''' Returns any type that can be converted to JSON '''
         return 15
