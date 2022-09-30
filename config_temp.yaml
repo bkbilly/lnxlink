@@ -25,5 +25,6 @@ control:
 monitoring:
   - cpu
   - memory
-  - network
+  - network_upload
+  - network_download
   - media

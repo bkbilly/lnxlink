@@ -7,11 +7,33 @@ import alsaaudio
 class Addon():
     service = 'media'
     name = 'Media Info'
-    icon = 'mdi:media'
+    icon = 'mdi:music'
     unit = 'json'
 
     def __init__(self):
         self.players = []
+
+    def exposedControls(self):
+        return {
+            "playpause": {
+                "type": "button",
+                "icon": "mdi:play-pause",
+            },
+            "previous": {
+                "type": "button",
+                "icon": "mdi:skip-previous",
+            },
+            "next": {
+                "type": "button",
+                "icon": "mdi:skip-next",
+            },
+            "volume_set": {
+                "type": "number",
+                "icon": "mdi:volume",
+                "min": 0,
+                "max": 100,
+            }
+        }
 
     def startControl(self, topic, data):
         if topic[1] == 'volume_set':
@@ -30,7 +52,6 @@ class Addon():
         elif topic[1] == 'next':
             if len(self.players) > 0:
                 self.players[0]['player'].Next()
-
 
     def getInfo(self):
         self.__getPlayers()
@@ -51,7 +72,6 @@ class Addon():
             info['status'] = player['status']
 
         return info
-
 
     def __getVolume(self):
         mixer = alsaaudio.Mixer()

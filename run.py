@@ -10,7 +10,7 @@ import modules
 import traceback
 
 
-version = "0.4"
+version = "0.5"
 
 
 class GracefulKiller:
@@ -117,7 +117,7 @@ class LNXlink():
             message = json.loads(message)
         except Exception as e:
             print("String could not be converted to JSON")
-            traceback.print_exc()
+            # traceback.print_exc()
 
         select_service = topic.split('/')
         control = self.Addons.get(select_service[0])
@@ -129,107 +129,76 @@ class LNXlink():
                 traceback.print_exc()
 
     def setup_discovery(self):
+        discovery_template = {
+            "availability": {
+                "topic": f"{self.pref_topic}/lwt",
+                "payload_available": "ON",
+                "payload_not_available": "OFF",
+            },
+            "device": {
+                "identifiers": [self.config['mqtt']['clientId']],
+                "name": self.config['mqtt']['clientId'],
+                "model": self.config['mqtt']['prefix'],
+                "manufacturer": f"LNXLink {version}"
+            },
+        }
         if self.config['monitoring'] is not None:
             for service in self.config['monitoring']:
-                discovery_template = {
-                    "availability": {
-                        "topic": f"{self.pref_topic}/lwt",
-                        "payload_available": "ON",
-                        "payload_not_available": "OFF",
-                    },
-                    "device": {
-                        "identifiers": [self.config['mqtt']['clientId']],
-                        "name": self.config['mqtt']['clientId'],
-                        "model": self.config['mqtt']['prefix'],
-                        "manufacturer": f"LNXLink {version}"
-                    },
-                }
                 addon = self.Addons[service]
                 subtopic = addon.name.lower().replace(' ', '/')
                 topic = f"{self.pref_topic}/{self.config['mqtt']['statsPrefix']}/{subtopic}"
 
-                discovery_template['name'] = addon.name.lower().replace(' ', '_')
-                discovery_template['unique_id'] = f"{self.config['mqtt']['clientId']}_{service}"
-                discovery_template['state_topic'] = topic
-                discovery_template['icon'] = addon.icon
-                if addon.unit:
-                    discovery_template['unit_of_measurement'] = addon.unit
+                discovery = discovery_template.copy()
+                discovery['name'] = addon.name.lower().replace(' ', '_')
+                discovery['unique_id'] = f"{self.config['mqtt']['clientId']}_{service}"
+                discovery['state_topic'] = topic
+                discovery['json_attributes_topic'] = topic
+                discovery['icon'] = addon.icon
+                discovery['unit_of_measurement'] = addon.unit
                 if hasattr(addon, 'device_class'):
                     # print(addon.device_class)
-                    discovery_template['device_class'] = addon.device_class
+                    discovery['device_class'] = addon.device_class
 
-                if service == 'network':
-                    discovery_template['json_attributes_topic'] = topic
-                    discovery_template['name'] = f"{addon.name.lower().replace(' ', '_')}_download"
-                    discovery_template['unique_id'] = f"{self.config['mqtt']['clientId']}_{service}_download"
-                    discovery_template['value_template'] = "{{ value_json.download }}"
-                    self.client.publish(
-                        f"homeassistant/sensor/lnxlink/{discovery_template['unique_id']}/config",
-                        payload=json.dumps(discovery_template),
-                        retain=self.config['mqtt']['lwt']['retain']
-                    )
-                    discovery_template['name'] = f"{addon.name.lower().replace(' ', '_')}_upload"
-                    discovery_template['unique_id'] = f"{self.config['mqtt']['clientId']}_{service}_upload"
-                    discovery_template['value_template'] = "{{ value_json.upload }}"
+                if addon.unit == 'json':
+                    discovery['unit_of_measurement'] = ""
+                    discovery['value_template'] = "{{ value_json.status }}"
+                    discovery['json_attributes_template'] = "{{ value_json | tojson }}"
 
                 sensor_type = getattr(addon, 'sensor_type', 'sensor')
                 self.client.publish(
-                    f"homeassistant/{sensor_type}/lnxlink/{discovery_template['unique_id']}/config",
-                    payload=json.dumps(discovery_template),
+                    f"homeassistant/{sensor_type}/lnxlink/{discovery['unique_id']}/config",
+                    payload=json.dumps(discovery),
                     retain=self.config['mqtt']['lwt']['retain']
                 )
-            if 'shutdown' in self.config['control']:
-                discovery_template = {
-                    "availability": {
-                        "topic": f"{self.pref_topic}/lwt",
-                        "payload_available": "ON",
-                        "payload_not_available": "OFF",
-                    },
-                    "device": {
-                        "identifiers": [self.config['mqtt']['clientId']],
-                        "name": self.config['mqtt']['clientId'],
-                        "model": self.config['mqtt']['prefix'],
-                        "manufacturer": f"LNXLink {version}"
-                    },
-                    "name": "Shutdown",
-                    "unique_id": f"{self.config['mqtt']['clientId']}_shutdown",
-                    "icon": "mdi:power",
-                    "command_topic": f"{self.pref_topic}/commands/shutdown",
-                    "state_topic": f"{self.pref_topic}/lwt",
-                    "payload_off": "OFF",
-                    "payload_on": "ON",
-                }
-                self.client.publish(
-                    f"homeassistant/switch/lnxlink/{discovery_template['unique_id']}/config",
-                    payload=json.dumps(discovery_template),
-                    retain=self.config['mqtt']['lwt']['retain']
-                )
-            if 'restart' in self.config['control']:
-                discovery_template = {
-                    "availability": {
-                        "topic": f"{self.pref_topic}/lwt",
-                        "payload_available": "ON",
-                        "payload_not_available": "OFF",
-                    },
-                    "device": {
-                        "identifiers": [self.config['mqtt']['clientId']],
-                        "name": self.config['mqtt']['clientId'],
-                        "model": self.config['mqtt']['prefix'],
-                        "manufacturer": f"LNXLink {version}"
-                    },
-                    "name": "Restart",
-                    "unique_id": f"{self.config['mqtt']['clientId']}_restart",
-                    "icon": "mdi:restart",
-                    "command_topic": f"{self.pref_topic}/commands/restart",
-                    "state_topic": f"{self.pref_topic}/lwt",
-                    "payload_off": "OFF",
-                    "payload_on": "ON",
-                }
-                self.client.publish(
-                    f"homeassistant/switch/lnxlink/{discovery_template['unique_id']}/config",
-                    payload=json.dumps(discovery_template),
-                    retain=self.config['mqtt']['lwt']['retain']
-                )
+        if self.config['monitoring'] is not None:
+            for service in self.config['control']:
+                addon = self.Addons.get(service)
+                if addon is not None and hasattr(addon, 'exposedControls'):
+                    for control_name, options in addon.exposedControls().items():
+                        discovery = discovery_template.copy()
+                        discovery['name'] = control_name.lower().replace(' ', '_')
+                        discovery['unique_id'] = f"{self.config['mqtt']['clientId']}_{control_name}"
+                        discovery['state_topic'] = f"{self.pref_topic}/lwt"
+                        discovery['icon'] = options.get('icon', '')
+
+                        if options['type'] == 'button':
+                            discovery["command_topic"] = f"{self.pref_topic}/commands/{service}/{control_name}/"
+                            discovery["payload_off"] = "OFF"
+                            discovery["payload_on"] = "ON"
+                        elif options['type'] == 'switch':
+                            continue
+                        elif options['type'] == 'number':
+                            continue
+                        else:
+                            continue
+                        self.client.publish(
+                            f"homeassistant/{options['type']}/lnxlink/{discovery['unique_id']}/config",
+                            payload=json.dumps(discovery),
+                            retain=self.config['mqtt']['lwt']['retain'])
+                        print("sent:", options['type'], discovery['unique_id'])
+
+
+
 
 
 
