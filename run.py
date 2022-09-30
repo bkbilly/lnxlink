@@ -10,7 +10,7 @@ import modules
 import traceback
 
 
-version = "0.5"
+version = "0.6"
 
 
 class GracefulKiller:
@@ -116,6 +116,7 @@ class LNXlink():
         try:
             message = json.loads(message)
         except Exception as e:
+            message = message.decode()
             print("String could not be converted to JSON")
             # traceback.print_exc()
 
@@ -144,62 +145,62 @@ class LNXlink():
         }
         if self.config['monitoring'] is not None:
             for service in self.config['monitoring']:
-                addon = self.Addons[service]
-                subtopic = addon.name.lower().replace(' ', '/')
-                topic = f"{self.pref_topic}/{self.config['mqtt']['statsPrefix']}/{subtopic}"
+                try:
+                    addon = self.Addons[service]
+                    subtopic = addon.name.lower().replace(' ', '/')
+                    topic = f"{self.pref_topic}/{self.config['mqtt']['statsPrefix']}/{subtopic}"
 
-                discovery = discovery_template.copy()
-                discovery['name'] = addon.name.lower().replace(' ', '_')
-                discovery['unique_id'] = f"{self.config['mqtt']['clientId']}_{service}"
-                discovery['state_topic'] = topic
-                discovery['json_attributes_topic'] = topic
-                discovery['icon'] = addon.icon
-                discovery['unit_of_measurement'] = addon.unit
-                if hasattr(addon, 'device_class'):
-                    # print(addon.device_class)
-                    discovery['device_class'] = addon.device_class
+                    discovery = discovery_template.copy()
+                    discovery['name'] = addon.name.lower().replace(' ', '_')
+                    discovery['unique_id'] = f"{self.config['mqtt']['clientId']}_{service}"
+                    discovery['state_topic'] = topic
+                    discovery['json_attributes_topic'] = topic
+                    discovery['icon'] = addon.icon
+                    discovery['unit_of_measurement'] = addon.unit
+                    if hasattr(addon, 'device_class'):
+                        # print(addon.device_class)
+                        discovery['device_class'] = addon.device_class
 
-                if addon.unit == 'json':
-                    discovery['unit_of_measurement'] = ""
-                    discovery['value_template'] = "{{ value_json.status }}"
-                    discovery['json_attributes_template'] = "{{ value_json | tojson }}"
+                    if addon.unit == 'json':
+                        discovery['unit_of_measurement'] = ""
+                        discovery['value_template'] = "{{ value_json.status }}"
+                        discovery['json_attributes_template'] = "{{ value_json | tojson }}"
 
-                sensor_type = getattr(addon, 'sensor_type', 'sensor')
-                self.client.publish(
-                    f"homeassistant/{sensor_type}/lnxlink/{discovery['unique_id']}/config",
-                    payload=json.dumps(discovery),
-                    retain=self.config['mqtt']['lwt']['retain']
-                )
+                    sensor_type = getattr(addon, 'sensor_type', 'sensor')
+                    self.client.publish(
+                        f"homeassistant/{sensor_type}/lnxlink/{discovery['unique_id']}/config",
+                        payload=json.dumps(discovery),
+                        retain=self.config['mqtt']['lwt']['retain'])
+                except Exception as e:
+                    traceback.print_exc()
         if self.config['monitoring'] is not None:
             for service in self.config['control']:
                 addon = self.Addons.get(service)
                 if addon is not None and hasattr(addon, 'exposedControls'):
                     for control_name, options in addon.exposedControls().items():
-                        discovery = discovery_template.copy()
-                        discovery['name'] = control_name.lower().replace(' ', '_')
-                        discovery['unique_id'] = f"{self.config['mqtt']['clientId']}_{control_name}"
-                        discovery['state_topic'] = f"{self.pref_topic}/lwt"
-                        discovery['icon'] = options.get('icon', '')
+                        try:
+                            discovery = discovery_template.copy()
+                            discovery['name'] = control_name.lower().replace(' ', '_')
+                            discovery['unique_id'] = f"{self.config['mqtt']['clientId']}_{control_name}"
+                            discovery['state_topic'] = f"{self.pref_topic}/lwt"
+                            discovery['icon'] = options.get('icon', '')
 
-                        if options['type'] == 'button':
-                            discovery["command_topic"] = f"{self.pref_topic}/commands/{service}/{control_name}/"
-                            discovery["payload_off"] = "OFF"
-                            discovery["payload_on"] = "ON"
-                        elif options['type'] == 'switch':
-                            continue
-                        elif options['type'] == 'number':
-                            continue
-                        else:
-                            continue
-                        self.client.publish(
-                            f"homeassistant/{options['type']}/lnxlink/{discovery['unique_id']}/config",
-                            payload=json.dumps(discovery),
-                            retain=self.config['mqtt']['lwt']['retain'])
-                        print("sent:", options['type'], discovery['unique_id'])
-
-
-
-
+                            if options['type'] == 'button':
+                                discovery["command_topic"] = f"{self.pref_topic}/commands/{service}/{control_name}/"
+                                discovery["payload_off"] = "OFF"
+                                discovery["payload_on"] = "ON"
+                            elif options['type'] == 'switch':
+                                continue
+                            elif options['type'] == 'number':
+                                continue
+                            else:
+                                continue
+                            self.client.publish(
+                                f"homeassistant/{options['type']}/lnxlink/{discovery['unique_id']}/config",
+                                payload=json.dumps(discovery),
+                                retain=self.config['mqtt']['lwt']['retain'])
+                        except Exception as e:
+                            traceback.print_exc()
 
 
 if __name__ == '__main__':

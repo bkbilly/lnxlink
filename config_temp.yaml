@@ -28,3 +28,4 @@ monitoring:
   - network_upload
   - network_download
   - media
+  - microphone
