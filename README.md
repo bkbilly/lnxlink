@@ -1,19 +1,18 @@
-<img align="right" width="170" height="100" src="https://github.com/bkbilly/lnxlink/blob/master/logo.png?raw=true">
-
-# LNX link
 [![license](https://img.shields.io/badge/license-MIT-blue)](LICENSE.md)
 [![OS - Linux](https://img.shields.io/badge/OS-Linux-blue?logo=linux&logoColor=white)]()
 [![Python 3.5](https://img.shields.io/badge/Python-3.5-blue?logo=python&logoColor=white)]()
 [![Last commit](https://img.shields.io/github/last-commit/bkbilly/lnxlink?color=blue&logo=github&logoColor=white)]()
 
+<img align="right" width="170" height="100" src="https://github.com/bkbilly/lnxlink/blob/master/logo.png?raw=true">
 
-
+# LNX link
 This is a Linux service for integrating your system with an external application like Home Assistant using MQTT.
 It is inspired by [IOT Link](https://iotlink.gitlab.io/).
 
 # Features
  - **System control:** Shutdown, Restart, Send Keys, Notify, Media.
- - **System monitor:** CPU, Ram, Network, Media, Microphone is used.
+ - **System monitor:** CPU, Ram, Network, Media, Microphone.
+ - **Home Assistant:** Uses MQTT Autodiscovery to create entities.
  - **No sudo required:** No need to be root user to install and use.
  - **Easily expanded:** Any new module is automatically imported as long as it meets the required format.
 
@@ -26,23 +25,6 @@ You can manually update the configuration file `/opt/lnxlink/config.yaml` and re
 ```shell
 systemctl --user restart lnxlink.service
 ```
-
-# Home Assistant integration
-LNX Link is using MQTT Autodiscovery to create entities to the frontend.
-
-Supported entities:
-  - button.shutdown
-  - button.restart
-  - sensor.cpu_usage
-  - sensor.memory_usage
-  - sensor.network_download
-  - sensor.network_upload
-  - sensor.microphone_used
-
-Unsupported entities that need manual configuration:
-  - media (check this: [mqtt-mediaplayer](https://github.com/bkbilly/hass-mqtt-mediaplayer))
-  - notify
-  - send-keys
 
 # Examples
 
@@ -64,6 +46,33 @@ data:
   topic: {prefix}/{clientId}/commands/send-keys
   payload: "<CTRL>+t"
 ```
+Combine with [Wake on Lan](https://www.home-assistant.io/integrations/wake_on_lan/) to control your PC with one switch:
+```yaml
+switch:
+  - platform: template
+    switches:
+      my_pc:
+        friendly_name: "My PC"
+        unique_id: my_pc
+        value_template: "{{ not is_state('button.shutdown', 'unavailable') }}"
+        turn_on:
+          service: switch.turn_on
+          data:
+            entity_id: switch.pc_wol
+        turn_off:
+          service: button.press
+          data:
+            entity_id: button.shutdown
+```
+
+Create a media player using [mqtt-mediaplayer](https://github.com/bkbilly/hass-mqtt-mediaplayer) using the information collected from the media sensor:
+
+![image](https://user-images.githubusercontent.com/518494/193397441-f18bb5fa-de37-4d95-9158-32cd81b31c72.png)
+
+
+
+
+
 
 <details>
   <summary>Technical Notes (click to expand)</summary>
@@ -117,13 +126,24 @@ To expand the supported features, create a new python file on **modules** folder
 class Addon():
     service = 'example'
     name = 'Example'
+    icon = 'mdi:home-assistant'
+    unit = ''
 
     def startControl(self, topic, data):
-        ''' topic is a list with all topics after commands '''
+        ''' When a command is sent, it will run this method '''
         print(topic, data)
 
     def getInfo(self):
         ''' Returns any type that can be converted to JSON '''
         return 15
+
+    def exposedControls(self):
+        ''' Optional method which exposes an entity '''
+        return {
+            "mybutton": {
+                "type": "button",
+                "icon": "mdi:button-cursor",
+            }
+        }
 ```
 </details>
