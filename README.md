@@ -75,9 +75,9 @@ switch:
 
 
 
-<details>
+<details><summary>Technical Notes (click to expand)</summary>
 
-# Expanding
+# Creating new senosr
 To expand the supported features, create a new python file on **modules** folder and use this template:
 ```python
 class Addon():
