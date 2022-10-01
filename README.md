@@ -14,7 +14,7 @@ It is inspired by [IOT Link](https://iotlink.gitlab.io/).
  - **System monitor:** CPU, Ram, Network, Media, Microphone.
  - **Home Assistant:** Uses MQTT Autodiscovery to create entities.
  - **No sudo required:** No need to be root user to install and use.
- - **Easily expanded:** Any new module is automatically imported as long as it meets the required format.
+ - **Easily expanded:** Any new module is automatically imported.
 
 # Installation
 One command install and update:
@@ -28,7 +28,7 @@ systemctl --user restart lnxlink.service
 
 # Examples
 
-Send a notification with an image as a preview:
+### Send a notification with an image as a preview:
 ```yaml
 service: mqtt.publish
 data:
@@ -39,14 +39,15 @@ data:
       "iconUrl": "http://hass.local:8123/local/myimage.jpg" }
 ```
 
-Send a series of keys:
+### Send a series of keys:
 ```yaml
 service: mqtt.publish
 data:
   topic: {prefix}/{clientId}/commands/send-keys
   payload: "<CTRL>+t"
 ```
-Combine with [Wake on Lan](https://www.home-assistant.io/integrations/wake_on_lan/) to control your PC with one switch:
+
+### Combine with [Wake on Lan](https://www.home-assistant.io/integrations/wake_on_lan/) to control your PC with one switch:
 ```yaml
 switch:
   - platform: template
@@ -65,7 +66,7 @@ switch:
             entity_id: button.shutdown
 ```
 
-Create a media player using [mqtt-mediaplayer](https://github.com/bkbilly/hass-mqtt-mediaplayer) using the information collected from the media sensor:
+### Create a media player using [mqtt-mediaplayer](https://github.com/bkbilly/hass-mqtt-mediaplayer) using the information collected from the media sensor:
 
 ![image](https://user-images.githubusercontent.com/518494/193397441-f18bb5fa-de37-4d95-9158-32cd81b31c72.png)
 
