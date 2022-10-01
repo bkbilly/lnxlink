@@ -29,3 +29,4 @@ monitoring:
   - network_download
   - media
   - microphone
+  - idle

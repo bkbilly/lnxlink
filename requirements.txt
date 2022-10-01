@@ -4,3 +4,4 @@ notify2>=0.3.1
 psutil>=5.8.0
 mpris2>=1.0.2
 pynput>=1.7.3
+idle-time>=0.1.0
