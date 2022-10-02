@@ -60,13 +60,25 @@ sudo pip3 install -r $basedir/requirements.txt
 echo -e "\e[35mUser configuration setup...\e[0m"
 sudo $basedir/config.py $basedir/config.yaml
 
-# Install as a service
-echo -e "\e[35mInstalling as a service...\e[0m"
-mkdir -p ~/.config/systemd/user/
-cp $basedir/autostart/lnxlink.service ~/.config/systemd/user/lnxlink.service
-chmod +x ~/.config/systemd/user/lnxlink.service
-systemctl --user enable lnxlink.service
-systemctl --user restart lnxlink.service
+echo -e "\e[35mChoose type of service to install...\e[0m"
+read -p "Headless service [y/N]: " -r
+if [[ $REPLY =~ ^[Yy]$ ]]
+then
+    # Install as a system service
+    echo -e "\e[35mInstalling as a headless service...\e[0m"
+    sudo cp $basedir/autostart/lnxlink_headless.service /etc/systemd/system/lnxlink.service
+    sudo chmod +x /etc/systemd/system/lnxlink.service
+    sudo systemctl enable lnxlink.service
+    sudo systemctl restart lnxlink.service
+else
+    # Install as a user service
+    echo -e "\e[35mInstalling as a user service...\e[0m"
+    mkdir -p ~/.config/systemd/user/
+    cp $basedir/autostart/lnxlink_user.service ~/.config/systemd/user/lnxlink.service
+    chmod +x ~/.config/systemd/user/lnxlink.service
+    systemctl --user enable lnxlink.service
+    systemctl --user restart lnxlink.service
+fi
 
 
 # Done
