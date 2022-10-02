@@ -13,7 +13,7 @@ It is inspired by [IOT Link](https://iotlink.gitlab.io/).
  - **System control:** Shutdown, Restart, Send Keys, Notify, Media.
  - **System monitor:** CPU, Ram, Network, Media, Microphone, Idle.
  - **Home Assistant:** Uses MQTT Autodiscovery to create entities.
- - **No sudo required:** No need to be root user to install and use.
+ - **No sudo required:** No need to be root user to install and use, unless used on server setup.
  - **Easily expanded:** Any new module is automatically imported.
 
 # Installation
