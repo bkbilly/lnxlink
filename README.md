@@ -75,53 +75,9 @@ switch:
 
 
 
-<details>
-  <summary>Technical Notes (click to expand)</summary>
+<details><summary>Technical Notes (click to expand)</summary>
 
-# Commands
-  - **Shutdown System**
-    - **Topic:** {prefix}/{clientId}/commands/shutdown
-  - **Restart System**
-    - **Topic:** {prefix}/{clientId}/commands/restart
-  - **Send Keys**
-    - **Topic:** {prefix}/{clientId}/commands/send-keys
-    - **Payload Type:** List or String
-    - **Payload:** Each string can contain special keys '\<ALT>+\<CTRL>+\<DELTE>', '\<CTRL>+c'
-  - **Notify**
-    - **Topic:** {prefix}/{clientId}/commands/notify
-    - **Payload Type:** JSON
-    - **Payload:**
-      - **title:** String
-      - **message:** String
-      - **iconUrl:** String
-  - **Media**
-    - **Topic:** {prefix}/{clientId}/commands/media/{media_action}
-    - **media_action:**
-      - **volume_set:** payload is integer or float with values 0-1 or 0-100
-      - **playpause**
-      - **previous**
-      - **next**
-
-# Monitoring
-  - **Power status**
-    - **Topic:** {prefix}/{clientId}/lwt
-    - **Payload Type:** ON/OFF {connectMsg}/{disconnectMsg}
-  - **CPU**
-    - **Topic:** {prefix}/{clientId}/{statsPrefix}/cpu/usage
-    - **Payload Type:** Integer
-  - **Memory RAM**
-    - **Topic:** {prefix}/{clientId}/{statsPrefix}/memory/usage
-    - **Payload Type:** Integer
-  - **Network**
-    - **Topic:** {prefix}/{clientId}/{statsPrefix}/network/0/speed
-    - **Payload Type:** JSON Mbps
-    - **Example:**: {"download": 0.8, "upload": 0.1}
-  - **Media**
-    - **Topic:** {prefix}/{clientId}/{statsPrefix}/media/info
-    - **Payload Type:** JSON
-    - **Example:**: {"title": "Hakuna Matata", "artist": "disney", "album": "", "status": "playing", "volume": 51, "playing": true}
-
-# Expanding
+# Creating new senosr
 To expand the supported features, create a new python file on **modules** folder and use this template:
 ```python
 class Addon():
@@ -146,4 +102,5 @@ class Addon():
             }
         }
 ```
+
 </details>
