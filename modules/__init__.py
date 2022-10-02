@@ -4,21 +4,22 @@ from importlib import import_module
 import time
 import traceback
 
-modules = {}
 
-# iterate through the modules in the current package
-package_dir = str(Path(__file__).resolve().parent)
-for (_, module_name, _) in iter_modules([package_dir]):
-    retries = 10
-    while retries >= 0:
-        try:
-            addons = getattr(import_module(f"{__name__}.{module_name}"), 'Addon')
-            modules[module_name] = addons
-            retries = -1
-            print(f"Successfully loaded addon: {module_name}")
-            
-        except Exception as e:
-            print(f"Error with module: {module_name}")
-            traceback.print_exc()
-            time.sleep(2)
-            retries -= 1
+def parse_modules(list_modules):
+    modules = {}
+    for module_name in list_modules:
+        retries = 10
+        while retries >= 0:
+            try:
+                addon = getattr(import_module(f"{__name__}.{module_name}"), 'Addon')
+                addon.service = module_name
+                modules[module_name] = addon
+                retries = -1
+                print(f"Successfully loaded addon: {module_name}")
+            except Exception as e:
+                print("----------------")
+                print(f"Error with module: {module_name}")
+                traceback.print_exc()
+                time.sleep(2)
+                retries -= 1
+    return modules

@@ -2,7 +2,6 @@ import glob
 
 
 class Addon():
-    service = 'microphone'
     name = 'Microphone used'
     icon = 'mdi:microphone'
     unit = ''

@@ -19,7 +19,6 @@ control:
   - shutdown
   - restart
   - send-keys
-  - run
   - notify
   - media
 monitoring:

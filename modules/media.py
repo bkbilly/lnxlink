@@ -5,7 +5,6 @@ import alsaaudio
 
 
 class Addon():
-    service = 'media'
     name = 'Media Info'
     icon = 'mdi:music'
     unit = 'json'

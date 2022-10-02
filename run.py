@@ -32,10 +32,13 @@ class LNXlink():
     def __init__(self, config_path):
         print("LNXLink started")
         self.config = self.read_config(config_path)
-        self.setup_mqtt()
+
+        modules_list = set(self.config['control'] + self.config['monitoring'])
         self.Addons = {}
-        for service, addon in modules.modules.items():
+        for service, addon in modules.parse_modules(modules_list).items():
             self.Addons[addon.service] = addon()
+
+        self.setup_mqtt()
 
     def monitor_run(self):
         if self.config['monitoring'] is not None:
@@ -79,6 +82,9 @@ class LNXlink():
         if 'prefix' in config['mqtt'] and 'clientId' in config['mqtt']:
             self.pref_topic = f"{config['mqtt']['prefix']}/{config['mqtt']['clientId']}"
         self.pref_topic = self.pref_topic.lower()
+
+        config['monitoring'] = [x.lower().replace('-', '_') for x in config['monitoring']]
+        config['control'] = [x.lower().replace('-', '_') for x in config['control']]
         return config
 
     def on_connect(self, client, userdata, flags, rc):

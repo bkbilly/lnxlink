@@ -2,7 +2,6 @@
 from pynput import keyboard
 
 class Addon():
-    service = 'send-keys'
     name = 'Send Keys'
     icon = None
     unit = None

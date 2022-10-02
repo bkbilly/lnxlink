@@ -1,7 +1,6 @@
 import subprocess
 
 class Addon():
-    service = 'restart'
     name = 'Restart'
     icon = 'mdi:restart'
     unit = 'button'

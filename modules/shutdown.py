@@ -1,7 +1,6 @@
 import subprocess
 
 class Addon():
-    service = 'shutdown'
     name = 'Shutdown'
     icon = 'mdi:power'
     unit = 'button'

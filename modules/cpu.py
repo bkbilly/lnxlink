@@ -1,7 +1,6 @@
 import psutil
 
 class Addon():
-    service = 'cpu'
     name = 'CPU Usage'
     icon = 'mdi:speedometer'
     unit = '%'

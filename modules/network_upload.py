@@ -3,26 +3,25 @@ from datetime import datetime
 
 
 class Addon():
-    service = 'network_download'
-    name = 'Network Download'
+    name = 'Network Upload'
     icon = 'mdi:access-point-network'
     unit = 'Mbit/s'
 
     def __init__(self):
         self.timeOld = datetime.now()
-        self.recvOld = psutil.net_io_counters().bytes_recv
+        self.sentOld = psutil.net_io_counters().bytes_sent
 
     def getInfo(self):
         """ Returns Mbps"""
         timeNew = datetime.now()
-        recvNew = psutil.net_io_counters().bytes_recv
+        sentNew = psutil.net_io_counters().bytes_sent
 
         timeDiff = (timeNew - self.timeOld).total_seconds()
-        recvDiff = recvNew - self.recvOld
+        sentDiff = sentNew - self.sentOld
 
         self.timeOld = timeNew
-        self.recvOld = recvNew
+        self.sentOld = sentNew
 
-        recvSpeed = round(recvDiff * 8 / timeDiff / 1024 / 1024, 2)
+        sentsSpeed = round(sentDiff * 8 / timeDiff / 1024 / 1024, 2)
 
-        return recvSpeed
+        return sentsSpeed

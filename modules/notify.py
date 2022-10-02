@@ -2,7 +2,6 @@ import notify2
 import requests
 
 class Addon():
-    service = 'notify'
     name = 'Notify OSD'
     icon = None
     unit = None

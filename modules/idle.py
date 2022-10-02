@@ -2,7 +2,6 @@ from idle_time import IdleMonitor
 
 
 class Addon():
-    service = 'idle'
     name = 'Idle'
     icon = 'mdi:timer-sand'
     unit = 'min'

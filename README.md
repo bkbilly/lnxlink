@@ -125,7 +125,6 @@ switch:
 To expand the supported features, create a new python file on **modules** folder and use this template:
 ```python
 class Addon():
-    service = 'example'
     name = 'Example'
     icon = 'mdi:home-assistant'
     unit = ''
