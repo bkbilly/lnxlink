@@ -10,7 +10,7 @@ import modules
 import traceback
 
 
-version = "0.6"
+version = "0.7"
 
 
 class GracefulKiller:
