@@ -21,6 +21,7 @@ control:
   - send-keys
   - notify
   - media
+  - screen_onoff
 monitoring:
   - cpu
   - memory
@@ -30,3 +31,4 @@ monitoring:
   - microphone
   - idle
   - bluetooth_battery
+  - screen_onoff

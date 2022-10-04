@@ -10,7 +10,7 @@ This is a Linux service for integrating your system with an external application
 It is inspired by [IOT Link](https://iotlink.gitlab.io/).
 
 # Features
- - **System control:** Shutdown, Restart, Send Keys, Notify, Media.
+ - **System control:** Shutdown, Restart, Send Keys, Notify, Media, Screen On/Off.
  - **System monitor:** CPU, Ram, Network, Media, Microphone, Idle, Bluetooth battery.
  - **Home Assistant:** Uses MQTT Autodiscovery to create entities.
  - **No sudo required:** No need to be root user to install and use, unless used on server setup.
