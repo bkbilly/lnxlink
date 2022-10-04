@@ -4,6 +4,7 @@ import glob
 class Addon():
     name = 'Microphone used'
     icon = 'mdi:microphone'
+    sensor_type = 'binary_sensor'
     unit = ''
 
     def getInfo(self):
@@ -12,5 +13,5 @@ class Addon():
             with open(mic) as mic_content:
                 mic_status = mic_content.read().strip().lower()
                 if mic_status != 'closed':
-                    return True
-        return False
+                    return "ON"
+        return "OFF"
