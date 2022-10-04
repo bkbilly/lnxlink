@@ -173,10 +173,11 @@ class LNXlink():
                         discovery['json_attributes_template'] = "{{ value_json | tojson }}"
 
                     sensor_type = getattr(addon, 'sensor_type', 'sensor')
-                    self.client.publish(
-                        f"homeassistant/{sensor_type}/lnxlink/{discovery['unique_id']}/config",
-                        payload=json.dumps(discovery),
-                        retain=self.config['mqtt']['lwt']['retain'])
+                    if sensor_type in ['binary_sensor', 'sensor']:
+                        self.client.publish(
+                            f"homeassistant/{sensor_type}/lnxlink/{discovery['unique_id']}/config",
+                            payload=json.dumps(discovery),
+                            retain=self.config['mqtt']['lwt']['retain'])
                 except Exception as e:
                     traceback.print_exc()
         if self.config['monitoring'] is not None:
@@ -188,15 +189,16 @@ class LNXlink():
                             discovery = discovery_template.copy()
                             discovery['name'] = control_name.lower().replace(' ', '_')
                             discovery['unique_id'] = f"{self.config['mqtt']['clientId']}_{control_name}"
-                            discovery['state_topic'] = f"{self.pref_topic}/lwt"
                             discovery['icon'] = options.get('icon', '')
 
                             if options['type'] == 'button':
+                                discovery['state_topic'] = f"{self.pref_topic}/lwt"
+                                discovery["command_topic"] = f"{self.pref_topic}/commands/{service}/{control_name}/"
+                            elif options['type'] == 'switch':
+                                discovery["state_topic"] = f"{self.pref_topic}/{self.config['mqtt']['statsPrefix']}/{subtopic}"
                                 discovery["command_topic"] = f"{self.pref_topic}/commands/{service}/{control_name}/"
                                 discovery["payload_off"] = "OFF"
                                 discovery["payload_on"] = "ON"
-                            elif options['type'] == 'switch':
-                                continue
                             elif options['type'] == 'number':
                                 continue
                             else:
