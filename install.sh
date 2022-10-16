@@ -9,6 +9,9 @@ if [ -f /etc/debian_version ]; then
 elif [ -d /etc/yum.repos.d ]; then
     installcommand='dnf install -y'
     system='redhat/fedora'
+elif [ -d /etc/pacman.d ]; then
+    installcommand='pacman -S --noconfirm '
+    system='arch/manjaro'
 else
     echo 'Warning! System type not recognized. Trying apt package manager.'
     installcommand='apt-get --yes --force-yes install'
@@ -32,7 +35,11 @@ fi
 echo -e "\e[35mLooking for PIP3...\e[0m"
 if [ -z $(which pip3) ]; then
     echo -e "\e[31mPIP3 not found, installing from $system package manager:\e[0m"
-    sudo $installcommand python3-pip
+    if [ system=='arch/manjaro' ]; then
+        sudo $installcommand python-pip
+    else
+        sudo $installcommand python3-pip
+    fi
 fi
 
 
@@ -53,7 +60,12 @@ if [ "$system" == "redhat/fedora" ]; then
     # python3-devel and  needed on fedora to install evdev (a dependency of pynput)
     sudo $installcommand kernel-headers-$(uname -r) python3-devel gcc
 fi
-sudo $installcommand python3-alsaaudio
+
+if [ "$system" == "arch/manjaro" ]; then
+    sudo pip3 install 'pyalsaaudio>=0.9.2,<1'
+else
+    sudo $installcommand python3-alsaaudio
+fi
 sudo pip3 install -r $basedir/requirements.txt
 
 # User config
