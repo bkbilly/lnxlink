@@ -104,7 +104,9 @@ def get_service_user():
             stderr=subprocess.PIPE).stdout.decode("UTF-8")
         result = stdout.strip()
         if result in ['active', 'failed']:
-            installed_as = num
+            _, _, _, service_location = get_service_vars(num)
+            if os.path.exists(f"{service_location}/lnxlink.service"):
+                installed_as = num
     return installed_as
 
 
