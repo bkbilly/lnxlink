@@ -17,11 +17,12 @@ It is inspired by [IOT Link](https://iotlink.gitlab.io/).
  - **Easily expanded:** Any new module is automatically imported.
 
 # Installation
-One command install and update:
+Install or update:
 ```shell
-bash <(curl -s "https://raw.githubusercontent.com/bkbilly/lnxlink/master/install.sh")
+pip3 install -U lnxlink
+lnxlink /absolute/path/to/config.yaml
 ```
-You can manually update the configuration file `/opt/lnxlink/config.yaml` and restart the service with the use of systemctl:
+You can manually update the configuration file `config.yaml` and restart the service with the use of systemctl:
 ```shell
 systemctl --user restart lnxlink.service
 ```
