@@ -14,7 +14,7 @@ github_repository = "bkbilly/lnxlink/master"
 def setup_config(config_path):
     if not os.path.exists(config_path):
         print("Config file not found.")
-        url = 'https://raw.githubusercontent.com/{github_repository}/config_temp.yaml'
+        url = f"https://raw.githubusercontent.com/{github_repository}/config_temp.yaml"
         r = requests.get(url)
         try:
             with open(config_path, 'wb') as config:
@@ -114,12 +114,12 @@ def get_service_vars(user_service):
     if user_service:
         sudo = ""
         cmd_user = "--user"
-        service_url = "https://raw.githubusercontent.com/{github_repository}/autostart/lnxlink_user.service"
+        service_url = f"https://raw.githubusercontent.com/{github_repository}/autostart/lnxlink_user.service"
         service_location = f"{os.path.expanduser('~')}/.config/systemd/user"
     else:
         sudo = "sudo"
         cmd_user = ""
-        service_url = "https://raw.githubusercontent.com/{github_repository}/autostart/lnxlink_headless.service"
+        service_url = f"https://raw.githubusercontent.com/{github_repository}/autostart/lnxlink_headless.service"
         service_location = "/etc/systemd/system"
     return sudo, cmd_user, service_url, service_location
 
