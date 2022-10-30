@@ -147,8 +147,6 @@ def setup_systemd(config_path):
         subprocess.call(cmd, shell=True)
         cmd = f"{sudo} systemctl {cmd_user} daemon-reload"
         subprocess.call(cmd, shell=True)
-        cmd = f"{sudo} systemctl {cmd_user} restart lnxlink.service"
-        subprocess.call(cmd, shell=True)
 
 
 if __name__ == '__main__':
