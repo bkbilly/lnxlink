@@ -21,7 +21,7 @@ It is inspired by [IOT Link](https://iotlink.gitlab.io/).
 Install or update:
 ```shell
 pip3 install -U lnxlink
-lnxlink /absolute/path/to/config.yaml
+lnxlink /path/to/config.yaml
 ```
 You can manually update the configuration file `config.yaml` and restart the service with the use of systemctl:
 ```shell

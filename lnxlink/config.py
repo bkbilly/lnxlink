@@ -6,6 +6,7 @@ import requests
 import os
 import subprocess
 import shutil
+from pathlib import Path
 
 
 github_repository = "bkbilly/lnxlink/master"
@@ -17,6 +18,7 @@ def setup_config(config_path):
         url = f"https://raw.githubusercontent.com/{github_repository}/config_temp.yaml"
         r = requests.get(url)
         try:
+            Path(config_path).parent.mkdir(parents=True, exist_ok=True)
             with open(config_path, 'wb') as config:
                 config.write(r.content)
             print(f"Created new template: {config_path}")
@@ -135,6 +137,7 @@ def setup_systemd(config_path):
         sudo, cmd_user, service_url, service_location = get_service_vars(user_service)
 
         # Install on SystemD
+        Path(service_location).mkdir(parents=True, exist_ok=True)
         r = requests.get(service_url)
         with open(f"{service_location}/lnxlink.service", 'wb') as config:
             exec_cmd = f"{shutil.which('lnxlink')} -c {config_path}"

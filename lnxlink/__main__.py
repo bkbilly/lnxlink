@@ -1,16 +1,17 @@
 #!/usr/bin/env python3
 
+import os
 import yaml
-import paho.mqtt.client as mqtt
 import time
 import signal
 import threading
 import json
-from . import modules
 import traceback
 import importlib.metadata
 import platform
 import argparse
+import paho.mqtt.client as mqtt
+from . import modules
 from . import config
 
 version = importlib.metadata.version(__package__ or __name__)
@@ -225,9 +226,10 @@ def main():
         required=True)
     args = parser.parse_args()
 
-    config.setup_config(args.config)
-    config.setup_systemd(args.config)
-    lnxlink = LNXlink(args.config)
+    config_file = os.path.abspath(args.config)
+    config.setup_config(config_file)
+    config.setup_systemd(config_file)
+    lnxlink = LNXlink(config_file)
     lnxlink.monitor_run_thread()
 
     killer = GracefulKiller()
