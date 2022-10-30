@@ -103,7 +103,7 @@ def get_service_user():
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE).stdout.decode("UTF-8")
         result = stdout.strip()
-        if result == 'active':
+        if result in ['active', 'failed']:
             installed_as = num
     return installed_as
 
