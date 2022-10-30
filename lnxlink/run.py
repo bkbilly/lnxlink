@@ -6,11 +6,14 @@ import time
 import signal
 import threading
 import json
-import modules
+from . import modules
 import traceback
+import importlib.metadata
+import platform
+import argparse
+from . import config
 
-
-version = "0.7"
+version = importlib.metadata.version(__package__ or __name__)
 
 
 class GracefulKiller:
@@ -30,7 +33,7 @@ class LNXlink():
     pref_topic = 'lnxlink'
 
     def __init__(self, config_path):
-        print("LNXLink started")
+        print(f"LNXLink {version} started: {platform.python_version()}")
         self.config = self.read_config(config_path)
 
         modules_list = set(self.config['control'] + self.config['monitoring'])
@@ -211,11 +214,27 @@ class LNXlink():
                             traceback.print_exc()
 
 
-if __name__ == '__main__':
-    lnxlink = LNXlink('config.yaml')
+def main():
+    parser = argparse.ArgumentParser(
+        prog="LNX Link",
+        description="Send system information to MQTT broker")
+    parser.add_argument(
+        "-c", "--config",
+        help="Configuration file",
+        default="/etc/config.yaml",
+        required=True)
+    args = parser.parse_args()
+
+    config.setup_config(args.config)
+    config.setup_systemd(args.config)
+    lnxlink = LNXlink(args.config)
     lnxlink.monitor_run_thread()
 
     killer = GracefulKiller()
     while not killer.kill_now:
         time.sleep(1)
     lnxlink.disconnect()
+
+
+if __name__ == '__main__':
+    main()

@@ -1,7 +1,7 @@
 mqtt:
-  prefix: 'iotlink/workgroup'
-  clientId: 'DESKTOP-PC'
-  statsPrefix: 'windows-monitor/stats'
+  prefix: 'lnxlink'
+  clientId: 'DESKTOP-Linux'
+  statsPrefix: 'monitor/stats'
   server: '192.168.1.1'
   port: 1883
   auth:
@@ -13,22 +13,22 @@ mqtt:
     enabled: true
     qos: 1
     retain: true
-    connectMsg: "ON"
-    disconnectMsg: "OFF"
+    connectMsg: 'ON'
+    disconnectMsg: 'OFF'
 control:
-  - shutdown
-  - restart
-  - send-keys
-  - notify
-  - media
-  - screen_onoff
+- shutdown
+- restart
+- send-keys
+- notify
+- media
+- screen_onoff
 monitoring:
-  - cpu
-  - memory
-  - network_upload
-  - network_download
-  - media
-  - microphone
-  - idle
-  - bluetooth_battery
-  - screen_onoff
+- cpu
+- memory
+- network_upload
+- network_download
+- media
+- microphone
+- idle
+- bluetooth_battery
+- screen_onoff
