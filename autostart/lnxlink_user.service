@@ -7,8 +7,7 @@ PartOf=graphical-session.target
 Type=simple
 Restart=always
 
-WorkingDirectory=/opt/lnxlink
-ExecStart=/usr/bin/python3 /opt/lnxlink/run.py
+ExecStart={exec_cmd}
  
 [Install]
 WantedBy=default.target

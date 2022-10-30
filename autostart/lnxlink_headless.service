@@ -6,8 +6,8 @@ After=network-online.target
 Type=simple
 Restart=always
 User=root
-WorkingDirectory=/opt/lnxlink
-ExecStart=/usr/bin/python3 /opt/lnxlink/run.py
+
+ExecStart={exec_cmd}
 
 [Install]
 WantedBy=default.target
