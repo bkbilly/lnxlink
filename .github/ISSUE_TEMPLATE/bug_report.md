@@ -24,11 +24,9 @@ Provide the configuration file, remove any sensitive info that might exist:
 ```
 
 **Logs**
-<details><summary>LOGS</summary>
 <!--  Provide the log output from the following command 
     journalctl --user -u lnxlink -n 300 --no-pager
 -->
 ```txt
 
 ```
-</details>
