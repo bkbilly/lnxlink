@@ -113,7 +113,7 @@ def get_service_user():
 
 
 def get_service_vars(user_service):
-    if user_service:
+    if user_service == True or user_service == 1:
         sudo = ""
         cmd_user = "--user"
         service_url = f"https://raw.githubusercontent.com/{github_repository}/autostart/lnxlink_user.service"
