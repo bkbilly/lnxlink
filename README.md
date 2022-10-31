@@ -20,8 +20,9 @@ It is inspired by [IOT Link](https://iotlink.gitlab.io/).
 # Installation
 Install or update:
 ```shell
+sudo apt install patchelf meson libdbus-glib-1-dev libglib2.0-dev libasound2-dev
 pip3 install -U lnxlink
-lnxlink /path/to/config.yaml
+lnxlink -c config.yaml
 ```
 You can manually update the configuration file `config.yaml` and restart the service with the use of systemctl:
 ```shell
