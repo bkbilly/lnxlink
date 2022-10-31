@@ -1,42 +1,34 @@
 ---
 name: Bug report
-about: Create a report to help identify the problem
+about: Create a report to help us improve
 title: ''
-labels: ''
+labels: bug
 assignees: ''
 
 ---
 
 **Describe the problem**
-<!--  READ THIS FIRST:
-  - Make sure you are running the latest version of LNXLink before reporting an issue: 
-    bash <(curl -s "https://raw.githubusercontent.com/bkbilly/lnxlink/master/install.sh")
-  - Provide as many details as possible. Paste logs, configuration samples and code into the backticks.
--->
+A clear and concise description of what the bug is.
 
+**Desktop (please complete the following information):**
+ - OS: [e.g. Ubuntu 22.04]
+ - Version [e.g. 2022.10.3]
 
-**OS Version**
-<!--  Provide the OS version with this command 
-    lsb_release -a
--->
+**Additional context**
+Add any other context about the problem here.
 
-**LNXLink version** 
-<!--  Provide the hash from the command bellow 
-    git -C /opt/lnxlink/ rev-parse HEAD
--->
+**Configuration**
+Provide the configuration file, remove any sensitive info that might exist:
+```yaml
+
+```
 
 **Logs**
+<details><summary>LOGS</summary>
 <!--  Provide the log output from the following command 
-    journalctl --user -u lnxlink -n 100 --no-pager
+    journalctl --user -u lnxlink -n 300 --no-pager
 -->
 ```txt
 
 ```
-
-**Configuration**
-<!--  Provide the settings, remove any sensitive info like usernames, passwords that might exist  
-    cat /opt/lnxlink/config.yaml
--->
-```yaml
-
-```
+</details>
