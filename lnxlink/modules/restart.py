@@ -10,7 +10,7 @@ class Addon():
 
     def exposedControls(self):
         return {
-            "shutdown": {
+            "restart": {
                 "type": "button",
                 "icon": "mdi:restart",
             }
