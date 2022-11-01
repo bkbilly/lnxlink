@@ -88,7 +88,7 @@ class Addon():
             title = player.Metadata.get('xesam:title')
             artist = player.Metadata.get('xesam:artist')
             album = player.Metadata.get('xesam:album')
-            if title is not None and title != "":
+            if p_status != 'Stopped':
                 artist_str = ''
                 if artist is not None:
                     artist_str = ','.join(artist)

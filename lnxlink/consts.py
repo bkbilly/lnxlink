@@ -46,14 +46,11 @@ mqtt:
     retain: true
     connectMsg: 'ON'
     disconnectMsg: 'OFF'
-control:
+modules:
 - shutdown
 - restart
 - send-keys
 - notify
-- media
-- screen_onoff
-monitoring:
 - cpu
 - memory
 - network_upload
