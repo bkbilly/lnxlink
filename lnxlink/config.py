@@ -1,26 +1,21 @@
 #!/usr/bin/env python3
 
 import yaml
-import sys
-import requests
 import os
 import subprocess
 import shutil
 from pathlib import Path
-
-
-github_repository = "bkbilly/lnxlink/master"
+from .consts import service_headless, service_user, config_temp
 
 
 def setup_config(config_path):
     if not os.path.exists(config_path):
         print("Config file not found.")
-        url = f"https://raw.githubusercontent.com/{github_repository}/config_temp.yaml"
-        r = requests.get(url)
+
         try:
             Path(config_path).parent.mkdir(parents=True, exist_ok=True)
             with open(config_path, 'wb') as config:
-                config.write(r.content)
+                config.write(config_temp.encode())
             print(f"Created new template: {config_path}")
         except IOError:
             print("Permision denied")
@@ -98,14 +93,14 @@ def userprompt_config(config_path):
 def get_service_user():
     installed_as = 0
     for num, cmd_user in enumerate(["--user", ""], start=1):
-        cmd = f"systemctl {cmd_user} is-active lnxlink.service"
+        cmd = f"systemctl {cmd_user} is-enabled lnxlink.service"
         stdout = subprocess.run(
             cmd,
             shell=True,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE).stdout.decode("UTF-8")
         result = stdout.strip()
-        if result in ['active', 'failed']:
+        if result in ['enabled']:
             _, _, _, service_location = get_service_vars(num)
             if os.path.exists(f"{service_location}/lnxlink.service"):
                 installed_as = num
@@ -116,14 +111,14 @@ def get_service_vars(user_service):
     if user_service == True or user_service == 1:
         sudo = ""
         cmd_user = "--user"
-        service_url = f"https://raw.githubusercontent.com/{github_repository}/autostart/lnxlink_user.service"
+        systemd_service = service_user
         service_location = f"{os.path.expanduser('~')}/.config/systemd/user"
     else:
         sudo = "sudo"
         cmd_user = ""
-        service_url = f"https://raw.githubusercontent.com/{github_repository}/autostart/lnxlink_headless.service"
+        systemd_service = service_headless
         service_location = "/etc/systemd/system"
-    return sudo, cmd_user, service_url, service_location
+    return sudo, cmd_user, systemd_service, service_location
 
 
 def setup_systemd(config_path):
@@ -134,15 +129,13 @@ def setup_systemd(config_path):
         # Service not found or not running
         print("SystemD service not found or it's not running...")
         user_service = query_true_false("Install as a user service?", True)
-        sudo, cmd_user, service_url, service_location = get_service_vars(user_service)
+        sudo, cmd_user, systemd_service, service_location = get_service_vars(user_service)
 
         # Install on SystemD
         Path(service_location).mkdir(parents=True, exist_ok=True)
-        r = requests.get(service_url)
+        exec_cmd = f"{shutil.which('lnxlink')} -c {config_path}"
         with open(f"{service_location}/lnxlink.service", 'wb') as config:
-            exec_cmd = f"{shutil.which('lnxlink')} -c {config_path}"
-            content = r.content.replace(b"{exec_cmd}", exec_cmd.encode())
-            config.write(content)
+            config.write(systemd_service.format(exec_cmd=exec_cmd).encode())
 
         cmd = f"{sudo} chmod +x {service_location}/lnxlink.service"
         subprocess.call(cmd, shell=True)

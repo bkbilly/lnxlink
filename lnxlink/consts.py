@@ -1,3 +1,34 @@
+service_headless = """[Unit]
+Description=LNXLink
+After=network-online.target
+
+[Service]
+Type=simple
+Restart=always
+User=root
+
+ExecStart={exec_cmd}
+
+[Install]
+WantedBy=default.target
+"""
+
+service_user = """[Unit]
+Description=LNXLink
+After=network-online.target multi-user.target graphical.target
+PartOf=graphical-session.target
+ 
+[Service]
+Type=simple
+Restart=always
+
+ExecStart={exec_cmd}
+ 
+[Install]
+WantedBy=default.target
+"""
+
+config_temp = """
 mqtt:
   prefix: 'lnxlink'
   clientId: 'DESKTOP-Linux'
@@ -32,3 +63,4 @@ monitoring:
 - idle
 - bluetooth_battery
 - screen_onoff
+"""
