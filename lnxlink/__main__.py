@@ -53,6 +53,8 @@ class LNXlink():
                         topic = f"{self.pref_topic}/{self.config['mqtt']['statsPrefix']}/{subtopic}"
                         pub_data = addon.getInfo()
                         # print(topic, pub_data, type(pub_data))
+                        if pub_data is None:
+                            return
                         if type(pub_data) in [dict, list]:
                             pub_data = json.dumps(pub_data)
                         self.client.publish(
