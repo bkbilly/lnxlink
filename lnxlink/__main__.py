@@ -193,7 +193,6 @@ class LNXlink():
             payload=json.dumps(discovery),
             retain=self.config['mqtt']['lwt']['retain'])
 
-
     def setup_discovery(self):
         discovery_template = {
             "availability": {
@@ -222,6 +221,7 @@ class LNXlink():
                             self.setup_discovery_control(addon, service, control_name, options, discovery_template)
                         except Exception as e:
                             traceback.print_exc()
+
 
 def main():
     parser = argparse.ArgumentParser(

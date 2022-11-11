@@ -60,4 +60,7 @@ modules:
 - idle
 - bluetooth_battery
 - screen_onoff
+- suspend
+- keep_alive
+- xdg_open
 """

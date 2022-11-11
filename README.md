@@ -11,7 +11,7 @@ This is a Linux service for integrating your system with an external application
 It is inspired by [IOT Link](https://iotlink.gitlab.io/).
 
 # Features
- - **System control:** Shutdown, Restart, Send Keys, Notify, Media, Screen On/Off.
+ - **System control:** Shutdown, Restart, Send Keys, Notify, Media, Screen On/Off, open URL/File.
  - **System monitor:** CPU, Ram, Network, Media, Microphone, Idle, Bluetooth battery.
  - **Home Assistant:** Uses MQTT Autodiscovery to create entities.
  - **No sudo required:** No need to be root user to install and use, unless used on server setup.
@@ -22,12 +22,28 @@ Install or update:
 ```shell
 sudo apt install patchelf meson libdbus-glib-1-dev libglib2.0-dev libasound2-dev
 pip3 install -U lnxlink
+# When asked, it's recommended to install as a user service.
 lnxlink -c config.yaml
 ```
+
 You can manually update the configuration file `config.yaml` and restart the service with the use of systemctl:
 ```shell
 systemctl --user restart lnxlink.service
 ```
+
+# Headless Installation
+The headless installation is used for linux environments that don't use a Graphical Interface like servers.
+```shell
+sudo apt install patchelf meson libdbus-glib-1-dev libglib2.0-dev libasound2-dev
+sudo pip3 install -U lnxlink
+# When asked, it's recommended to answer false on install as a user service.
+sudo lnxlink -c config.yaml
+```
+Some modules depend on graphical interface, so if you choose to use this option for installation, you will have to find which ones stop lnxlink from starting and remove them from the config file.
+```shell
+sudo systemctl restart lnxlink.service
+```
+
 
 # Examples
 
@@ -48,6 +64,14 @@ service: mqtt.publish
 data:
   topic: {prefix}/{clientId}/commands/send-keys
   payload: "<CTRL>+t"
+```
+
+### Open a URL or a File
+```yaml
+service: mqtt.publish
+data:
+  topic: lnxlink/desktop-linux/commands/xdg_open
+  payload: "https://www.google.com"  # or "myimg.jpeg" for file
 ```
 
 ### Combine with [Wake on Lan](https://www.home-assistant.io/integrations/wake_on_lan/) to control your PC with one switch:
@@ -74,7 +98,28 @@ switch:
 ![image](https://user-images.githubusercontent.com/518494/193397441-f18bb5fa-de37-4d95-9158-32cd81b31c72.png)
 
 
+# FAQ
+## Config file location
+Your config file is located at the directory you were when you first run lnxlink. This can be anything you write instead of the `config.yaml` that I suggested. You can find where it is from the systemd service:
+```shell
+cat ~/.config/systemd/user/lnxlink.service  | grep -i ExecStart
+```
 
+## Reinitiate systemd service
+If you want to create the service from scratch, you will have to disable the running service and start lnxlink again:
+```shell
+systemctl --user disable lnxlink.service
+lnxlink -c config.yaml
+```
+
+## Idle time not working
+Idle time module is dependend on [idle-time](https://pypi.org/project/idle-time/) which only supports __Gnome Mutter__ for now.
+If you want support for this, you can install the newest version from my github:
+```shell
+pip3 uninstall idle_time
+pip3 install 'idle_time @ git+https://github.com/bkbilly/idle_time.git'
+systemctl --user restart lnxlink.service
+```
 
 
 
