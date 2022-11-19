@@ -49,7 +49,7 @@ mqtt:
 modules:
 - shutdown
 - restart
-- send-keys
+- send_keys
 - notify
 - cpu
 - memory
@@ -63,4 +63,5 @@ modules:
 - suspend
 - keep_alive
 - xdg_open
+- bash
 """

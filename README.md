@@ -11,7 +11,7 @@ This is a Linux service for integrating your system with an external application
 It is inspired by [IOT Link](https://iotlink.gitlab.io/).
 
 # Features
- - **System control:** Shutdown, Restart, Send Keys, Notify, Media, Screen On/Off, open URL/File.
+ - **System control:** Shutdown, Restart, Send Keys, Notify, Media, Screen On/Off, open URL/File, bash.
  - **System monitor:** CPU, Ram, Network, Media, Microphone, Idle, Bluetooth battery.
  - **Home Assistant:** Uses MQTT Autodiscovery to create entities.
  - **No sudo required:** No need to be root user to install and use, unless used on server setup.
@@ -62,8 +62,16 @@ data:
 ```yaml
 service: mqtt.publish
 data:
-  topic: {prefix}/{clientId}/commands/send-keys
+  topic: {prefix}/{clientId}/commands/send_keys
   payload: "<CTRL>+t"
+```
+
+### Send a command:
+```yaml
+service: mqtt.publish
+data:
+  topic: {prefix}/{clientId}/commands/bash
+  payload: "xdotool key ctrl+t"
 ```
 
 ### Open a URL or a File
