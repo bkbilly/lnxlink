@@ -20,7 +20,7 @@ It is inspired by [IOT Link](https://iotlink.gitlab.io/).
 # Installation
 Install or update:
 ```shell
-sudo apt install patchelf meson libdbus-glib-1-dev libglib2.0-dev libasound2-dev
+sudo apt install patchelf meson libdbus-glib-1-dev libglib2.0-dev libasound2-dev python3-pip
 pip3 install -U lnxlink
 # When asked, it's recommended to install as a user service.
 lnxlink -c config.yaml
@@ -34,7 +34,7 @@ systemctl --user restart lnxlink.service
 # Headless Installation
 The headless installation is used for linux environments that don't use a Graphical Interface like servers.
 ```shell
-sudo apt install patchelf meson libdbus-glib-1-dev libglib2.0-dev libasound2-dev
+sudo apt install patchelf meson libdbus-glib-1-dev libglib2.0-dev libasound2-dev python3-pip
 sudo pip3 install -U lnxlink
 # When asked, it's recommended to answer false on install as a user service.
 sudo lnxlink -c config.yaml
