@@ -69,7 +69,8 @@ class LNXlink():
     def monitor_run_thread(self):
         self.monitor_run()
 
-        self.monitor = threading.Timer(5.0, self.monitor_run_thread)
+        interval = self.config.get('update_interval', 5)
+        self.monitor = threading.Timer(interval, self.monitor_run_thread)
         self.monitor.start()
 
     def setup_mqtt(self):

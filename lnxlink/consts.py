@@ -46,6 +46,7 @@ mqtt:
     retain: true
     connectMsg: 'ON'
     disconnectMsg: 'OFF'
+update_interval: 5
 modules:
 - shutdown
 - restart
