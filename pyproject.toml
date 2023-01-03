@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name              = "lnxlink"
-version           = "2022.12.0"
+version           = "2023.1.0"
 description       = "Internet Of Things (IOT) integration with Linux using MQTT"
 readme            = "README.md"
 keywords          = ["lnxlink"]

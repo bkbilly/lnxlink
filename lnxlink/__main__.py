@@ -151,7 +151,8 @@ class LNXlink():
         discovery['name'] = addon.name.lower().replace(' ', '_')
         discovery['unique_id'] = f"{self.config['mqtt']['clientId']}_{service}"
         discovery['state_topic'] = topic
-        discovery['json_attributes_topic'] = topic
+        if addon.getInfo.__annotations__.get('return') == dict:
+            discovery['json_attributes_topic'] = topic
         discovery['icon'] = addon.icon
         discovery['unit_of_measurement'] = addon.unit
         if hasattr(addon, 'device_class'):

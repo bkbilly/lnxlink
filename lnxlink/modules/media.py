@@ -52,7 +52,7 @@ class Addon():
             if len(self.players) > 0:
                 self.players[0]['player'].Next()
 
-    def getInfo(self):
+    def getInfo(self) -> dict:
         self.__getPlayers()
         info = {
             'title': '',
