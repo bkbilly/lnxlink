@@ -2,6 +2,7 @@ from dbus.mainloop.glib import DBusGMainLoop
 from mpris2 import get_players_uri
 from mpris2 import Player
 import alsaaudio
+import subprocess
 
 
 class Addon():
@@ -51,6 +52,9 @@ class Addon():
         elif topic[1] == 'next':
             if len(self.players) > 0:
                 self.players[0]['player'].Next()
+        elif topic[1] == 'play_media':
+            url = data["media_id"]
+            subprocess.call(["cvlc", "--play-and-exit", url])
 
     def getInfo(self) -> dict:
         self.__getPlayers()
