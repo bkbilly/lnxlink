@@ -105,6 +105,32 @@ switch:
 
 ![image](https://user-images.githubusercontent.com/518494/193397441-f18bb5fa-de37-4d95-9158-32cd81b31c72.png)
 
+Supports playing remote or local media using `cvlc` which should be installed.
+ - Text To Speach
+```yaml
+service: tts.google_say
+data:
+  entity_id: media_player.desktop_linux
+  message: Hello world!
+```
+ - Play Media
+```yaml
+service: media_player.play_media
+data:
+  media_content_id: /home/user/imag.jpg
+  media_content_type: media  # Not used, but required by home assistant
+target:
+  entity_id: media_player.desktop_linux
+```
+ - Camera Play Stream
+```yaml
+service: camera.play_stream
+data:
+  media_player: media_player.desktop_linux
+target:
+  entity_id: camera.demo_camera
+```
+
 
 # FAQ
 ## Config file location
