@@ -156,8 +156,9 @@ class LNXlink():
         discovery['icon'] = addon.icon
         discovery['unit_of_measurement'] = addon.unit
         if hasattr(addon, 'device_class'):
-            # print(addon.device_class)
             discovery['device_class'] = addon.device_class
+        if hasattr(addon, 'state_class'):
+            discovery['state_class'] = addon.state_class
 
         if addon.unit == 'json':
             discovery['unit_of_measurement'] = ""

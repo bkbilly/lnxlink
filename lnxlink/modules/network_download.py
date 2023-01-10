@@ -6,12 +6,13 @@ class Addon():
     name = 'Network Download'
     icon = 'mdi:access-point-network'
     unit = 'Mbit/s'
+    state_class = 'measurement'
 
     def __init__(self):
         self.timeOld = datetime.now()
         self.recvOld = psutil.net_io_counters().bytes_recv
 
-    def getInfo(self):
+    def getInfo(self) -> int:
         """ Returns Mbps"""
         timeNew = datetime.now()
         recvNew = psutil.net_io_counters().bytes_recv

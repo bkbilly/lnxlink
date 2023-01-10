@@ -6,12 +6,13 @@ class Addon():
     name = 'Network Upload'
     icon = 'mdi:access-point-network'
     unit = 'Mbit/s'
+    state_class = 'measurement'
 
     def __init__(self):
         self.timeOld = datetime.now()
         self.sentOld = psutil.net_io_counters().bytes_sent
 
-    def getInfo(self):
+    def getInfo(self) -> int:
         """ Returns Mbps"""
         timeNew = datetime.now()
         sentNew = psutil.net_io_counters().bytes_sent
