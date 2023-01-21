@@ -67,4 +67,5 @@ modules:
 - bash
 - required_restart
 - disk_usage
+- nvidia_gpu
 """
