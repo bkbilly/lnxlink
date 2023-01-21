@@ -66,4 +66,5 @@ modules:
 - xdg_open
 - bash
 - required_restart
+- disk_usage
 """
