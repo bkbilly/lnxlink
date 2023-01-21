@@ -65,4 +65,5 @@ modules:
 - keep_alive
 - xdg_open
 - bash
+- required_restart
 """
