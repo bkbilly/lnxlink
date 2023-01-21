@@ -44,7 +44,6 @@ Some modules depend on graphical interface, so if you choose to use this option 
 sudo systemctl restart lnxlink.service
 ```
 
-
 # Examples
 
 ### Send a notification with an image as a preview:
@@ -146,16 +145,15 @@ systemctl --user disable lnxlink.service
 lnxlink -c config.yaml
 ```
 
-## Idle time not working
-Idle time module is dependend on [idle-time](https://pypi.org/project/idle-time/) which only supports __Gnome Mutter__ for now.
-If you want support for this, you can install the newest version from my github:
-```shell
-pip3 uninstall idle_time
-pip3 install 'idle_time @ git+https://github.com/bkbilly/idle_time.git'
-systemctl --user restart lnxlink.service
-```
-
-
+## One of my integration is not working
+Make sure you have these packages on your system:
+ - xdotool
+ - shutdown
+ - systemctl
+ - xprintidle
+ - xdg-open
+ - upower
+ - xset
 
 <details><summary>Technical Notes (click to expand)</summary>
 

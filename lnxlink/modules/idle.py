@@ -1,4 +1,4 @@
-from idle_time import IdleMonitor
+import subprocess
 
 
 class Addon():
@@ -7,7 +7,11 @@ class Addon():
     unit = 'sec'
 
     def getInfo(self):
-        monitor = IdleMonitor.get_monitor()
-        idle_sec = monitor.get_idle_time()
-        # idle_min = int(idle_sec / 60)
-        return round(idle_sec, 0)
+        stdout = subprocess.run(
+            'xprintidle',
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE).stdout.decode("UTF-8").strip()
+
+        idle_sec = round(float(stdout.strip()) / 1000, 0)
+
+        return idle_sec
