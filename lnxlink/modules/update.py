@@ -5,7 +5,7 @@ import traceback
 
 
 class Addon():
-    name = 'Update'
+    name = 'LNXLink'
     icon = 'mdi:update'
     device_class = "firmware"
     title = "LNXLink"
