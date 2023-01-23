@@ -68,4 +68,5 @@ modules:
 - required_restart
 - disk_usage
 - nvidia_gpu
+- update
 """

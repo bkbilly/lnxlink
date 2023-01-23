@@ -90,7 +90,6 @@ class LNXlink():
             self.pref_topic = f"{config['mqtt']['prefix']}/{config['mqtt']['clientId']}"
         self.pref_topic = self.pref_topic.lower()
 
-        print(config)
         config['modules'] = [x.lower().replace('-', '_') for x in config['modules']]
         return config
 
@@ -154,19 +153,24 @@ class LNXlink():
         if addon.getInfo.__annotations__.get('return') == dict:
             discovery['json_attributes_topic'] = topic
         discovery['icon'] = addon.icon
-        discovery['unit_of_measurement'] = addon.unit
+        if hasattr(addon, 'unit'):
+            discovery['unit_of_measurement'] = addon.unit
+            if addon.unit == 'json':
+                discovery['unit_of_measurement'] = ""
+                discovery['value_template'] = "{{ value_json.status }}"
+                discovery['json_attributes_template'] = "{{ value_json | tojson }}"
+        if hasattr(addon, 'title'):
+            discovery['title'] = addon.title
+        if hasattr(addon, 'entity_picture'):
+            discovery['entity_picture'] = addon.entity_picture
         if hasattr(addon, 'device_class'):
             discovery['device_class'] = addon.device_class
         if hasattr(addon, 'state_class'):
             discovery['state_class'] = addon.state_class
 
-        if addon.unit == 'json':
-            discovery['unit_of_measurement'] = ""
-            discovery['value_template'] = "{{ value_json.status }}"
-            discovery['json_attributes_template'] = "{{ value_json | tojson }}"
 
         sensor_type = getattr(addon, 'sensor_type', 'sensor')
-        if sensor_type in ['binary_sensor', 'sensor']:
+        if sensor_type in ['binary_sensor', 'sensor', 'update']:
             self.client.publish(
                 f"homeassistant/{sensor_type}/lnxlink/{discovery['unique_id']}/config",
                 payload=json.dumps(discovery),

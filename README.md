@@ -12,8 +12,8 @@ It is inspired by [IOT Link](https://iotlink.gitlab.io/).
 
 # Features
  - **System control:** Shutdown, Restart, Send Keys, Notify, Media, Screen On/Off, open URL/File, bash.
- - **System monitor:** CPU, Ram, Network, Media, Microphone, Idle, Bluetooth battery.
- - **Home Assistant:** Uses MQTT Autodiscovery to create entities.
+ - **System monitor:** CPU, Ram, Network, Media, Microphone, Idle, Bluetooth battery, Disk usage, Required restart, Nvidia GPU.
+ - **Home Assistant:** Uses MQTT Autodiscovery to create entities and shows if update is required.
  - **No sudo required:** No need to be root user to install and use, unless used on server setup.
  - **Easily expanded:** Any new module is automatically imported.
 
