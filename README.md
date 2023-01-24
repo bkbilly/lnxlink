@@ -7,8 +7,17 @@
 <img align="right" width="170" height="100" src="https://github.com/bkbilly/lnxlink/blob/master/logo.png?raw=true">
 
 # LNX link
-This is a Linux service for integrating your system with an external application like Home Assistant using MQTT.
-It is inspired by [IOT Link](https://iotlink.gitlab.io/).
+This is a Linux companion app for integrating your system with an external application like Home Assistant using MQTT.
+It's very usefull for remote controling a linux PC, receiving notifications and monitoring it's stats.
+
+# Table of contents
+
+ * [Features](#features)
+ * [Installation](#installation)
+ * [Headless Installation](#headless-installation)
+ * [Examples](#examples)
+ * [FAQ](#faq)
+
 
 # Features
  - **System control:** Shutdown, Restart, Send Keys, Notify, Media, Screen On/Off, open URL/File, bash.
@@ -132,6 +141,9 @@ target:
 
 
 # FAQ
+## Windows compatibility
+Only Linux is supported and there is no plan on supporting Windows. A recomended companion app for windows is [HASS.Agent](https://github.com/LAB02-Research/HASS.Agent).
+
 ## Config file location
 Your config file is located at the directory you were when you first run lnxlink. This can be anything you write instead of the `config.yaml` that I suggested. You can find where it is from the systemd service:
 ```shell
