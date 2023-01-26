@@ -157,7 +157,8 @@ class LNXlink():
         discovery['state_topic'] = topic
         if addon.getInfo.__annotations__.get('return') == dict:
             discovery['json_attributes_topic'] = topic
-        discovery['icon'] = addon.icon
+        if hasattr(addon, 'icon'):
+            discovery['icon'] = addon.icon
         if hasattr(addon, 'unit'):
             discovery['unit_of_measurement'] = addon.unit
             if addon.unit == 'json':
@@ -174,12 +175,13 @@ class LNXlink():
             discovery['state_class'] = addon.state_class
 
 
-        sensor_type = getattr(addon, 'sensor_type', 'sensor')
-        if sensor_type in ['binary_sensor', 'sensor', 'update']:
-            self.client.publish(
-                f"homeassistant/{sensor_type}/lnxlink/{discovery['unique_id']}/config",
-                payload=json.dumps(discovery),
-                retain=self.config['mqtt']['lwt']['retain'])
+        if hasattr(addon, 'sensor_type'):
+            sensor_type = getattr(addon, 'sensor_type', 'sensor')
+            if sensor_type in ['binary_sensor', 'sensor', 'update']:
+                self.client.publish(
+                    f"homeassistant/{sensor_type}/lnxlink/{discovery['unique_id']}/config",
+                    payload=json.dumps(discovery),
+                    retain=self.config['mqtt']['lwt']['retain'])
 
     def setup_discovery_control(self, addon, service, control_name, options, discovery_template):
         subtopic = addon.name.lower().replace(' ', '/')
@@ -196,6 +198,9 @@ class LNXlink():
             discovery["command_topic"] = f"{self.pref_topic}/commands/{service}/{control_name}/"
             discovery["payload_off"] = "OFF"
             discovery["payload_on"] = "ON"
+        elif options['type'] == 'text':
+            discovery["state_topic"] = f"{self.pref_topic}/{self.config['mqtt']['statsPrefix']}/{subtopic}"
+            discovery["command_topic"] = f"{self.pref_topic}/commands/{service}/{control_name}/"
         elif options['type'] == 'number':
             return
         else:

@@ -3,8 +3,14 @@ import subprocess
 
 class Addon():
     name = 'bash'
-    icon = None
-    unit = None
+
+    def exposedControls(self):
+        return {
+            "Bash_Command": {
+                "type": "text",
+                "icon": "mdi:bash",
+            }
+        }
 
     def startControl(self, topic, data):
         subprocess.call(f"{data}", shell=True)
