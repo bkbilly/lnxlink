@@ -3,7 +3,6 @@
 import os
 import yaml
 import time
-import signal
 import threading
 import json
 import traceback
@@ -13,20 +12,9 @@ import argparse
 import paho.mqtt.client as mqtt
 from . import modules
 from . import config
+from .system_monitor import MonitorSuspend, GracefulKiller
 
 version = importlib.metadata.version(__package__ or __name__)
-
-
-class GracefulKiller:
-    kill_now = False
-
-    def __init__(self):
-        signal.signal(signal.SIGINT, self.exit_gracefully)
-        signal.signal(signal.SIGTERM, self.exit_gracefully)
-
-    def exit_gracefully(self, signum, frame):
-        print("LNXLink stopped by user")
-        self.kill_now = True
 
 
 class LNXlink():
@@ -106,7 +94,7 @@ class LNXlink():
         if self.config['mqtt']['discovery']['enabled']:
             self.setup_discovery()
 
-    def disconnect(self):
+    def disconnect(self, *args):
         print("Disconnected from MQTT.")
         if self.config['mqtt']['lwt']['enabled']:
             self.client.publish(
@@ -120,6 +108,23 @@ class LNXlink():
         except Exception as e:
             pass
         self.client.disconnect()
+
+    def temp_connection_callback(self, status):
+        if self.config['mqtt']['lwt']['enabled']:
+            if status:
+                self.client.publish(
+                    f"{self.pref_topic}/lwt",
+                    payload=self.config['mqtt']['lwt']['disconnectMsg'],
+                    qos=self.config['mqtt']['lwt']['qos'],
+                    retain=self.config['mqtt']['lwt']['retain']
+                )
+            else:
+                self.client.publish(
+                    f"{self.pref_topic}/lwt",
+                    payload=self.config['mqtt']['lwt']['connectMsg'],
+                    qos=self.config['mqtt']['lwt']['qos'],
+                    retain=self.config['mqtt']['lwt']['retain']
+                )
 
     def on_message(self, client, userdata, msg):
         topic = msg.topic.replace(f"{self.pref_topic}/commands/", "")
@@ -247,9 +252,13 @@ def main():
     lnxlink = LNXlink(config_file)
     lnxlink.monitor_run_thread()
 
-    killer = GracefulKiller()
-    while not killer.kill_now:
+    # Monitor for system changes (Shutdown/Suspend/Sleep)
+    monitor_suspend = MonitorSuspend(lnxlink.temp_connection_callback)
+    monitor_suspend.start()
+    monitor_gracefulkiller = GracefulKiller(lnxlink.temp_connection_callback)
+    while not monitor_gracefulkiller.kill_now:
         time.sleep(1)
+    monitor_suspend.stop()
     lnxlink.disconnect()
 
 
