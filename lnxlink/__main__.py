@@ -134,7 +134,7 @@ class LNXlink():
             message = json.loads(message)
         except Exception as e:
             message = message.decode()
-            print("String could not be converted to JSON")
+            # print("String could not be converted to JSON")
             # traceback.print_exc()
 
         select_service = topic.split('/')
