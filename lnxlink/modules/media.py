@@ -18,20 +18,25 @@ class Addon():
             "playpause": {
                 "type": "button",
                 "icon": "mdi:play-pause",
+                "enabled": False,
             },
             "previous": {
                 "type": "button",
                 "icon": "mdi:skip-previous",
+                "enabled": False,
             },
             "next": {
                 "type": "button",
                 "icon": "mdi:skip-next",
+                "enabled": False,
             },
             "volume_set": {
                 "type": "number",
-                "icon": "mdi:volume",
+                "icon": "mdi:volume-high",
                 "min": 0,
                 "max": 100,
+                "enabled": False,
+                "value_template": "{{ value_json.volume }}",
             }
         }
 

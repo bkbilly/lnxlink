@@ -29,7 +29,7 @@ It's very usefull for remote controling a linux PC, receiving notifications and 
 # Installation
 Install or update:
 ```shell
-sudo apt install patchelf meson libdbus-glib-1-dev libglib2.0-dev libasound2-dev python3-pip
+sudo apt install patchelf meson libdbus-glib-1-dev libglib2.0-dev libasound2-dev python3-pip xdotool xprintidle xdg-utils
 pip3 install -U lnxlink
 # When asked, it's recommended to install as a user service.
 lnxlink -c config.yaml
@@ -66,20 +66,20 @@ data:
       "iconUrl": "http://hass.local:8123/local/myimage.jpg" }
 ```
 
-### Send a series of keys:
-```yaml
-service: mqtt.publish
-data:
-  topic: {prefix}/{clientId}/commands/send_keys
-  payload: "<CTRL>+t"
-```
-
 ### Send a command:
 ```yaml
 service: mqtt.publish
 data:
   topic: {prefix}/{clientId}/commands/bash
-  payload: "xdotool key ctrl+t"
+  payload: "ctrl+shift+t"
+```
+
+### Send a series of keys:
+```yaml
+service: mqtt.publish
+data:
+  topic: {prefix}/{clientId}/commands/send_keys
+  payload: "ctrl+f H e l l o space W o r l d"
 ```
 
 ### Open a URL or a File

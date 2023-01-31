@@ -149,14 +149,14 @@ class LNXlink():
 
     def setup_discovery_monitoring(self, addon, service, discovery_template):
         subtopic = addon.name.lower().replace(' ', '/')
-        topic = f"{self.pref_topic}/{self.config['mqtt']['statsPrefix']}/{subtopic}"
+        state_topic = f"{self.pref_topic}/{self.config['mqtt']['statsPrefix']}/{subtopic}"
 
         discovery = discovery_template.copy()
         discovery['name'] = addon.name.lower().replace(' ', '_')
         discovery['unique_id'] = f"{self.config['mqtt']['clientId']}_{service}"
-        discovery['state_topic'] = topic
+        discovery['state_topic'] = state_topic
         if addon.getInfo.__annotations__.get('return') == dict:
-            discovery['json_attributes_topic'] = topic
+            discovery['json_attributes_topic'] = state_topic
         if hasattr(addon, 'icon'):
             discovery['icon'] = addon.icon
         if hasattr(addon, 'unit'):
@@ -174,35 +174,38 @@ class LNXlink():
         if hasattr(addon, 'state_class'):
             discovery['state_class'] = addon.state_class
 
-
-        if hasattr(addon, 'sensor_type'):
-            sensor_type = getattr(addon, 'sensor_type', 'sensor')
-            if sensor_type in ['binary_sensor', 'sensor', 'update']:
-                self.client.publish(
-                    f"homeassistant/{sensor_type}/lnxlink/{discovery['unique_id']}/config",
-                    payload=json.dumps(discovery),
-                    retain=self.config['mqtt']['lwt']['retain'])
+        sensor_type = getattr(addon, 'sensor_type', 'sensor')
+        self.client.publish(
+            f"homeassistant/{sensor_type}/lnxlink/{discovery['unique_id']}/config",
+            payload=json.dumps(discovery),
+            retain=self.config['mqtt']['lwt']['retain'])
 
     def setup_discovery_control(self, addon, service, control_name, options, discovery_template):
         subtopic = addon.name.lower().replace(' ', '/')
+        state_topic = f"{self.pref_topic}/{self.config['mqtt']['statsPrefix']}/{subtopic}"
         discovery = discovery_template.copy()
         discovery['name'] = control_name.lower().replace(' ', '_')
         discovery['unique_id'] = f"{self.config['mqtt']['clientId']}_{control_name}"
-        discovery['icon'] = options.get('icon', '')
+        discovery['enabled_by_default'] = options.get('enabled', True)
+        discovery["command_topic"] = f"{self.pref_topic}/commands/{service}/{control_name}/"
+        if 'value_template' in options:
+            discovery["value_template"] = options['value_template']
+        if 'icon' in options:
+            discovery['icon'] = options.get('icon', '')
+
 
         if options['type'] == 'button':
             discovery['state_topic'] = f"{self.pref_topic}/lwt"
-            discovery["command_topic"] = f"{self.pref_topic}/commands/{service}/{control_name}/"
         elif options['type'] == 'switch':
-            discovery["state_topic"] = f"{self.pref_topic}/{self.config['mqtt']['statsPrefix']}/{subtopic}"
-            discovery["command_topic"] = f"{self.pref_topic}/commands/{service}/{control_name}/"
+            discovery["state_topic"] = state_topic
             discovery["payload_off"] = "OFF"
             discovery["payload_on"] = "ON"
         elif options['type'] == 'text':
-            discovery["state_topic"] = f"{self.pref_topic}/{self.config['mqtt']['statsPrefix']}/{subtopic}"
-            discovery["command_topic"] = f"{self.pref_topic}/commands/{service}/{control_name}/"
+            discovery["state_topic"] = state_topic
         elif options['type'] == 'number':
-            return
+            discovery["state_topic"] = state_topic
+            discovery["min"] = options.get('min', 1)
+            discovery["max"] = options.get('max', 100)
         else:
             return
         self.client.publish(

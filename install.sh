@@ -43,7 +43,7 @@ fi
 if [ system != 'debian/ubuntu' ]; then
     echo -e "\n\n\e[31mSystem dependencies might not be correct...\e[0m"
 fi
-sudo $installcommand patchelf meson libdbus-glib-1-dev libglib2.0-dev libasound2-dev
+sudo $installcommand patchelf meson libdbus-glib-1-dev libglib2.0-dev libasound2-dev xdotool xprintidle xdg-utils
 
 
 # Install Python requirements
