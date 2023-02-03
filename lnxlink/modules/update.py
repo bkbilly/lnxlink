@@ -5,14 +5,15 @@ import traceback
 
 
 class Addon():
-    name = 'LNXLink'
-    icon = 'mdi:update'
-    device_class = "firmware"
-    title = "LNXLink"
-    entity_picture = "https://github.com/bkbilly/lnxlink/raw/master/logo.png?raw=true"
-    sensor_type = "update"
 
-    def __init__(self):
+    def __init__(self, lnxlink):
+        self.name = 'LNXLink'
+        self.icon = 'mdi:update'
+        self.device_class = "firmware"
+        self.title = "LNXLink"
+        self.entity_picture = "https://github.com/bkbilly/lnxlink/raw/master/logo.png?raw=true"
+        self.sensor_type = "update"
+
         self.last_time = 0
         self.update_interval = 86400  # Check for updates every 24 hours
         version = importlib.metadata.version('lnxlink')

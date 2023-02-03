@@ -1,11 +1,14 @@
 import subprocess
 
+
 class Addon():
-    name = 'Shutdown'
-    icon = 'mdi:power'
-    unit = 'button'
+
+    def __init__(self, lnxlink):
+        self.name = 'Shutdown'
+        self.lnxlink = lnxlink
 
     def startControl(self, topic, data):
+        self.lnxlink.temp_connection_callback(True)
         subprocess.call(["shutdown", "now"])
 
     def exposedControls(self):

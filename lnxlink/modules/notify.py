@@ -1,10 +1,11 @@
 import notify2
 import requests
 
+
 class Addon():
-    name = 'Notify OSD'
-    icon = None
-    unit = None
+
+    def __init__(self, lnxlink):
+        self.name = 'Notify OSD'
 
     def startControl(self, topic, data):
         iconUrl = data.get('iconUrl', '')
@@ -27,4 +28,3 @@ class Addon():
         ).show()
 
         print(topic, data)
-

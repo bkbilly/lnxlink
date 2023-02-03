@@ -2,9 +2,12 @@ import subprocess
 
 
 class Addon():
-    name = 'Idle'
-    icon = 'mdi:timer-sand'
-    unit = 'sec'
+
+    def __init__(self, lnxlink):
+        self.name = 'Idle'
+        self.sensor_type = 'sensor'
+        self.icon = 'mdi:timer-sand'
+        self.unit = 'sec'
 
     def getInfo(self):
         stdout = subprocess.run(

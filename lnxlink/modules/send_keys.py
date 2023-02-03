@@ -2,7 +2,9 @@ import subprocess
 
 
 class Addon():
-    name = 'Send Keys'
+
+    def __init__(self, lnxlink):
+        self.name = 'Send Keys'
 
     def exposedControls(self):
         return {

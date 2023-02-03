@@ -2,10 +2,11 @@ import glob
 
 
 class Addon():
-    name = 'Microphone used'
-    icon = 'mdi:microphone'
-    sensor_type = 'binary_sensor'
-    unit = ''
+
+    def __init__(self, lnxlink):
+        self.name = 'Microphone used'
+        self.icon = 'mdi:microphone'
+        self.sensor_type = 'binary_sensor'
 
     def getInfo(self):
         mics = glob.glob('/proc/asound/**/*c/sub*/status', recursive=True)

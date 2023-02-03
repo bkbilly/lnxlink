@@ -3,10 +3,12 @@ import re
 
 
 class Addon():
-    name = 'Bluetooth Battery'
-    icon = 'mdi:battery'
-    device_class = 'battery'
-    unit = '%'
+    def __init__(self, lnxlink):
+        self.name = 'Bluetooth Battery'
+        self.sensor_type = 'sensor'
+        self.icon = 'mdi:battery'
+        self.device_class = 'battery'
+        self.unit = '%'
 
     def getInfo(self):
         stdout = subprocess.run(

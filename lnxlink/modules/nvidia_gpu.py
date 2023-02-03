@@ -2,9 +2,12 @@ import subprocess
 
 
 class Addon():
-    name = 'Nvidia GPU'
-    icon = 'mdi:expansion-card-variant'
-    unit = 'json'
+
+    def __init__(self, lnxlink):
+        self.name = 'Nvidia GPU'
+        self.sensor_type = 'sensor'
+        self.icon = 'mdi:expansion-card-variant'
+        self.unit = 'json'
 
     def getInfo(self) -> dict:
         stdout = subprocess.run(

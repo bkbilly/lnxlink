@@ -2,9 +2,11 @@ import subprocess
 
 
 class Addon():
-    name = 'Camera used'
-    icon = 'mdi:webcam'
-    sensor_type = 'binary_sensor'
+
+    def __init__(self, lnxlink):
+        self.name = 'Camera used'
+        self.icon = 'mdi:webcam'
+        self.sensor_type = 'binary_sensor'
 
     def getInfo(self):
         stdout = subprocess.run(

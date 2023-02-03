@@ -3,12 +3,13 @@ from datetime import datetime
 
 
 class Addon():
-    name = 'Network Download'
-    icon = 'mdi:access-point-network'
-    unit = 'Mbit/s'
-    state_class = 'measurement'
 
-    def __init__(self):
+    def __init__(self, lnxlink):
+        self.name = 'Network Download'
+        self.sensor_type = 'sensor'
+        self.icon = 'mdi:access-point-network'
+        self.unit = 'Mbit/s'
+        self.state_class = 'measurement'
         self.timeOld = datetime.now()
         self.recvOld = psutil.net_io_counters().bytes_recv
 

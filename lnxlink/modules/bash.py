@@ -2,7 +2,9 @@ import subprocess
 
 
 class Addon():
-    name = 'bash'
+
+    def __init__(self, lnxlink):
+        self.name = 'bash'
 
     def exposedControls(self):
         return {

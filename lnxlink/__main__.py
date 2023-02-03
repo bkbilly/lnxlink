@@ -27,7 +27,7 @@ class LNXlink():
 
         self.Addons = {}
         for service, addon in modules.parse_modules(self.config['modules']).items():
-            self.Addons[addon.service] = addon()
+            self.Addons[addon.service] = addon(self)
 
         self.setup_mqtt()
 
@@ -174,11 +174,12 @@ class LNXlink():
         if hasattr(addon, 'state_class'):
             discovery['state_class'] = addon.state_class
 
-        sensor_type = getattr(addon, 'sensor_type', 'sensor')
-        self.client.publish(
-            f"homeassistant/{sensor_type}/lnxlink/{discovery['unique_id']}/config",
-            payload=json.dumps(discovery),
-            retain=self.config['mqtt']['lwt']['retain'])
+        sensor_type = getattr(addon, 'sensor_type', None)
+        if sensor_type is not None:
+            self.client.publish(
+                f"homeassistant/{sensor_type}/lnxlink/{discovery['unique_id']}/config",
+                payload=json.dumps(discovery),
+                retain=self.config['mqtt']['lwt']['retain'])
 
     def setup_discovery_control(self, addon, service, control_name, options, discovery_template):
         subtopic = addon.name.lower().replace(' ', '/')
@@ -238,6 +239,7 @@ class LNXlink():
                 if hasattr(addon, 'exposedControls'):
                     for control_name, options in addon.exposedControls().items():
                         try:
+                            control_name = control_name.lower().replace(' ', '_')
                             self.setup_discovery_control(addon, service, control_name, options, discovery_template)
                         except Exception as e:
                             traceback.print_exc()

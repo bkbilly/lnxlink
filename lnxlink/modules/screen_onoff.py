@@ -2,10 +2,9 @@ import subprocess
 
 
 class Addon():
-    name = 'Screen OnOff'
-    icon = 'mdi:monitor'
-    unit = None
-    sensor_type = 'switch'
+
+    def __init__(self, lnxlink):
+        self.name = 'Screen OnOff'
 
     def exposedControls(self):
         return {

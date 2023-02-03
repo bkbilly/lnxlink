@@ -2,9 +2,9 @@ import subprocess
 
 
 class Addon():
-    name = 'xdg_open'
-    icon = None
-    unit = None
+
+    def __init__(self, lnxlink):
+        self.name = 'xdg_open'
 
     def startControl(self, topic, data):
         print(f"/usr/bin/xdg-open {data}")

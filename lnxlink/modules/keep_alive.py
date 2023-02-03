@@ -2,11 +2,10 @@ import subprocess
 
 
 class Addon():
-    name = 'Keep Alive'
-    icon = 'mdi:mouse-variant'
-    unit = None
-    sensor_type = 'switch'
-    keepalive = 'OFF'
+
+    def __init__(self, lnxlink):
+        self.name = 'Keep Alive'
+        self.keepalive = 'OFF'
 
     def exposedControls(self):
         return {

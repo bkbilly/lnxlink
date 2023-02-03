@@ -2,9 +2,12 @@ import psutil
 
 
 class Addon():
-    name = 'Disk Usage'
-    icon = 'mdi:harddisk'
-    unit = 'json'
+
+    def __init__(self, lnxlink):
+        self.name = 'Disk Usage'
+        self.sensor_type = 'sensor'
+        self.icon = 'mdi:harddisk'
+        self.unit = 'json'
 
     def getInfo(self) -> dict:
         disks = {"status": False}

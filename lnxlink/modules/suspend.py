@@ -1,9 +1,10 @@
 import subprocess
 
+
 class Addon():
-    name = 'Suspend'
-    icon = 'mdi:progress-clock'
-    unit = 'button'
+
+    def __init__(self, lnxlink):
+        self.name = 'Suspend'
 
     def startControl(self, topic, data):
         subprocess.call(["systemctl", "suspend"])
