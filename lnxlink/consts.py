@@ -50,13 +50,14 @@ update_interval: 5
 modules:
 - bash
 - bluetooth_battery
+- camera_used
 - cpu
 - disk_usage
 - idle
 - keep_alive
 - media
 - memory
-- microphone
+- microphone_used
 - network_download
 - network_upload
 - notify
