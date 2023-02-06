@@ -7,7 +7,9 @@ class Addon():
         self.name = 'Idle'
         self.sensor_type = 'sensor'
         self.icon = 'mdi:timer-sand'
-        self.unit = 'sec'
+        self.unit = 's'
+        self.state_class = 'total_increasing'
+        self.device_class = 'duration'
 
     def getInfo(self):
         stdout = subprocess.run(

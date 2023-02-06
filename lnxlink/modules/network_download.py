@@ -10,6 +10,7 @@ class Addon():
         self.icon = 'mdi:access-point-network'
         self.unit = 'Mbit/s'
         self.state_class = 'measurement'
+        self.device_class = 'data_rate'
         self.timeOld = datetime.now()
         self.recvOld = psutil.net_io_counters().bytes_recv
 
