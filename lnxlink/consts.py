@@ -49,7 +49,7 @@ mqtt:
 update_interval: 5
 modules:
 - bash
-- bluetooth_battery
+- battery
 - camera_used
 - cpu
 - disk_usage

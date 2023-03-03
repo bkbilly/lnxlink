@@ -152,7 +152,7 @@ class LNXlink():
         state_topic = f"{self.pref_topic}/{self.config['mqtt']['statsPrefix']}/{subtopic}"
 
         discovery = discovery_template.copy()
-        discovery['name'] = addon.name.lower().replace(' ', '_')
+        discovery['name'] = f"{self.config['mqtt']['clientId']} {addon.name.lower().replace(' ', '_')}"
         discovery['unique_id'] = f"{self.config['mqtt']['clientId']}_{service}"
         discovery['state_topic'] = state_topic
         if addon.getInfo.__annotations__.get('return') == dict:
@@ -160,11 +160,11 @@ class LNXlink():
         if hasattr(addon, 'icon'):
             discovery['icon'] = addon.icon
         if hasattr(addon, 'unit'):
-            discovery['unit_of_measurement'] = addon.unit
             if addon.unit == 'json':
-                discovery['unit_of_measurement'] = ""
                 discovery['value_template'] = "{{ value_json.status }}"
                 discovery['json_attributes_template'] = "{{ value_json | tojson }}"
+            else:
+                discovery['unit_of_measurement'] = addon.unit
         if hasattr(addon, 'title'):
             discovery['title'] = addon.title
         if hasattr(addon, 'entity_picture'):
@@ -185,7 +185,7 @@ class LNXlink():
         subtopic = addon.name.lower().replace(' ', '/')
         state_topic = f"{self.pref_topic}/{self.config['mqtt']['statsPrefix']}/{subtopic}"
         discovery = discovery_template.copy()
-        discovery['name'] = control_name.lower().replace(' ', '_')
+        discovery['name'] = f"{self.config['mqtt']['clientId']} {control_name.lower().replace(' ', '_')}"
         discovery['unique_id'] = f"{self.config['mqtt']['clientId']}_{control_name}"
         discovery['enabled_by_default'] = options.get('enabled', True)
         discovery["command_topic"] = f"{self.pref_topic}/commands/{service}/{control_name}/"
