@@ -13,7 +13,6 @@ class Addon():
         videos = glob.glob('/dev/video*', recursive=True)
         cam_used = False
         for video in videos:
-            print(f"fuser {video}")
             proc = subprocess.run(
                 f"fuser {video}",
                 shell=True,
@@ -25,6 +24,3 @@ class Addon():
         if cam_used:
             return "ON"
         return "OFF"
-
-
-print(Addon('').getInfo())
