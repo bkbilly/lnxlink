@@ -1,4 +1,5 @@
 import subprocess
+import glob
 
 
 class Addon():
@@ -9,13 +10,21 @@ class Addon():
         self.sensor_type = 'binary_sensor'
 
     def getInfo(self):
-        stdout = subprocess.run(
-            "lsmod | grep '^uvcvideo ' | awk '{print $3}'",
-            shell=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE).stdout.decode("UTF-8")
+        videos = glob.glob('/dev/video*', recursive=True)
+        cam_used = False
+        for video in videos:
+            print(f"fuser {video}")
+            proc = subprocess.run(
+                f"fuser {video}",
+                shell=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE)
+            if proc.returncode == 0:
+                cam_used = True
 
-        cam_used = bool(int(stdout.strip()))
         if cam_used:
             return "ON"
         return "OFF"
+
+
+print(Addon('').getInfo())
