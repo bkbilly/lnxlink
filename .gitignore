@@ -2,3 +2,4 @@ __pycache__
 config.yaml
 *.egg-info
 dist/
+build/

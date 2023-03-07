@@ -7,7 +7,6 @@ class Addon():
         self.name = 'Nvidia GPU'
         self.sensor_type = 'sensor'
         self.icon = 'mdi:expansion-card-variant'
-        self.unit = 'json'
 
     def getInfo(self) -> dict:
         stdout = subprocess.run(

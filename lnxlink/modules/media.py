@@ -11,7 +11,6 @@ class Addon():
         self.name = 'Media Info'
         self.sensor_type = 'sensor'
         self.icon = 'mdi:music'
-        self.unit = 'json'
         self.players = []
 
     def exposedControls(self):

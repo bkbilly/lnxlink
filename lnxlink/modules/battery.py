@@ -8,7 +8,7 @@ class Addon():
         self.sensor_type = 'sensor'
         self.icon = 'mdi:battery'
         self.device_class = 'battery'
-        self.unit = 'json'
+        self.unit = '%'
 
     def getInfo(self) -> dict:
         stdout = subprocess.run(

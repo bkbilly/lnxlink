@@ -18,20 +18,25 @@ version = importlib.metadata.version(__package__ or __name__)
 
 
 class LNXlink():
-    client = mqtt.Client()
-    pref_topic = 'lnxlink'
 
     def __init__(self, config_path):
         print(f"LNXLink {version} started: {platform.python_version()}")
+
+        # Read configuration from yaml file
+        self.pref_topic = 'lnxlink'
         self.config = self.read_config(config_path)
 
+        # Run each addon included in the modules folder
         self.Addons = {}
         for service, addon in modules.parse_modules(self.config['modules']).items():
             self.Addons[addon.service] = addon(self)
 
+        # Setup MQTT
+        self.client = mqtt.Client()
         self.setup_mqtt()
 
     def monitor_run(self):
+        '''Gets information from each Addon and sends it to MQTT'''
         if self.config['modules'] is not None:
             for service in self.config['modules']:
                 addon = self.Addons[service]
@@ -55,13 +60,15 @@ class LNXlink():
                         traceback.print_exc()
 
     def monitor_run_thread(self):
+        '''Runs method to get sensor information every prespecified interval'''
         self.monitor_run()
 
-        interval = self.config.get('update_interval', 5)
+        interval = self.config.get('update_interval', 1)
         self.monitor = threading.Timer(interval, self.monitor_run_thread)
         self.monitor.start()
 
     def setup_mqtt(self):
+        '''Creates the mqtt object'''
         self.client = mqtt.Client()
         self.client.on_connect = self.on_connect
         self.client.on_message = self.on_message
@@ -71,6 +78,7 @@ class LNXlink():
         self.client.loop_start()
 
     def read_config(self, config_path):
+        '''Reads the config file and prepares module names for import'''
         with open(config_path) as file:
             config = yaml.load(file, Loader=yaml.FullLoader)
 
@@ -82,6 +90,8 @@ class LNXlink():
         return config
 
     def on_connect(self, client, userdata, flags, rc):
+        '''Callback for MQTT connect which reports the connection status
+        back to MQTT server'''
         print(f"Connected to MQTT with code {rc}")
         client.subscribe(f"{self.pref_topic}/commands/#")
         if self.config['mqtt']['lwt']['enabled']:
@@ -95,6 +105,7 @@ class LNXlink():
             self.setup_discovery()
 
     def disconnect(self, *args):
+        '''Reports to MQTT server that the service has stopped'''
         print("Disconnected from MQTT.")
         if self.config['mqtt']['lwt']['enabled']:
             self.client.publish(
@@ -110,6 +121,7 @@ class LNXlink():
         self.client.disconnect()
 
     def temp_connection_callback(self, status):
+        '''Report the connection status to MQTT server'''
         if self.config['mqtt']['lwt']['enabled']:
             if status:
                 self.client.publish(
@@ -127,6 +139,7 @@ class LNXlink():
                 )
 
     def on_message(self, client, userdata, msg):
+        '''MQTT message is received with a module command to excecute'''
         topic = msg.topic.replace(f"{self.pref_topic}/commands/", "")
         message = msg.payload
         print(f"Message received: {topic}")
@@ -147,7 +160,8 @@ class LNXlink():
                 except Exception as e:
                     traceback.print_exc()
 
-    def setup_discovery_monitoring(self, addon, service, discovery_template):
+    def setup_discovery_monitoring(self, discovery_template, addon, service):
+        '''Send discovery information on Home Assistant for sensors'''
         subtopic = addon.name.lower().replace(' ', '/')
         state_topic = f"{self.pref_topic}/{self.config['mqtt']['statsPrefix']}/{subtopic}"
 
@@ -157,14 +171,12 @@ class LNXlink():
         discovery['state_topic'] = state_topic
         if addon.getInfo.__annotations__.get('return') == dict:
             discovery['json_attributes_topic'] = state_topic
+            discovery['value_template'] = "{{ value_json.status }}"
+            discovery['json_attributes_template'] = "{{ value_json | tojson }}"
         if hasattr(addon, 'icon'):
             discovery['icon'] = addon.icon
         if hasattr(addon, 'unit'):
-            if addon.unit == 'json':
-                discovery['value_template'] = "{{ value_json.status }}"
-                discovery['json_attributes_template'] = "{{ value_json | tojson }}"
-            else:
-                discovery['unit_of_measurement'] = addon.unit
+            discovery['unit_of_measurement'] = addon.unit
         if hasattr(addon, 'title'):
             discovery['title'] = addon.title
         if hasattr(addon, 'entity_picture'):
@@ -180,8 +192,11 @@ class LNXlink():
                 f"homeassistant/{sensor_type}/lnxlink/{discovery['unique_id']}/config",
                 payload=json.dumps(discovery),
                 retain=self.config['mqtt']['lwt']['retain'])
+        else:
+            print(f"Can't find sensor_type attribute for {discovery['name']}")
 
-    def setup_discovery_control(self, addon, service, control_name, options, discovery_template):
+    def setup_discovery_control(self, discovery_template, addon, service, control_name, options):
+        '''Send discovery information on Home Assistant for controls'''
         subtopic = addon.name.lower().replace(' ', '/')
         state_topic = f"{self.pref_topic}/{self.config['mqtt']['statsPrefix']}/{subtopic}"
         discovery = discovery_template.copy()
@@ -215,6 +230,7 @@ class LNXlink():
             retain=self.config['mqtt']['lwt']['retain'])
 
     def setup_discovery(self):
+        '''First time setup of discovery for Home Assistant'''
         discovery_template = {
             "availability": {
                 "topic": f"{self.pref_topic}/lwt",
@@ -233,14 +249,14 @@ class LNXlink():
                 addon = self.Addons[service]
                 if hasattr(addon, 'getInfo'):
                     try:
-                        self.setup_discovery_monitoring(addon, service, discovery_template)
+                        self.setup_discovery_monitoring(discovery_template, addon, service)
                     except Exception as e:
                         traceback.print_exc()
                 if hasattr(addon, 'exposedControls'):
                     for control_name, options in addon.exposedControls().items():
                         try:
                             control_name = control_name.lower().replace(' ', '_')
-                            self.setup_discovery_control(addon, service, control_name, options, discovery_template)
+                            self.setup_discovery_control(discovery_template, addon, service, control_name, options)
                         except Exception as e:
                             traceback.print_exc()
 
@@ -267,7 +283,7 @@ def main():
     monitor_suspend.start()
     monitor_gracefulkiller = GracefulKiller(lnxlink.temp_connection_callback)
     while not monitor_gracefulkiller.kill_now:
-        time.sleep(1)
+        time.sleep(0.2)
     monitor_suspend.stop()
     lnxlink.disconnect()
 
