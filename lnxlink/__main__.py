@@ -37,27 +37,25 @@ class LNXlink():
 
     def monitor_run(self):
         '''Gets information from each Addon and sends it to MQTT'''
-        if self.config['modules'] is not None:
-            for service in self.config['modules']:
-                addon = self.Addons[service]
-                if hasattr(addon, 'getInfo'):
-                    try:
-                        subtopic = addon.name.lower().replace(' ', '/')
-                        topic = f"{self.pref_topic}/{self.config['mqtt']['statsPrefix']}/{subtopic}"
-                        pub_data = addon.getInfo()
-                        # print(topic, pub_data, type(pub_data))
-                        if pub_data is None:
-                            return
-                        if type(pub_data) in [dict, list]:
-                            pub_data = json.dumps(pub_data)
-                        self.client.publish(
-                            topic,
-                            payload=pub_data,
-                            retain=self.config['mqtt']['lwt']['retain']
-                        )
-                    except Exception as e:
-                        print(f"Can't load addon: {service}")
-                        traceback.print_exc()
+        for service, addon in self.Addons.items():
+            if hasattr(addon, 'getInfo'):
+                try:
+                    subtopic = addon.name.lower().replace(' ', '/')
+                    topic = f"{self.pref_topic}/{self.config['mqtt']['statsPrefix']}/{subtopic}"
+                    pub_data = addon.getInfo()
+                    # print(topic, pub_data, type(pub_data))
+                    if pub_data is None:
+                        return
+                    if type(pub_data) in [dict, list]:
+                        pub_data = json.dumps(pub_data)
+                    self.client.publish(
+                        topic,
+                        payload=pub_data,
+                        retain=self.config['mqtt']['lwt']['retain']
+                    )
+                except Exception as e:
+                    print(f"Can't load addon: {service}")
+                    traceback.print_exc()
 
     def monitor_run_thread(self):
         '''Runs method to get sensor information every prespecified interval'''
@@ -86,7 +84,10 @@ class LNXlink():
             self.pref_topic = f"{config['mqtt']['prefix']}/{config['mqtt']['clientId']}"
         self.pref_topic = self.pref_topic.lower()
 
-        config['modules'] = [x.lower().replace('-', '_') for x in config['modules']]
+        modules = config.get('modules')
+        if modules is not None:
+            modules = [x.lower().replace('-', '_') for x in config['modules']]
+        config['modules'] = modules
         return config
 
     def on_connect(self, client, userdata, flags, rc):
@@ -152,7 +153,7 @@ class LNXlink():
 
         select_service = topic.split('/')
         addon = self.Addons.get(select_service[0])
-        if select_service[0] in self.config['modules'] and addon is not None:
+        if addon is not None:
             if hasattr(addon, 'startControl'):
                 try:
                     addon.startControl(select_service, message)
@@ -192,8 +193,6 @@ class LNXlink():
                 f"homeassistant/{sensor_type}/lnxlink/{discovery['unique_id']}/config",
                 payload=json.dumps(discovery),
                 retain=self.config['mqtt']['lwt']['retain'])
-        else:
-            print(f"Can't find sensor_type attribute for {discovery['name']}")
 
     def setup_discovery_control(self, discovery_template, addon, service, control_name, options):
         '''Send discovery information on Home Assistant for controls'''
@@ -244,21 +243,20 @@ class LNXlink():
                 "manufacturer": f"LNXLink {version}"
             },
         }
-        if self.config['modules'] is not None:
-            for service in self.config['modules']:
-                addon = self.Addons[service]
-                if hasattr(addon, 'getInfo'):
+        for service, addon in self.Addons.items():
+            addon = self.Addons[service]
+            if hasattr(addon, 'getInfo'):
+                try:
+                    self.setup_discovery_monitoring(discovery_template, addon, service)
+                except Exception as e:
+                    traceback.print_exc()
+            if hasattr(addon, 'exposedControls'):
+                for control_name, options in addon.exposedControls().items():
                     try:
-                        self.setup_discovery_monitoring(discovery_template, addon, service)
+                        control_name = control_name.lower().replace(' ', '_')
+                        self.setup_discovery_control(discovery_template, addon, service, control_name, options)
                     except Exception as e:
                         traceback.print_exc()
-                if hasattr(addon, 'exposedControls'):
-                    for control_name, options in addon.exposedControls().items():
-                        try:
-                            control_name = control_name.lower().replace(' ', '_')
-                            self.setup_discovery_control(discovery_template, addon, service, control_name, options)
-                        except Exception as e:
-                            traceback.print_exc()
 
 
 def main():

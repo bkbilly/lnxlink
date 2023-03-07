@@ -48,26 +48,4 @@ mqtt:
     disconnectMsg: 'OFF'
 update_interval: 5
 modules:
-- bash
-- battery
-- camera_used
-- cpu
-- disk_usage
-- idle
-- keep_alive
-- media
-- memory
-- microphone_used
-- network_download
-- network_upload
-- notify
-- nvidia_gpu
-- required_restart
-- restart
-- screen_onoff
-- send_keys
-- shutdown
-- suspend
-- update
-- xdg_open
 """

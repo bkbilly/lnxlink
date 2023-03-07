@@ -1,11 +1,24 @@
-from pkgutil import iter_modules
-from pathlib import Path
 from importlib import import_module
 import time
 import traceback
+import glob
+import os
 
 
-def parse_modules(list_modules):
+def autoload_modules():
+    modules = []
+    modules_path = f"{os.path.dirname(__file__)}/*.py"
+    for module_path in glob.glob(modules_path):
+        module = os.path.basename(module_path)
+        if '__' not in module and '.py' in module:
+            modules.append(module.replace('.py', ''))
+
+    return modules
+
+
+def parse_modules(list_modules=None):
+    if list_modules is None:
+        list_modules = autoload_modules()
     modules = {}
     for module_name in list_modules:
         retries = 10
@@ -16,6 +29,9 @@ def parse_modules(list_modules):
                 modules[module_name] = addon
                 retries = -1
                 print(f"Successfully loaded addon: {module_name}")
+            except ModuleNotFoundError:
+                print(f"Addon {module_name} is not supported, please remove it from your config")
+                retries = -1
             except Exception as e:
                 print("----------------")
                 print(f"Error with module: {module_name}")
