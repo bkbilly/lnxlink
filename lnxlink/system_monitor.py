@@ -37,6 +37,7 @@ class MonitorSuspend():
         self.loop.quit()
         self.t1.join()
 
+
 class GracefulKiller():
     """Monitor Signal Termination"""
 

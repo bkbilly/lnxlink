@@ -3,6 +3,7 @@ import time
 import traceback
 import glob
 import os
+import sys
 
 
 def autoload_modules():
@@ -24,7 +25,14 @@ def parse_modules(list_modules=None):
         retries = 10
         while retries >= 0:
             try:
-                addon = getattr(import_module(f"{__name__}.{module_name}"), 'Addon')
+                if '.py' in module_name:
+                    module_path = os.path.dirname(module_name)
+                    module_basename = os.path.basename(module_name)
+                    module_name = os.path.splitext(module_basename)[0]
+                    sys.path.append(module_path)
+                    addon = getattr(import_module(f"{module_name}"), 'Addon')
+                else:
+                    addon = getattr(import_module(f"{__name__}.{module_name}"), 'Addon')
                 addon.service = module_name
                 modules[module_name] = addon
                 retries = -1
