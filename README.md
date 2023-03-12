@@ -29,7 +29,10 @@ It's very usefull for remote controling a linux PC, receiving notifications and 
 # Installation
 Install or update:
 ```shell
+# For debian based distros:
 sudo apt install patchelf meson libdbus-glib-1-dev libglib2.0-dev libasound2-dev python3-pip xdotool xprintidle xdg-utils
+# For Red Hat based distros:
+sudo dnf install python39-pip.noarch gcc cmake dbus-devel glib2-devel python39-devel alsa-lib-devel
 pip3 install -U lnxlink
 # When asked, it's recommended to install as a user service.
 lnxlink -c config.yaml
