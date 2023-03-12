@@ -9,7 +9,7 @@ class Addon():
 
     def startControl(self, topic, data):
         self.lnxlink.temp_connection_callback(True)
-        subprocess.call(["shutdown", "now", "&"])
+        subprocess.call(["shutdown", "1", "&"])
 
     def exposedControls(self):
         return {

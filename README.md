@@ -20,11 +20,11 @@ It's very usefull for remote controling a linux PC, receiving notifications and 
 
 
 # Features
- - **System control:** Shutdown, Restart, Send Keys, Notify, Media, Screen On/Off, open URL/File, bash.
- - **System monitor:** CPU, Ram, Network, Media, Microphone, Idle, Bluetooth battery, Disk usage, Required restart, Nvidia GPU.
+ - **System control:** Shutdown, Restart, Suspend, Send Keys, Notify, Media, Screen On/Off, open URL/File, bash, Keep Alive.
+ - **System monitor:** CPU, Ram, Network, Media, Microphone, Idle, Battery, Disk usage, Required restart, Nvidia GPU, Camera, Memory, Update required.
  - **Home Assistant:** Uses MQTT Autodiscovery to create entities and shows if update is required.
  - **No sudo required:** No need to be root user to install and use, unless used on server setup.
- - **Easily expanded:** Any new module is automatically imported.
+ - **Easily expanded:** Any new module is automatically imported and custom modules can be added.
 
 # Installation
 Install or update:
@@ -137,6 +137,13 @@ data:
   media_player: media_player.desktop_linux
 target:
   entity_id: camera.demo_camera
+```
+
+### Create a custom module
+You can create custom modules and import them to your configuration with their full path. Check out examples [here](https://github.com/bkbilly/lnxlink/tree/master/lnxlink/modules) and this is an example of how to add the `mytest` module to your configuration.
+```yaml
+modules:
+- /home/user/mytest.py
 ```
 
 
