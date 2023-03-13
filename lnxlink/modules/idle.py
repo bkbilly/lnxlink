@@ -1,4 +1,4 @@
-import subprocess
+from dbus_idle import IdleMonitor
 
 
 class Addon():
@@ -12,11 +12,7 @@ class Addon():
         self.device_class = 'duration'
 
     def getInfo(self):
-        stdout = subprocess.run(
-            'xprintidle',
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE).stdout.decode("UTF-8").strip()
-
-        idle_sec = round(float(stdout.strip()) / 1000, 0)
-
+        monitor = IdleMonitor.get_monitor()
+        idle_ms = monitor.get_dbus_idle()
+        idle_sec = round(idle_ms / 1000, 0)
         return idle_sec
