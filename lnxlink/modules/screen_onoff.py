@@ -8,7 +8,7 @@ class Addon():
 
     def exposedControls(self):
         return {
-            "Screen_OnOff": {
+            "Screen OnOff": {
                 "type": "switch",
                 "icon": "mdi:monitor",
             }

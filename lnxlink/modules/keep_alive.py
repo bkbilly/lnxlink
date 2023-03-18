@@ -9,7 +9,7 @@ class Addon():
 
     def exposedControls(self):
         return {
-            "Keep_Alive": {
+            "Keep Alive": {
                 "type": "switch",
                 "icon": "mdi:mouse-variant",
             }

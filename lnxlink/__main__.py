@@ -46,6 +46,10 @@ class LNXlink():
                     # print(topic, pub_data, type(pub_data))
                     if pub_data is None:
                         return
+                    if pub_data == True:
+                        pub_data = 'ON'
+                    if pub_data == False:
+                        pub_data = 'OFF'
                     if type(pub_data) in [dict, list]:
                         pub_data = json.dumps(pub_data)
                     self.client.publish(
@@ -167,7 +171,7 @@ class LNXlink():
         state_topic = f"{self.pref_topic}/{self.config['mqtt']['statsPrefix']}/{subtopic}"
 
         discovery = discovery_template.copy()
-        discovery['name'] = f"{self.config['mqtt']['clientId']} {addon.name.lower().replace(' ', '_')}"
+        discovery['name'] = f"{self.config['mqtt']['clientId']} {addon.name}"
         discovery['unique_id'] = f"{self.config['mqtt']['clientId']}_{service}"
         discovery['state_topic'] = state_topic
         if addon.getInfo.__annotations__.get('return') == dict:
@@ -199,10 +203,10 @@ class LNXlink():
         subtopic = addon.name.lower().replace(' ', '/')
         state_topic = f"{self.pref_topic}/{self.config['mqtt']['statsPrefix']}/{subtopic}"
         discovery = discovery_template.copy()
-        discovery['name'] = f"{self.config['mqtt']['clientId']} {control_name.lower().replace(' ', '_')}"
-        discovery['unique_id'] = f"{self.config['mqtt']['clientId']}_{control_name}"
+        discovery['name'] = f"{self.config['mqtt']['clientId']} {control_name}"
+        discovery['unique_id'] = f"{self.config['mqtt']['clientId']}_{control_name.lower().replace(' ', '_')}"
         discovery['enabled_by_default'] = options.get('enabled', True)
-        discovery["command_topic"] = f"{self.pref_topic}/commands/{service}/{control_name}/"
+        discovery["command_topic"] = f"{self.pref_topic}/commands/{service}/{control_name.lower().replace(' ', '_')}/"
         if 'value_template' in options:
             discovery["value_template"] = options['value_template']
         if 'icon' in options:
@@ -253,7 +257,6 @@ class LNXlink():
             if hasattr(addon, 'exposedControls'):
                 for control_name, options in addon.exposedControls().items():
                     try:
-                        control_name = control_name.lower().replace(' ', '_')
                         self.setup_discovery_control(discovery_template, addon, service, control_name, options)
                     except Exception as e:
                         traceback.print_exc()
