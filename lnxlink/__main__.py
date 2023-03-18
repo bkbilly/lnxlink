@@ -20,7 +20,7 @@ version = importlib.metadata.version(__package__ or __name__)
 class LNXlink():
 
     def __init__(self, config_path):
-        print(f"LNXLink {version} started: {platform.python_version()}")
+        print(f"LNXlink {version} started: {platform.python_version()}")
 
         # Read configuration from yaml file
         self.pref_topic = 'lnxlink'
@@ -244,7 +244,7 @@ class LNXlink():
                 "identifiers": [self.config['mqtt']['clientId']],
                 "name": self.config['mqtt']['clientId'],
                 "model": self.config['mqtt']['prefix'],
-                "manufacturer": f"LNXLink {version}"
+                "manufacturer": f"LNXlink {version}"
             },
         }
         for service, addon in self.Addons.items():
@@ -264,7 +264,7 @@ class LNXlink():
 
 def main():
     parser = argparse.ArgumentParser(
-        prog="LNX Link",
+        prog="LNXlink",
         description="Send system information to MQTT broker")
     parser.add_argument(
         "-c", "--config",

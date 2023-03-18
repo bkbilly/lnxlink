@@ -7,10 +7,10 @@ import traceback
 class Addon():
 
     def __init__(self, lnxlink):
-        self.name = 'LNXLink'
+        self.name = 'LNXlink'
         self.icon = 'mdi:update'
         self.device_class = "firmware"
-        self.title = "LNXLink"
+        self.title = "LNXlink"
         self.entity_picture = "https://github.com/bkbilly/lnxlink/raw/master/logo.png?raw=true"
         self.sensor_type = "update"
 

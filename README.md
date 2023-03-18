@@ -6,7 +6,7 @@
 
 <img align="right" width="170" height="100" src="https://github.com/bkbilly/lnxlink/blob/master/logo.png?raw=true">
 
-# LNX link
+# LNXlink
 This is a Linux companion app for integrating your system with an external application like Home Assistant using MQTT.
 It's very usefull for remote controling a linux PC, receiving notifications and monitoring it's stats.
 

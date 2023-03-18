@@ -1,5 +1,5 @@
 service_headless = """[Unit]
-Description=LNXLink
+Description=LNXlink
 After=network-online.target
 
 [Service]
@@ -14,7 +14,7 @@ WantedBy=default.target
 """
 
 service_user = """[Unit]
-Description=LNXLink
+Description=LNXlink
 After=network-online.target multi-user.target graphical.target
 PartOf=graphical-session.target
  
