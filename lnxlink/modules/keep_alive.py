@@ -15,7 +15,7 @@ class Addon():
             }
         }
 
-    def getInfo(self):
+    def getControlInfo(self):
         if self.keepalive == 'ON':
             subprocess.run(
                 "xdotool key 0x00",

@@ -35,28 +35,36 @@ class LNXlink():
         self.client = mqtt.Client()
         self.setup_mqtt()
 
+    def publish_monitor_data(self, topic, pub_data):
+        # print(topic, pub_data, type(pub_data))
+        if pub_data is None:
+            return
+        if pub_data == True:
+            pub_data = 'ON'
+        if pub_data == False:
+            pub_data = 'OFF'
+        if type(pub_data) in [dict, list]:
+            pub_data = json.dumps(pub_data)
+        self.client.publish(
+            topic,
+            payload=pub_data,
+            retain=self.config['mqtt']['lwt']['retain']
+        )
+
     def monitor_run(self):
         '''Gets information from each Addon and sends it to MQTT'''
         for service, addon in self.Addons.items():
-            if hasattr(addon, 'getInfo'):
+            if hasattr(addon, 'getInfo') or hasattr(addon, 'getControlInfo'):
                 try:
                     subtopic = addon.name.lower().replace(' ', '/')
-                    topic = f"{self.pref_topic}/{self.config['mqtt']['statsPrefix']}/{subtopic}"
-                    pub_data = addon.getInfo()
-                    # print(topic, pub_data, type(pub_data))
-                    if pub_data is None:
-                        return
-                    if pub_data == True:
-                        pub_data = 'ON'
-                    if pub_data == False:
-                        pub_data = 'OFF'
-                    if type(pub_data) in [dict, list]:
-                        pub_data = json.dumps(pub_data)
-                    self.client.publish(
-                        topic,
-                        payload=pub_data,
-                        retain=self.config['mqtt']['lwt']['retain']
-                    )
+                    if hasattr(addon, 'getInfo'):
+                        topic = f"{self.pref_topic}/{self.config['mqtt']['statsPrefix']}/{subtopic}"
+                        pub_data = addon.getInfo()
+                        self.publish_monitor_data(topic, pub_data)
+                    if hasattr(addon, 'getControlInfo'):
+                        topic = f"{self.pref_topic}/monitor_controls/{subtopic}"
+                        pub_data = addon.getControlInfo()
+                        self.publish_monitor_data(topic, pub_data)
                 except Exception as e:
                     print(f"Can't load addon: {service}")
                     traceback.print_exc()
@@ -174,6 +182,7 @@ class LNXlink():
         discovery['name'] = f"{self.config['mqtt']['clientId']} {addon.name}"
         discovery['unique_id'] = f"{self.config['mqtt']['clientId']}_{service}"
         discovery['state_topic'] = state_topic
+        discovery['topic'] = state_topic
         if addon.getInfo.__annotations__.get('return') == dict:
             discovery['json_attributes_topic'] = state_topic
             discovery['value_template'] = "{{ value_json.status }}"
@@ -201,7 +210,7 @@ class LNXlink():
     def setup_discovery_control(self, discovery_template, addon, service, control_name, options):
         '''Send discovery information on Home Assistant for controls'''
         subtopic = addon.name.lower().replace(' ', '/')
-        state_topic = f"{self.pref_topic}/{self.config['mqtt']['statsPrefix']}/{subtopic}"
+        state_topic = f"{self.pref_topic}/monitor_controls/{subtopic}"
         discovery = discovery_template.copy()
         discovery['name'] = f"{self.config['mqtt']['clientId']} {control_name}"
         discovery['unique_id'] = f"{self.config['mqtt']['clientId']}_{control_name.lower().replace(' ', '_')}"

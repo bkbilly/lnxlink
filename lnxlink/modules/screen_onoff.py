@@ -14,7 +14,7 @@ class Addon():
             }
         }
 
-    def getInfo(self):
+    def getControlInfo(self):
         stdout = subprocess.run(
             "xset q | grep -i 'monitor is'",
             shell=True,
