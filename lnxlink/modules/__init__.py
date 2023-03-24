@@ -37,8 +37,9 @@ def parse_modules(list_modules=None):
                 modules[module_name] = addon
                 retries = -1
                 print(f"Successfully loaded addon: {module_name}")
-            except ModuleNotFoundError:
+            except ModuleNotFoundError as e:
                 print(f"Addon {module_name} is not supported, please remove it from your config")
+                print(e)
                 retries = -1
             except Exception as e:
                 print("----------------")

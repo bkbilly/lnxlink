@@ -29,7 +29,8 @@ dependencies = [
     "pyOpenSSL>=22.1.0",
     "requests>=2.28.1",
     "jc>=1.23.0",
-    "dbus-idle>=2023.3.2"
+    "dbus-idle>=2023.3.2",
+    "opencv-python>=4.7.0.68"
 ]
 
 
@@ -42,4 +43,3 @@ include = ["lnxlink*"]
 
 [project.scripts]
 lnxlink = "lnxlink.__main__:main"
-
