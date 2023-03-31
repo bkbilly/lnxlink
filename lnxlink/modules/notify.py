@@ -1,11 +1,13 @@
 import notify2
 import requests
+from dbus.mainloop.glib import DBusGMainLoop
 
 
 class Addon():
 
     def __init__(self, lnxlink):
         self.name = 'Notify OSD'
+        DBusGMainLoop(set_as_default=True)
 
     def startControl(self, topic, data):
         iconUrl = data.get('iconUrl', '')
@@ -26,5 +28,3 @@ class Addon():
             data['message'],
             icon
         ).show()
-
-        print(topic, data)
