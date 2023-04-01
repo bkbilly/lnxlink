@@ -39,10 +39,11 @@ class LNXlink():
         # print(topic, pub_data, type(pub_data))
         if pub_data is None:
             return
-        if pub_data == True:
-            pub_data = 'ON'
-        if pub_data == False:
-            pub_data = 'OFF'
+        if isinstance(pub_data, bool):
+            if pub_data is True:
+                pub_data = 'ON'
+            if pub_data is False:
+                pub_data = 'OFF'
         if type(pub_data) in [dict, list]:
             pub_data = json.dumps(pub_data)
         self.client.publish(
@@ -155,7 +156,7 @@ class LNXlink():
         '''MQTT message is received with a module command to excecute'''
         topic = msg.topic.replace(f"{self.pref_topic}/commands/", "")
         message = msg.payload
-        print(f"Message received: {topic}")
+        print(f"Message received {topic}: {message}")
         try:
             message = json.loads(message)
         except Exception as e:
@@ -215,7 +216,7 @@ class LNXlink():
         discovery['name'] = f"{self.config['mqtt']['clientId']} {control_name}"
         discovery['unique_id'] = f"{self.config['mqtt']['clientId']}_{control_name.lower().replace(' ', '_')}"
         discovery['enabled_by_default'] = options.get('enabled', True)
-        discovery["command_topic"] = f"{self.pref_topic}/commands/{service}/{control_name.lower().replace(' ', '_')}/"
+        discovery["command_topic"] = f"{self.pref_topic}/commands/{service}/{control_name.replace(' ', '_')}/"
         if 'value_template' in options:
             discovery["value_template"] = options['value_template']
         if 'icon' in options:
@@ -234,6 +235,7 @@ class LNXlink():
             discovery["state_topic"] = state_topic
             discovery["min"] = options.get('min', 1)
             discovery["max"] = options.get('max', 100)
+            discovery["step"] = options.get('step', 1)
         else:
             return
         self.client.publish(
