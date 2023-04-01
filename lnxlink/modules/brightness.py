@@ -38,7 +38,7 @@ class Addon():
                     "max": 1,
                     "step": 0.1,
                     "value_template": "{{ value_json." + json_display + " }}",
-                    # "enabled": False,
+                    "enabled": False,
                 }
         except Exception as e:
             print(e)
