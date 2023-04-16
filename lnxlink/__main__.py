@@ -222,7 +222,6 @@ class LNXlink():
         if 'icon' in options:
             discovery['icon'] = options.get('icon', '')
 
-
         if options['type'] == 'button':
             discovery['state_topic'] = f"{self.pref_topic}/lwt"
         elif options['type'] == 'switch':
@@ -236,6 +235,9 @@ class LNXlink():
             discovery["min"] = options.get('min', 1)
             discovery["max"] = options.get('max', 100)
             discovery["step"] = options.get('step', 1)
+        elif options['type'] == 'select':
+            discovery["state_topic"] = state_topic
+            discovery["options"] = addon.options
         else:
             return
         self.client.publish(

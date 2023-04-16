@@ -20,7 +20,7 @@ It's very usefull for remote controling a linux PC, receiving notifications and 
 
 
 # Features
- - **System control:** Shutdown, Restart, Suspend, Send Keys, Notify, Media, Screen On/Off, open URL/File, bash, Keep Alive, Brightness.
+ - **System control:** Shutdown, Restart, Suspend, Send Keys, Notify, Media, Screen On/Off, open URL/File, bash, Keep Alive, Brightness, Boot select.
  - **System monitor:** CPU, Ram, Network, Media, Microphone, Idle, Battery, Disk usage, Required restart, Nvidia GPU, Camera, Memory, Update required, System updates, Webcam, Screenshot.
  - **Home Assistant:** Uses MQTT Autodiscovery to create entities and shows if update is required.
  - **No sudo required:** No need to be root user to install and use, unless used on server setup.
@@ -176,3 +176,12 @@ Make sure you have these packages on your system:
  - xdg-open
  - upower
  - xset
+
+## Use Boot Select addon
+This control needs to run as root, but it's not recomended to run lnxlink as a super user. To fix this, you need to allow the command `grub-reboot` to run without asking for password:
+```bash
+# Edit the sudoers file:
+sudo visudo
+# Add this line at the end (replace USER with your username):
+USER ALL=(ALL) NOPASSWD: /usr/sbin/grub-reboot
+```
