@@ -10,7 +10,11 @@ class Addon():
         self.icon = 'mdi:microphone'
         self.sensor_type = 'binary_sensor'
 
-        self.use_pactl = subprocess.run(f"which pactl && pactl -f json list", shell=True).returncode == 0
+        self.use_pactl = subprocess.run(
+            f"which pactl && pactl -f json list",
+            shell=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE).returncode == 0
 
 
     def getInfo(self):

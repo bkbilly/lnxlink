@@ -36,7 +36,7 @@ def parse_modules(list_modules=None):
                 addon.service = module_name
                 modules[module_name] = addon
                 retries = -1
-                print(f"Successfully loaded addon: {module_name}")
+                print(f"Loaded addon: {module_name}")
             except ModuleNotFoundError as e:
                 print(f"Addon {module_name} is not supported, please remove it from your config")
                 print(e)

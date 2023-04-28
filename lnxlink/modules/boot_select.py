@@ -16,7 +16,9 @@ class Addon():
             stderr=subprocess.PIPE).stdout.decode("UTF-8")
         nextentry_pattern = re.compile(r"^next_entry=(\d+)")
         nextentry_match = re.match(nextentry_pattern, stdout)
-        entry_ind = int(nextentry_match.group(1))
+        entry_ind = 0
+        if nextentry_match:
+            entry_ind = int(nextentry_match.group(1))
 
         return self.options[entry_ind]
 

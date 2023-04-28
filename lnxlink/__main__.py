@@ -29,7 +29,12 @@ class LNXlink():
         # Run each addon included in the modules folder
         self.Addons = {}
         for service, addon in modules.parse_modules(self.config['modules']).items():
-            self.Addons[addon.service] = addon(self)
+            try:
+                tmp_addon = addon(self)
+                self.Addons[addon.service] = tmp_addon
+            except Exception as e:
+                print(f"Error with addon {addon.service}, please remove it from your config")
+                traceback.print_exc()
 
         # Setup MQTT
         self.client = mqtt.Client()
