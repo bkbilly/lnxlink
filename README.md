@@ -143,7 +143,7 @@ target:
 ```
 
 ### Create a custom module
-You can create custom modules and import them to your configuration with their full path. Check out examples [here](https://github.com/bkbilly/lnxlink/tree/master/lnxlink/modules) and this is an example of how to add the `mytest` module to your configuration.
+You can create custom modules and import them to your configuration with their full path. Check out examples [here](lnxlink/modules) and this is an example of how to add the `mytest` module to your configuration.
 ```yaml
 modules:
 - /home/user/mytest.py
