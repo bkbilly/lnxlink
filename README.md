@@ -216,3 +216,17 @@ sudo visudo
 # Add this line at the end (replace USER with your username):
 USER ALL=(ALL) NOPASSWD: /usr/sbin/grub-reboot
 ```
+
+## How to help the development
+In case you have found the solution to a bug or you want to create a new feature, follow these instructions to get you started:
+```bash
+# Install system dependencies
+sudo apt install git patchelf meson libdbus-glib-1-dev libglib2.0-dev libasound2-dev python3-pip
+# Fork my repository and then download it
+git clone git@github.com:<yourusername>/lnxlink.git
+# Install lnxlink as editable package
+cd lnxlink
+pip3 install -e .
+# Run it manually
+lnxlink -c config.yaml
+```
