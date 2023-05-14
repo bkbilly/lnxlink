@@ -12,7 +12,7 @@ class Addon():
         self.sensor_type = 'binary_sensor'
 
         self.use_pactl = subprocess.run(
-            f"which pactl && pactl -f json list",
+            f"which pactl && pactl -f json list short source-outputs",
             shell=True,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE).returncode == 0
@@ -20,13 +20,13 @@ class Addon():
 
     def getInfo(self):
         if self.use_pactl:
-            stdout = subprocess.run(f"pactl -f json list", shell=True,
+            stdout = subprocess.run(f"pactl -f json list short source-outputs", shell=True,
                                     stdout=subprocess.PIPE,
                                     stderr=subprocess.PIPE).stdout.decode("UTF-8")
             # Replace 0,00 values with 0.00
             stdout = re.sub(r'(\s*[+-]?[0-9]+),([0-9]+\s*)',r'\1.\2', stdout)
             data = json.loads(stdout)
-            if 'source_outputs' in data and len(data['source_outputs']) > 0:
+            if len(data) > 0:
                 return 'ON'
             return "OFF"
         else:
