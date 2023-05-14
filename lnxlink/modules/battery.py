@@ -26,7 +26,8 @@ class Addon():
                         device.get('vendor', ''),
                         device.get('model', ''),
                     ]).strip()
-                    devices[name] = device['detail']['percentage']
-                    if devices['status'] is None:
-                        devices['status'] = device['detail']['percentage']
+                    if name != "":
+                        devices[name] = device['detail']['percentage']
+                        if devices['status'] is None:
+                            devices['status'] = device['detail']['percentage']
         return devices
