@@ -1,6 +1,7 @@
 import glob
 import subprocess
 import json
+import re
 
 
 class Addon():
@@ -22,6 +23,8 @@ class Addon():
             stdout = subprocess.run(f"pactl -f json list", shell=True,
                                     stdout=subprocess.PIPE,
                                     stderr=subprocess.PIPE).stdout.decode("UTF-8")
+            # Replace 0,00 values with 0.00
+            stdout = re.sub(r'(\s*[+-]?[0-9]+),([0-9]+\s*)',r'\1.\2', stdout)
             data = json.loads(stdout)
             if 'source_outputs' in data and len(data['source_outputs']) > 0:
                 return 'ON'
