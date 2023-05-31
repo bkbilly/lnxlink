@@ -236,6 +236,8 @@ class LNXlink():
             discovery['device_class'] = options.get('device_class', '')
         if 'state_class' in options:
             discovery['state_class'] = options.get('state_class', '')
+        if 'entity_category' in options:
+            discovery['entity_category'] = options.get('entity_category', '')
 
         if options['type'] in ['sensor', 'binary_sensor', 'camera', 'update']:
             discovery['state_topic'] = state_topic
@@ -261,7 +263,7 @@ class LNXlink():
             discovery["state_topic"] = state_topic
             discovery["options"] = addon.options
         else:
-            print("not supported", options['type'])
+            print("Not supported:", options['type'])
             return
         self.client.publish(
             f"homeassistant/{options['type']}/lnxlink/{discovery['unique_id']}/config",

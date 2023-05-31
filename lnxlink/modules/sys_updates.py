@@ -6,12 +6,19 @@ class Addon():
 
     def __init__(self, lnxlink):
         self.name = 'System Updates'
-        self.icon = 'mdi:package-variant'
-        self.sensor_type = 'binary_sensor'
         self.last_time = 0
         self.update_interval = 7200  # Check for updates every 2 hours
 
-    def getInfo(self):
+    def exposedControls(self):
+        return {
+            "System Updates": {
+                "type": "binary_sensor",
+                "icon": "mdi:package-variant",
+                "entity_category": "diagnostic",
+            },
+        }
+
+    def getControlInfo(self):
         packages = [
             {
                 'command': 'apt list --upgradable | wc -l',

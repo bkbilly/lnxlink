@@ -8,12 +8,6 @@ class Addon():
 
     def __init__(self, lnxlink):
         self.name = 'LNXlink'
-        self.icon = 'mdi:update'
-        self.device_class = "firmware"
-        self.title = "LNXlink"
-        self.entity_picture = "https://github.com/bkbilly/lnxlink/raw/master/logo.png?raw=true"
-        self.sensor_type = "update"
-
         self.last_time = 0
         self.update_interval = 86400  # Check for updates every 24 hours
         version = importlib.metadata.version('lnxlink')
@@ -24,7 +18,19 @@ class Addon():
           "release_url": "https://github.com/bkbilly/lnxlink/releases/latest",
         }
 
-    def getInfo(self):
+    def exposedControls(self):
+        return {
+            "Update": {
+                "type": "update",
+                "title": "LNXlink",
+                "icon": "mdi:update",
+                "device_class": "firmware",
+                "entity_category": "diagnostic",
+                "entity_picture": "https://github.com/bkbilly/lnxlink/raw/master/logo.png?raw=true",
+            },
+        }
+
+    def getControlInfo(self):
         cur_time = time.time()
         if cur_time - self.last_time > self.update_interval:
             self._latest_version()
