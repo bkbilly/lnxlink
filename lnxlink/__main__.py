@@ -190,8 +190,8 @@ class LNXlink():
         discovery['state_topic'] = state_topic
         discovery['topic'] = state_topic
         if addon.getInfo.__annotations__.get('return') == dict:
-            discovery['json_attributes_topic'] = state_topic
             discovery['value_template'] = "{{ value_json.status }}"
+            discovery['json_attributes_topic'] = state_topic
             discovery['json_attributes_template'] = "{{ value_json | tojson }}"
         if hasattr(addon, 'icon'):
             discovery['icon'] = addon.icon
@@ -224,6 +224,9 @@ class LNXlink():
         discovery['enabled_by_default'] = options.get('enabled', True)
         if 'value_template' in options:
             discovery["value_template"] = options['value_template']
+            if options['type'] != 'camera':
+                discovery['json_attributes_topic'] = state_topic
+                discovery['json_attributes_template'] = "{{ value_json | tojson }}"
         if 'icon' in options:
             discovery['icon'] = options.get('icon', '')
         if 'unit' in options:

@@ -29,6 +29,7 @@ class Addon():
             "Screenshot": {
                 "type": "switch",
                 "icon": "mdi:monitor-screenshot",
+                "entity_category": "config",
             }
         }
 

@@ -26,6 +26,7 @@ class Addon():
             "Webcam": {
                 "type": "switch",
                 "icon": "mdi:webcam",
+                "entity_category": "config",
             }
         }
 
