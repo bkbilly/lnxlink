@@ -50,6 +50,14 @@ class LNXlink():
                 pub_data = 'ON'
             if pub_data is False:
                 pub_data = 'OFF'
+        if type(pub_data) == dict:
+            if all(v is None for v in pub_data.values()):
+                return
+        if type(pub_data) == list:
+            if all(v is None for v in pub_data):
+                return
+        if pub_data is None:
+            return
         if type(pub_data) in [dict, list]:
             pub_data = json.dumps(pub_data)
         self.client.publish(
