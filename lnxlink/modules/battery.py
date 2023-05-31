@@ -5,12 +5,21 @@ import jc
 class Addon():
     def __init__(self, lnxlink):
         self.name = 'Battery'
-        self.sensor_type = 'sensor'
-        self.icon = 'mdi:battery'
-        self.device_class = 'battery'
-        self.unit = '%'
 
-    def getInfo(self) -> dict:
+    def exposedControls(self):
+        return {
+            "Battery": {
+                "type": "sensor",
+                "icon": "mdi:battery",
+                "unit": "%",
+                "device_class": "battery",
+                "value_template": "{{ value_json.status }}",
+                "enabled": False,
+            },
+        }
+
+
+    def getControlInfo(self):
         stdout = subprocess.run(
             'upower --dump',
             shell=True,

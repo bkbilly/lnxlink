@@ -217,33 +217,51 @@ class LNXlink():
         '''Send discovery information on Home Assistant for controls'''
         subtopic = addon.name.lower().replace(' ', '/')
         state_topic = f"{self.pref_topic}/monitor_controls/{subtopic}"
+        command_topic = f"{self.pref_topic}/commands/{service}/{control_name.replace(' ', '_')}/"
         discovery = discovery_template.copy()
         discovery['name'] = f"{self.config['mqtt']['clientId']} {control_name}"
         discovery['unique_id'] = f"{self.config['mqtt']['clientId']}_{control_name.lower().replace(' ', '_')}"
         discovery['enabled_by_default'] = options.get('enabled', True)
-        discovery["command_topic"] = f"{self.pref_topic}/commands/{service}/{control_name.replace(' ', '_')}/"
         if 'value_template' in options:
             discovery["value_template"] = options['value_template']
         if 'icon' in options:
             discovery['icon'] = options.get('icon', '')
+        if 'unit' in options:
+            discovery['unit_of_measurement'] = options.get('unit', '')
+        if 'title' in options:
+            discovery['title'] = options.get('title', '')
+        if 'entity_picture' in options:
+            discovery['entity_picture'] = options.get('entity_picture', '')
+        if 'device_class' in options:
+            discovery['device_class'] = options.get('device_class', '')
+        if 'state_class' in options:
+            discovery['state_class'] = options.get('state_class', '')
 
-        if options['type'] == 'button':
+        if options['type'] in ['sensor', 'binary_sensor', 'camera', 'update']:
+            discovery['state_topic'] = state_topic
+        elif options['type'] == 'button':
+            discovery["command_topic"] = command_topic
             discovery['state_topic'] = f"{self.pref_topic}/lwt"
         elif options['type'] == 'switch':
+            discovery["command_topic"] = command_topic
             discovery["state_topic"] = state_topic
             discovery["payload_off"] = "OFF"
             discovery["payload_on"] = "ON"
         elif options['type'] == 'text':
+            discovery["command_topic"] = command_topic
             discovery["state_topic"] = state_topic
         elif options['type'] == 'number':
+            discovery["command_topic"] = command_topic
             discovery["state_topic"] = state_topic
             discovery["min"] = options.get('min', 1)
             discovery["max"] = options.get('max', 100)
             discovery["step"] = options.get('step', 1)
         elif options['type'] == 'select':
+            discovery["command_topic"] = command_topic
             discovery["state_topic"] = state_topic
             discovery["options"] = addon.options
         else:
+            print("not supported", options['type'])
             return
         self.client.publish(
             f"homeassistant/{options['type']}/lnxlink/{discovery['unique_id']}/config",
