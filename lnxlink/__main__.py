@@ -3,8 +3,9 @@
 import os
 import yaml
 import time
-import threading
 import json
+import distro
+import threading
 import traceback
 import importlib.metadata
 import platform
@@ -207,6 +208,8 @@ class LNXlink():
             discovery['state_class'] = addon.state_class
 
         sensor_type = getattr(addon, 'sensor_type', None)
+        if sensor_type in ['sensor', 'binary_sensor']:
+            discovery['expire_after'] = self.config.get('update_interval', 5) * 2
         if sensor_type is not None:
             self.client.publish(
                 f"homeassistant/{sensor_type}/lnxlink/{discovery['unique_id']}/config",
@@ -242,7 +245,10 @@ class LNXlink():
         if 'entity_category' in options:
             discovery['entity_category'] = options.get('entity_category', '')
 
-        if options['type'] in ['sensor', 'binary_sensor', 'camera', 'update']:
+        if options['type'] in ['sensor', 'binary_sensor']:
+            discovery['state_topic'] = state_topic
+            discovery['expire_after'] = self.config.get('update_interval', 5) * 2
+        elif options['type'] in ['camera', 'update']:
             discovery['state_topic'] = state_topic
         elif options['type'] == 'button':
             discovery["command_topic"] = command_topic
@@ -284,8 +290,9 @@ class LNXlink():
             "device": {
                 "identifiers": [self.config['mqtt']['clientId']],
                 "name": self.config['mqtt']['clientId'],
-                "model": self.config['mqtt']['prefix'],
-                "manufacturer": f"LNXlink {version}"
+                "model": f"{distro.name()} {distro.version()}",
+                "manufacturer": f"LNXlink",
+                "sw_version": version,
             },
         }
         for service, addon in self.Addons.items():
