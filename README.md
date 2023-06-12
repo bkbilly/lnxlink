@@ -21,7 +21,7 @@ It's very usefull for remote controling a linux PC, receiving notifications and 
 
 # Features
  - **System control:** Shutdown, Restart, Suspend, Send Keys, Notify, Media, Screen On/Off, open URL/File, bash, Keep Alive, Brightness, Boot select.
- - **System monitor:** CPU, Ram, Network, Media, Microphone, Idle, Battery, Disk usage, Required restart, Nvidia GPU, Camera, Memory, Update required, System updates, Webcam, Screenshot.
+ - **System monitor:** CPU, Ram, Network, Media, Microphone, Idle, Battery, Disk usage, Required restart, AMD / Nvidia GPU, Camera, Memory, Update required, System updates, Webcam, Screenshot.
  - **Home Assistant:** Uses MQTT Autodiscovery to create entities and shows if update is required.
  - **No sudo required:** No need to be root user to install and use, unless used on server setup.
  - **Easily expanded:** Any new module is automatically imported and custom modules can be added.
