@@ -21,9 +21,19 @@ jobs:
     - uses: actions/stale@v5
       with:
         repo-token: ${{ secrets.GITHUB_TOKEN }}
-        stale-issue-message: 'Stale issue message'
-        stale-pr-message: 'Stale pull request message'
+        days-before-stale: 40
+        days-before-close: 5
+        remove-stale-when-updated: false
         stale-issue-label: 'no-issue-activity'
         stale-pr-label: 'no-pr-activity'
-        days-before-stale: 60
-        days-before-close: 7
+        stale-issue-message: >
+          No activity on this issue recently. Make sure you update to the latest
+          version of LNXlink to check if the issue has been resolved.
+
+          If no further activity occurs, the issue will be closed.
+        stale-pr-message: >
+          No activity on this Pull Request recently.
+          If no further activity occurs, this PR will be closed.
+
+          Thank you for your contributions.
+
