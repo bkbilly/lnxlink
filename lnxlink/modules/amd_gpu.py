@@ -20,4 +20,6 @@ class Addon():
         gpu_status["Power"] = first_gpu.query_power()
         gpu_status["Voltage"] = first_gpu.query_graphics_voltage()
 
+        gpu_status["status"] = first_gpu.name
+
         return gpu_status
