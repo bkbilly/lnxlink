@@ -26,13 +26,14 @@ It's very usefull for remote controling a linux PC, receiving notifications and 
  - **No sudo required:** No need to be root user to install and use, unless used on server setup.
  - **Easily expanded:** Any new module is automatically imported and custom modules can be added.
 
-# Installation
+# Installation for Desktop
 Install or update:
 ```shell
 # For debian based distros:
 sudo apt install patchelf meson libdbus-glib-1-dev libglib2.0-dev libasound2-dev python3-pip xdotool xprintidle xdg-utils
 # For Red Hat based distros:
 sudo dnf install python39-pip.noarch gcc cmake dbus-devel glib2-devel python39-devel alsa-lib-devel
+# Install lnxlink package on the system
 pip3 install -U lnxlink
 # When asked, it's recommended to install as a user service.
 lnxlink -c config.yaml
@@ -43,7 +44,7 @@ You can manually update the configuration file `config.yaml` and restart the ser
 systemctl --user restart lnxlink.service
 ```
 
-# Headless Installation
+# Installation for Server
 The headless installation is used for linux environments that don't use a Graphical Interface like servers.
 ```shell
 sudo apt install patchelf meson libdbus-glib-1-dev libglib2.0-dev libasound2-dev python3-pip
@@ -160,11 +161,21 @@ Your config file is located at the directory you were when you first run lnxlink
 cat ~/.config/systemd/user/lnxlink.service  | grep -i ExecStart
 ```
 
-## Reinitiate systemd service
-If you want to create the service from scratch, you will have to disable the running service and start lnxlink again:
+## Remove lnxlink from your system
+This covers both installation types, so some of the commands might not work:
 ```shell
+# Disables systemd service
 systemctl --user disable lnxlink.service
-lnxlink -c config.yaml
+sudo systemctl disable lnxlink.service
+
+# Remove systemd service
+rm ~/.config/systemd/user/lnxlink.service
+sudo rm /etc/systemd/system/lnxlink.service
+
+# Uninstall the package
+sudo pip3 uninstall -U lnxlink
+sudo pip3 uninstall -U lnxlink
+pip3 uninstall -U lnxlink
 ```
 
 ## One of my integration is not working
