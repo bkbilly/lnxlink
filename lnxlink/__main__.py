@@ -217,7 +217,7 @@ class LNXlink():
 
         sensor_type = getattr(addon, 'sensor_type', None)
         if sensor_type in ['sensor', 'binary_sensor']:
-            discovery['expire_after'] = self.config.get('update_interval', 5) * 2
+            discovery['expire_after'] = self.config.get('update_interval', 5) * 5
         if sensor_type is not None:
             self.client.publish(
                 f"homeassistant/{sensor_type}/lnxlink/{discovery['unique_id']}/config",
