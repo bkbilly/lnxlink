@@ -1,0 +1,56 @@
+name: Bug report
+description: Create a report to help improving the app.
+labels: bug
+body:
+  - type: dropdown
+    validations:
+      required: true
+    attributes:
+      label: What type of installation are you running?
+      description: >
+        If you used sudo to install lnxlink, it means that you are using a server installation.
+      options:
+        - Desktop
+        - Server
+  - type: input
+    id: os
+    validations:
+      required: true
+    attributes:
+      label: Which Linux OS are you using?
+      placeholder: e.g. Ubuntu 22.04
+      description: >
+        A crossplatform tool to get the OS is `screenfetch`.
+  - type: input
+    id: version
+    validations:
+      required: true
+    attributes:
+      label: Which version of LNXLink has the issue?
+      placeholder: e.g. 2023.6.1
+      description: >
+        Can be found with this command: `pip freeze | grep lnxlink`.
+  - type: textarea
+    validations:
+      required: true
+    attributes:
+      label: Describe the problem
+      description: >
+        A clear and concise description of what the bug is.
+  - type: textarea
+    attributes:
+      label: Additional context
+      description: >-
+        Add any other context about the problem here.
+  - type: textarea
+    attributes:
+      label: Configuration
+      description: >-
+        Provide the configuration file, remove any sensitive info that might exist.
+      render: yaml
+  - type: textarea
+    attributes:
+      label: Logs
+      description: >
+        Write the output of this command: `journalctl --user -u lnxlink -n 300 --no-pager`.
+      render: bash
