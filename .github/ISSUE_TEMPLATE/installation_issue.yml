@@ -1,0 +1,35 @@
+name: Installation problem
+description: Having issues installing or running the app.
+labels: installation
+body:
+  - type: dropdown
+    validations:
+      required: true
+    attributes:
+      label: What type of installation are you running?
+      description: >
+        If you used sudo to install lnxlink, it means that you are using a server installation.
+      options:
+        - Desktop
+        - Server
+  - type: input
+    id: version
+    validations:
+      required: true
+    attributes:
+      label: Which version of LNXLink has the issue?
+      placeholder: e.g. 2023.6.1
+      description: >
+        Can be found with this command: `pip freeze | grep lnxlink`
+  - type: textarea
+    validations:
+      required: true
+    attributes:
+      label: The problem
+      description: >-
+        Describe the issue you are experiencing here. Please provide a clear and concise description of what the problem is.
+  - type: textarea
+    attributes:
+      label: Logs
+      description: >-
+        If you have any logs or other information, you can write them here.
