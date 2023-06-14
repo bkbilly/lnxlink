@@ -1,0 +1,16 @@
+name: Feature request
+description: Suggest an idea for this project.
+labels: enhancement
+body:
+  - type: textarea
+    validations:
+      required: true
+    attributes:
+      label: Describe the solution you'd like
+      description: >-
+        A clear and concise description of what you want to happen.
+  - type: textarea
+    attributes:
+      label: Additional context
+      description: >-
+        Add any other context or info that can help implement this faster.
