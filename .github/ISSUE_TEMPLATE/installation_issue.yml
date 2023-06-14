@@ -13,6 +13,15 @@ body:
         - Desktop
         - Server
   - type: input
+    id: os
+    validations:
+      required: true
+    attributes:
+      label: Which Linux OS are you using?
+      placeholder: e.g. Ubuntu 22.04
+      description: >
+        A crossplatform tool to get the OS is `screenfetch`.
+  - type: input
     id: version
     validations:
       required: true
@@ -20,7 +29,7 @@ body:
       label: Which version of LNXLink has the issue?
       placeholder: e.g. 2023.6.1
       description: >
-        Can be found with this command: `pip freeze | grep lnxlink`
+        Can be found with this command: `pip freeze | grep lnxlink`.
   - type: textarea
     validations:
       required: true
