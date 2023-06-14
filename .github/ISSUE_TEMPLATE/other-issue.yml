@@ -1,0 +1,33 @@
+name: Other issue
+description: Describe an empty issue.
+body:
+  - type: dropdown
+    validations:
+      required: true
+    attributes:
+      label: What type of installation are you running?
+      description: >
+        If you used sudo to install lnxlink, it means that you are using a server installation.
+      options:
+        - Desktop
+        - Server
+        - Other
+  - type: input
+    id: os
+    attributes:
+      label: Which Linux OS are you using?
+      placeholder: e.g. Ubuntu 22.04
+      description: >
+        A crossplatform tool to get the OS is `screenfetch`.
+  - type: input
+    id: version
+    attributes:
+      label: Which version of LNXLink has the issue?
+      placeholder: e.g. 2023.6.1
+      description: >
+        Can be found with this command: `pip freeze | grep lnxlink`.
+  - type: textarea
+    validations:
+      required: true
+    attributes:
+      label: Description
