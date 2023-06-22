@@ -32,7 +32,8 @@ dependencies = [
     "dbus-idle>=2023.3.2",
     "opencv-python>=4.7.0.68",
     "mss>=7.0.1",
-    "pyamdgpuinfo>=2.1.4"
+    "pyamdgpuinfo>=2.1.4",
+    "nvsmi>=0.4.2"
 ]
 
 
