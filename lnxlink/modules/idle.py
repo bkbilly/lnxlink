@@ -14,5 +14,8 @@ class Addon():
     def getInfo(self):
         monitor = IdleMonitor.get_monitor()
         idle_ms = monitor.get_dbus_idle()
-        idle_sec = round(idle_ms / 1000, 0)
+        try:
+            idle_sec = round(idle_ms / 1000, 0)
+        except:
+            return 0
         return idle_sec

@@ -6,20 +6,22 @@ import os
 import sys
 
 
-def autoload_modules():
+def autoload_modules(auto_exclude):
     modules = []
     modules_path = f"{os.path.dirname(__file__)}/*.py"
     for module_path in glob.glob(modules_path):
         module = os.path.basename(module_path)
         if '__' not in module and '.py' in module:
-            modules.append(module.replace('.py', ''))
+            module = module.replace('.py', '')
+            if module not in auto_exclude:
+                modules.append(module)
 
     return modules
 
 
-def parse_modules(list_modules=None):
+def parse_modules(list_modules=None, auto_exclude=[]):
     if list_modules is None:
-        list_modules = autoload_modules()
+        list_modules = autoload_modules(auto_exclude)
     modules = {}
     for module_name in list_modules:
         retries = 10

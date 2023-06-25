@@ -22,6 +22,7 @@ class LNXlink():
 
     def __init__(self, config_path):
         print(f"LNXlink {version} started: {platform.python_version()}")
+        self.kill = False
 
         # Read configuration from yaml file
         self.pref_topic = 'lnxlink'
@@ -29,7 +30,11 @@ class LNXlink():
 
         # Run each addon included in the modules folder
         self.Addons = {}
-        for service, addon in modules.parse_modules(self.config['modules']).items():
+        conf_modules = self.config.get('modules', None)
+        conf_exclude = self.config.get('exclude', [])
+        conf_exclude = [] if conf_exclude is None else conf_exclude
+        loaded_modules = modules.parse_modules(conf_modules, conf_exclude)
+        for service, addon in loaded_modules.items():
             try:
                 tmp_addon = addon(self)
                 self.Addons[addon.service] = tmp_addon
@@ -89,8 +94,9 @@ class LNXlink():
         self.monitor_run()
 
         interval = self.config.get('update_interval', 1)
-        self.monitor = threading.Timer(interval, self.monitor_run_thread)
-        self.monitor.start()
+        if not self.kill:
+            self.monitor = threading.Timer(interval, self.monitor_run_thread)
+            self.monitor.start()
 
     def setup_mqtt(self):
         '''Creates the mqtt object'''
@@ -150,6 +156,7 @@ class LNXlink():
 
     def temp_connection_callback(self, status):
         '''Report the connection status to MQTT server'''
+        self.kill = True
         if self.config['mqtt']['lwt']['enabled']:
             if status:
                 self.client.publish(
