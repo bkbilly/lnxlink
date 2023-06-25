@@ -9,7 +9,7 @@ class Addon():
 
     def getControlInfo(self):
         displays = self._get_displays()
-        avg_brightness = sum(displays.values()) / len(displays.values())
+        avg_brightness = sum(displays.values()) / max(1, len(displays.values()))
 
         info = {"status": avg_brightness}
         for display, brightness in displays.items():

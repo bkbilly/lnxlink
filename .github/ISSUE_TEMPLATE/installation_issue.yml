@@ -1,5 +1,5 @@
 name: Installation problem
-description: Having issues installing or running the app.
+description: Having issues installing the app.
 labels: installation
 body:
   - type: dropdown
