@@ -33,7 +33,8 @@ dependencies = [
     "opencv-python>=4.7.0.68",
     "mss>=7.0.1",
     "pyamdgpuinfo>=2.1.4",
-    "nvsmi>=0.4.2"
+    "nvsmi>=0.4.2",
+    "distro>=1.7.0"
 ]
 
 

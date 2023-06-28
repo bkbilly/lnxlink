@@ -3,3 +3,5 @@ config.yaml
 *.egg-info
 dist/
 build/
+.venv/
+venv/
