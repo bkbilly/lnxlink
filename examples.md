@@ -94,6 +94,649 @@ You can create a virtual keyboard on your frontend:
 <figure><img src=".gitbook/assets/Screenshot from 2023-06-22 01-17-12.png" alt=""><figcaption></figcaption></figure>
 
 </div>
+<details>
+
+<summary>Lovelace Card Config</summary>
+
+{% code overflow="wrap" lineNumbers="true" %}
+```yaml
+type: vertical-stack
+cards:
+  - square: true
+    type: grid
+    columns: 10
+    cards:
+      - show_name: true
+        show_icon: false
+        type: button
+        tap_action:
+          action: call-service
+          service: text.set_value
+          target:
+            entity_id: text.desktop_linux_send_keys
+          data:
+            value: '1'
+        entity: text.desktop_linux_send_keys
+        name: '1'
+        hold_action:
+          action: more-info
+      - show_name: true
+        show_icon: false
+        type: button
+        tap_action:
+          action: call-service
+          service: text.set_value
+          target:
+            entity_id: text.desktop_linux_send_keys
+          data:
+            value: '2'
+        entity: text.desktop_linux_send_keys
+        name: '2'
+        hold_action:
+          action: more-info
+      - show_name: true
+        show_icon: false
+        type: button
+        tap_action:
+          action: call-service
+          service: text.set_value
+          target:
+            entity_id: text.desktop_linux_send_keys
+          data:
+            value: '3'
+        entity: text.desktop_linux_send_keys
+        name: '3'
+        hold_action:
+          action: more-info
+      - show_name: true
+        show_icon: false
+        type: button
+        tap_action:
+          action: call-service
+          service: text.set_value
+          target:
+            entity_id: text.desktop_linux_send_keys
+          data:
+            value: '4'
+        entity: text.desktop_linux_send_keys
+        name: '4'
+        hold_action:
+          action: more-info
+      - show_name: true
+        show_icon: false
+        type: button
+        tap_action:
+          action: call-service
+          service: text.set_value
+          target:
+            entity_id: text.desktop_linux_send_keys
+          data:
+            value: '5'
+        entity: text.desktop_linux_send_keys
+        name: '5'
+        hold_action:
+          action: more-info
+      - show_name: true
+        show_icon: false
+        type: button
+        tap_action:
+          action: call-service
+          service: text.set_value
+          target:
+            entity_id: text.desktop_linux_send_keys
+          data:
+            value: '6'
+        entity: text.desktop_linux_send_keys
+        name: '6'
+        hold_action:
+          action: more-info
+      - show_name: true
+        show_icon: false
+        type: button
+        tap_action:
+          action: call-service
+          service: text.set_value
+          target:
+            entity_id: text.desktop_linux_send_keys
+          data:
+            value: '7'
+        entity: text.desktop_linux_send_keys
+        name: '7'
+        hold_action:
+          action: more-info
+      - show_name: true
+        show_icon: false
+        type: button
+        tap_action:
+          action: call-service
+          service: text.set_value
+          target:
+            entity_id: text.desktop_linux_send_keys
+          data:
+            value: '8'
+        entity: text.desktop_linux_send_keys
+        name: '8'
+        hold_action:
+          action: more-info
+      - show_name: true
+        show_icon: false
+        type: button
+        tap_action:
+          action: call-service
+          service: text.set_value
+          target:
+            entity_id: text.desktop_linux_send_keys
+          data:
+            value: '9'
+        entity: text.desktop_linux_send_keys
+        name: '9'
+        hold_action:
+          action: more-info
+      - show_name: true
+        show_icon: false
+        type: button
+        tap_action:
+          action: call-service
+          service: text.set_value
+          target:
+            entity_id: text.desktop_linux_send_keys
+          data:
+            value: 0
+        entity: text.desktop_linux_send_keys
+        name: '0'
+        hold_action:
+          action: more-info
+  - square: true
+    type: grid
+    cards:
+      - show_name: true
+        show_icon: false
+        type: button
+        tap_action:
+          action: call-service
+          service: text.set_value
+          target:
+            entity_id: text.desktop_linux_send_keys
+          data:
+            value: q
+        entity: text.desktop_linux_send_keys
+        name: Q
+        hold_action:
+          action: more-info
+      - show_name: true
+        show_icon: false
+        type: button
+        tap_action:
+          action: call-service
+          service: text.set_value
+          target:
+            entity_id: text.desktop_linux_send_keys
+          data:
+            value: w
+        entity: text.desktop_linux_send_keys
+        name: W
+        hold_action:
+          action: more-info
+      - show_name: true
+        show_icon: false
+        type: button
+        tap_action:
+          action: call-service
+          service: text.set_value
+          target:
+            entity_id: text.desktop_linux_send_keys
+          data:
+            value: e
+        entity: text.desktop_linux_send_keys
+        name: E
+        hold_action:
+          action: more-info
+      - show_name: true
+        show_icon: false
+        type: button
+        tap_action:
+          action: call-service
+          service: text.set_value
+          target:
+            entity_id: text.desktop_linux_send_keys
+          data:
+            value: r
+        entity: text.desktop_linux_send_keys
+        name: R
+        hold_action:
+          action: more-info
+      - show_name: true
+        show_icon: false
+        type: button
+        tap_action:
+          action: call-service
+          service: text.set_value
+          target:
+            entity_id: text.desktop_linux_send_keys
+          data:
+            value: t
+        entity: text.desktop_linux_send_keys
+        name: T
+        hold_action:
+          action: more-info
+      - show_name: true
+        show_icon: false
+        type: button
+        tap_action:
+          action: call-service
+          service: text.set_value
+          target:
+            entity_id: text.desktop_linux_send_keys
+          data:
+            value: 'y'
+        entity: text.desktop_linux_send_keys
+        name: 'Y'
+        hold_action:
+          action: more-info
+      - show_name: true
+        show_icon: false
+        type: button
+        tap_action:
+          action: call-service
+          service: text.set_value
+          target:
+            entity_id: text.desktop_linux_send_keys
+          data:
+            value: u
+        entity: text.desktop_linux_send_keys
+        name: U
+        hold_action:
+          action: more-info
+      - show_name: true
+        show_icon: false
+        type: button
+        tap_action:
+          action: call-service
+          service: text.set_value
+          target:
+            entity_id: text.desktop_linux_send_keys
+          data:
+            value: i
+        entity: text.desktop_linux_send_keys
+        name: I
+        hold_action:
+          action: more-info
+      - show_name: true
+        show_icon: false
+        type: button
+        tap_action:
+          action: call-service
+          service: text.set_value
+          target:
+            entity_id: text.desktop_linux_send_keys
+          data:
+            value: o
+        entity: text.desktop_linux_send_keys
+        name: O
+        hold_action:
+          action: more-info
+      - show_name: true
+        show_icon: false
+        type: button
+        tap_action:
+          action: call-service
+          service: text.set_value
+          target:
+            entity_id: text.desktop_linux_send_keys
+          data:
+            value: p
+        entity: text.desktop_linux_send_keys
+        name: P
+        hold_action:
+          action: more-info
+    columns: 10
+  - square: true
+    type: grid
+    cards:
+      - show_name: true
+        show_icon: false
+        type: button
+        tap_action:
+          action: call-service
+          service: text.set_value
+          target:
+            entity_id: text.desktop_linux_send_keys
+          data:
+            value: a
+        entity: text.desktop_linux_send_keys
+        name: A
+        hold_action:
+          action: more-info
+      - show_name: true
+        show_icon: false
+        type: button
+        tap_action:
+          action: call-service
+          service: text.set_value
+          target:
+            entity_id: text.desktop_linux_send_keys
+          data:
+            value: s
+        entity: text.desktop_linux_send_keys
+        name: S
+        hold_action:
+          action: more-info
+      - show_name: true
+        show_icon: false
+        type: button
+        tap_action:
+          action: call-service
+          service: text.set_value
+          target:
+            entity_id: text.desktop_linux_send_keys
+          data:
+            value: d
+        entity: text.desktop_linux_send_keys
+        name: D
+        hold_action:
+          action: more-info
+      - show_name: true
+        show_icon: false
+        type: button
+        tap_action:
+          action: call-service
+          service: text.set_value
+          target:
+            entity_id: text.desktop_linux_send_keys
+          data:
+            value: f
+        entity: text.desktop_linux_send_keys
+        name: F
+        hold_action:
+          action: more-info
+      - show_name: true
+        show_icon: false
+        type: button
+        tap_action:
+          action: call-service
+          service: text.set_value
+          target:
+            entity_id: text.desktop_linux_send_keys
+          data:
+            value: g
+        entity: text.desktop_linux_send_keys
+        name: G
+        hold_action:
+          action: more-info
+      - show_name: true
+        show_icon: false
+        type: button
+        tap_action:
+          action: call-service
+          service: text.set_value
+          target:
+            entity_id: text.desktop_linux_send_keys
+          data:
+            value: h
+        entity: text.desktop_linux_send_keys
+        name: H
+        hold_action:
+          action: more-info
+      - show_name: true
+        show_icon: false
+        type: button
+        tap_action:
+          action: call-service
+          service: text.set_value
+          target:
+            entity_id: text.desktop_linux_send_keys
+          data:
+            value: j
+        entity: text.desktop_linux_send_keys
+        name: J
+        hold_action:
+          action: more-info
+      - show_name: true
+        show_icon: false
+        type: button
+        tap_action:
+          action: call-service
+          service: text.set_value
+          target:
+            entity_id: text.desktop_linux_send_keys
+          data:
+            value: k
+        entity: text.desktop_linux_send_keys
+        name: K
+        hold_action:
+          action: more-info
+      - show_name: true
+        show_icon: false
+        type: button
+        tap_action:
+          action: call-service
+          service: text.set_value
+          target:
+            entity_id: text.desktop_linux_send_keys
+          data:
+            value: l
+        entity: text.desktop_linux_send_keys
+        name: L
+        hold_action:
+          action: more-info
+      - show_name: false
+        show_icon: true
+        type: button
+        tap_action:
+          action: call-service
+          service: text.set_value
+          target:
+            entity_id: text.desktop_linux_send_keys
+          data:
+            value: BackSpace
+        entity: text.desktop_linux_send_keys
+        hold_action:
+          action: more-info
+        icon: mdi:backspace-outline
+    columns: 10
+  - square: true
+    type: grid
+    columns: 10
+    cards:
+      - show_name: true
+        show_icon: false
+        type: button
+        tap_action:
+          action: call-service
+          service: text.set_value
+          target:
+            entity_id: text.desktop_linux_send_keys
+          data:
+            value: z
+        entity: text.desktop_linux_send_keys
+        name: Z
+        hold_action:
+          action: more-info
+      - show_name: true
+        show_icon: false
+        type: button
+        tap_action:
+          action: call-service
+          service: text.set_value
+          target:
+            entity_id: text.desktop_linux_send_keys
+          data:
+            value: x
+        entity: text.desktop_linux_send_keys
+        name: X
+        hold_action:
+          action: more-info
+      - show_name: true
+        show_icon: false
+        type: button
+        tap_action:
+          action: call-service
+          service: text.set_value
+          target:
+            entity_id: text.desktop_linux_send_keys
+          data:
+            value: c
+        entity: text.desktop_linux_send_keys
+        name: C
+        hold_action:
+          action: more-info
+      - show_name: true
+        show_icon: false
+        type: button
+        tap_action:
+          action: call-service
+          service: text.set_value
+          target:
+            entity_id: text.desktop_linux_send_keys
+          data:
+            value: v
+        entity: text.desktop_linux_send_keys
+        name: V
+        hold_action:
+          action: more-info
+      - show_name: true
+        show_icon: false
+        type: button
+        tap_action:
+          action: call-service
+          service: text.set_value
+          target:
+            entity_id: text.desktop_linux_send_keys
+          data:
+            value: b
+        entity: text.desktop_linux_send_keys
+        name: B
+        hold_action:
+          action: more-info
+      - show_name: true
+        show_icon: false
+        type: button
+        tap_action:
+          action: call-service
+          service: text.set_value
+          target:
+            entity_id: text.desktop_linux_send_keys
+          data:
+            value: 'n'
+        entity: text.desktop_linux_send_keys
+        name: 'N'
+        hold_action:
+          action: more-info
+      - show_name: true
+        show_icon: false
+        type: button
+        tap_action:
+          action: call-service
+          service: text.set_value
+          target:
+            entity_id: text.desktop_linux_send_keys
+          data:
+            value: m
+        entity: text.desktop_linux_send_keys
+        name: M
+        hold_action:
+          action: more-info
+      - show_name: true
+        show_icon: false
+        type: button
+        tap_action:
+          action: call-service
+          service: text.set_value
+          target:
+            entity_id: text.desktop_linux_send_keys
+          data:
+            value: comma
+        entity: text.desktop_linux_send_keys
+        name: ','
+        hold_action:
+          action: more-info
+      - show_name: true
+        show_icon: false
+        type: button
+        tap_action:
+          action: call-service
+          service: text.set_value
+          target:
+            entity_id: text.desktop_linux_send_keys
+          data:
+            value: period
+        entity: text.desktop_linux_send_keys
+        name: .
+        hold_action:
+          action: more-info
+      - show_name: true
+        show_icon: false
+        type: button
+        tap_action:
+          action: call-service
+          service: text.set_value
+          target:
+            entity_id: text.desktop_linux_send_keys
+          data:
+            value: slash
+        entity: text.desktop_linux_send_keys
+        name: /
+        hold_action:
+          action: more-info
+  - type: horizontal-stack
+    cards:
+      - square: true
+        type: grid
+        columns: 2
+        cards: []
+      - square: true
+        type: grid
+        columns: 2
+        cards: []
+      - square: false
+        type: grid
+        columns: 1
+        cards:
+          - show_name: false
+            show_icon: true
+            type: button
+            tap_action:
+              action: call-service
+              service: text.set_value
+              target:
+                entity_id: text.desktop_linux_send_keys
+              data:
+                value: space
+            entity: text.desktop_linux_send_keys
+            name: Space
+            icon: mdi:keyboard-space
+            icon_height: 30px
+            hold_action:
+              action: more-info
+      - square: true
+        type: grid
+        columns: 2
+        cards: []
+      - square: false
+        type: grid
+        columns: 1
+        cards:
+          - show_name: false
+            show_icon: true
+            type: button
+            tap_action:
+              action: call-service
+              service: text.set_value
+              target:
+                entity_id: text.desktop_linux_send_keys
+              data:
+                value: Return
+            entity: text.desktop_linux_send_keys
+            name: Enter
+            hold_action:
+              action: more-info
+            icon: mdi:keyboard-return
+            icon_height: 30px
+
+```
+{% endcode %}
+
+</details>
 
 ## Open a URL or File
 
