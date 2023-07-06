@@ -1,0 +1,188 @@
+# 🖥 Setup
+
+## Installation
+
+Select the installation type you want.
+
+{% tabs %}
+{% tab title="Desktop" %}
+Recommended installation if you have a graphical interface.
+
+Prepare your system:
+
+{% code overflow="wrap" lineNumbers="true" %}
+```bash
+# For debian based distros:
+sudo apt install patchelf meson libdbus-glib-1-dev libglib2.0-dev libasound2-dev python3-pip xdotool xprintidle xdg-utils
+# For Red Hat based distros:
+sudo dnf install python39-pip.noarch gcc cmake dbus-devel glib2-devel python39-devel alsa-lib-devel
+# Upgrade PIP to the latest version
+sudo pip3 install -U pip
+```
+{% endcode %}
+
+Install or Update LNXlink:
+
+{% code overflow="wrap" lineNumbers="true" %}
+```bash
+# Install lnxlink package on the system
+pip3 install -U lnxlink
+# When asked, it's recommended to install as a user service.
+lnxlink -c config.yaml
+```
+{% endcode %}
+
+You can manually update the configuration file `config.yaml` and restart the service with the use of systemctl:
+
+{% code overflow="wrap" lineNumbers="true" %}
+```bash
+systemctl --user restart lnxlink.service
+```
+{% endcode %}
+{% endtab %}
+
+{% tab title="Server" %}
+The headless installation is used for linux environments that don't use a Graphical Interface like servers.
+
+{% code overflow="wrap" lineNumbers="true" fullWidth="false" %}
+```bash
+sudo apt install patchelf meson libdbus-glib-1-dev libglib2.0-dev libasound2-dev python3-pip
+# Upgrade PIP to the latest version
+sudo pip3 install -U pip
+```
+{% endcode %}
+
+Install or Update LNXlink:
+
+{% code overflow="wrap" lineNumbers="true" %}
+```bash
+# Install lnxlink package on the system
+sudo pip3 install -U lnxlink
+# When asked, it's recommended to answer false on install as a user service.
+sudo lnxlink -c config.yaml
+```
+{% endcode %}
+
+You can manually update the configuration file `config.yaml` and restart the service with the use of systemctl:
+
+{% code overflow="wrap" lineNumbers="true" %}
+```bash
+sudo systemctl restart lnxlink.service
+```
+{% endcode %}
+{% endtab %}
+
+{% tab title="Development" %}
+This installs LNXlink as a development platform which is helpful if you want to create your own changes or create a new module. Read on the Development section for more information.
+
+{% code overflow="wrap" lineNumbers="true" %}
+```bash
+# Install system dependencies
+sudo apt install git patchelf meson libdbus-glib-1-dev libglib2.0-dev libasound2-dev python3-pip
+# Upgrade PIP to the latest version
+sudo pip3 install -U lnxlink
+# Fork my repository and then download it
+git clone git@github.com:<yourusername>/lnxlink.git
+# Install lnxlink as editable package
+cd lnxlink
+pip3 install -e .
+# Run it manually
+lnxlink -c config.yaml
+```
+{% endcode %}
+{% endtab %}
+{% endtabs %}
+
+### Run sudo commands
+
+Some commands needs to run as a root user, but it's not recommended to run LNXlink as a superuser. To fix this, you need to allow the command grub-reboot to run without asking for password:
+
+```bash
+# Edit the sudoers file:
+sudo visudo
+# Add this line at the end (replace USER with your username):
+USER ALL=(ALL) NOPASSWD: /usr/sbin/grub-reboot
+```
+
+## Config
+
+### Config file location
+
+Your config file is located at the directory you were when you first run LNXlink. This can be anything you write like of the `config.yaml` that I suggested. You can find where it is from the systemd service:
+
+{% tabs %}
+{% tab title="Desktop" %}
+```
+cat ~/.config/systemd/user/lnxlink.service | grep -i ExecStart
+```
+{% endtab %}
+
+{% tab title="Server" %}
+```
+cat /etc/systemd/lnxlink.service | grep -i ExecStart
+```
+{% endtab %}
+{% endtabs %}
+
+### Modules
+
+By default all modules are automatically loaded. This happens when the modules section is empty like this:
+
+```yaml
+modules:
+```
+
+You should select the ones you want to load. All supported modules can be found [here](https://github.com/bkbilly/lnxlink/blob/master/lnxlink/modules) and the configuration should look like this:
+
+```yaml
+modules:
+- notify
+- camera_used
+- idle
+- keep_alive
+- shutdown
+- brightness
+```
+
+### Exclude Modules
+
+In case you have empty modules config which auto loads all the available modules, you can have this option that excludes modules from auto loading:
+
+```yaml
+exclude:
+- screenshot
+- webcam
+```
+
+## Uninstall
+
+Remove LNXlink from your system.
+
+{% tabs %}
+{% tab title="Desktop" %}
+```bash
+# Disables systemd service
+systemctl --user disable lnxlink.service
+
+# Remove systemd service
+rm ~/.config/systemd/user/lnxlink.service
+
+# Uninstall the package
+pip3 uninstall -U lnxlink
+```
+{% endtab %}
+
+{% tab title="Server" %}
+```bash
+# Disables systemd service
+sudo systemctl disable lnxlink.service
+
+# Remove systemd service
+sudo rm /etc/systemd/system/lnxlink.service
+
+# Uninstall the package
+sudo pip3 uninstall -U lnxlink
+sudo pip3 uninstall lnxlink
+```
+{% endtab %}
+{% endtabs %}

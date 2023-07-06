@@ -1,27 +1,42 @@
-# [Start Bootstrap](http://startbootstrap.com/) - [Landing Page](http://startbootstrap.com/template-overviews/landing-page/)
+---
+description: Companion app
+---
 
-[Landing Page](http://startbootstrap.com/template-overviews/landing-page/) is a multipurpose landing page template for [Bootstrap](http://getbootstrap.com/) created by [Start Bootstrap](http://startbootstrap.com/).
+# 🌩 LNXlink
 
-## Getting Started
+<figure><img src=".gitbook/assets/logo.png" alt=""><figcaption></figcaption></figure>
 
-To begin using this template, choose one of the following options to get started:
-* [Download the latest release on Start Bootstrap](http://startbootstrap.com/template-overviews/landing-page/)
-* Clone the repo: `git clone https://github.com/BlackrockDigital/startbootstrap-landing-page.git`
-* Fork the repo
+## Welcome
 
-## Bugs and Issues
+Home Assistant companion app for linux that uses the MQTT integration to get info and control the PC.
 
-Have a bug or an issue with this template? [Open a new issue](https://github.com/BlackrockDigital/startbootstrap-landing-page/issues) here on GitHub or leave a comment on the [template overview page at Start Bootstrap](http://startbootstrap.com/template-overviews/landing-page/).
+## Features
 
-## Creator
+* **Sensors:** Automatically discover sensors that monitor and control the system.
+* **Home Assistant:** Uses MQTT Autodiscovery to create entities and shows if update is required.
+* **No sudo required:** No need to be root user to install and use, unless used on server setup.
+* **Easily expanded:** Any new module is automatically imported and custom modules can be added.
 
-Start Bootstrap was created by and is maintained by **[David Miller](http://davidmiller.io/)**, Owner of [Blackrock Digital](http://blackrockdigital.io/).
+## Supported Modules
 
-* https://twitter.com/davidmillerskt
-* https://github.com/davidtmiller
+| Sensors          | Controls       |
+| ---------------- | -------------- |
+| CPU              | Shutdown       |
+| RAM              | Restart        |
+| GPU              | Suspend        |
+| Network Speed    | Notify         |
+| Media info       | Media Controls |
+| Microphone used  | Send Keys      |
+| Camera used      | Screen On/Off  |
+| Idle time        | Open URL/File  |
+| Battery          | Bash commands  |
+| Disk usage       | Keep Alive     |
+| Restart required | Brightness     |
+| Update required  | Boot select    |
+| Webcam           |                |
+| Screenshot       |                |
+| Fullscreen       |                |
 
-Start Bootstrap is based on the [Bootstrap](http://getbootstrap.com/) framework created by [Mark Otto](https://twitter.com/mdo) and [Jacob Thorton](https://twitter.com/fat).
+## Supported OS
 
-## Copyright and License
-
-Copyright 2013-2016 Blackrock Digital LLC. Code released under the [MIT](https://github.com/BlackrockDigital/startbootstrap-landing-page/blob/gh-pages/LICENSE) license.
+Only Linux is supported and there is no plan on supporting Windows or any other operating system because it has many system dependencies that can't be ported. A recommended companion app for windows is HASS.Agent.
