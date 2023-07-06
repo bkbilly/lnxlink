@@ -137,9 +137,8 @@ class LNXlink():
             )
         if self.config['mqtt']['discovery']['enabled']:
             self.setup_discovery()
-        if self.kill:
-            self.kill = False
-            self.monitor_run_thread()
+        self.kill = False
+        self.monitor_run_thread()
 
     def disconnect(self, *args):
         '''Reports to MQTT server that the service has stopped'''

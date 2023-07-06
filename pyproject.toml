@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name              = "lnxlink"
-version           = "2023.7.0"
+version           = "2023.7.1"
 description       = "Internet Of Things (IOT) integration with Linux using MQTT"
 readme            = "README.md"
 keywords          = ["lnxlink"]
@@ -34,7 +34,8 @@ dependencies = [
     "mss>=7.0.1",
     "pyamdgpuinfo>=2.1.4",
     "nvsmi>=0.4.2",
-    "distro>=1.7.0"
+    "distro>=1.7.0",
+    "ewmh>=0.1.6"
 ]
 
 
