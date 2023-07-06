@@ -137,6 +137,9 @@ class LNXlink():
             )
         if self.config['mqtt']['discovery']['enabled']:
             self.setup_discovery()
+        if self.kill:
+            self.kill = False
+            self.monitor_run_thread()
 
     def disconnect(self, *args):
         '''Reports to MQTT server that the service has stopped'''
@@ -148,6 +151,7 @@ class LNXlink():
                 qos=self.config['mqtt']['lwt']['qos'],
                 retain=self.config['mqtt']['lwt']['retain']
             )
+        self.kill = True
         try:
             self.monitor.cancel()
         except Exception as e:
@@ -159,6 +163,7 @@ class LNXlink():
         self.kill = True
         if self.config['mqtt']['lwt']['enabled']:
             if status:
+                print("Power Down detected.")
                 self.client.publish(
                     f"{self.pref_topic}/lwt",
                     payload=self.config['mqtt']['lwt']['disconnectMsg'],
@@ -166,6 +171,10 @@ class LNXlink():
                     retain=self.config['mqtt']['lwt']['retain']
                 )
             else:
+                print("Power Up detected.")
+                if self.kill:
+                    self.kill = False
+                    self.monitor_run_thread()
                 self.client.publish(
                     f"{self.pref_topic}/lwt",
                     payload=self.config['mqtt']['lwt']['connectMsg'],
@@ -340,7 +349,6 @@ def main():
     config.setup_config(config_file)
     config.setup_systemd(config_file)
     lnxlink = LNXlink(config_file)
-    lnxlink.monitor_run_thread()
 
     # Monitor for system changes (Shutdown/Suspend/Sleep)
     monitor_suspend = MonitorSuspend(lnxlink.temp_connection_callback)
