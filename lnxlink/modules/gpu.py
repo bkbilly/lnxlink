@@ -1,5 +1,6 @@
 import pyamdgpuinfo
 import nvsmi
+from shutil import which
 
 
 class Addon():
@@ -7,9 +8,12 @@ class Addon():
     def __init__(self, lnxlink):
         self.name = 'GPU'
         self.gpu_ids = {
-            "nvidia": len(list(nvsmi.get_gpus())),
-            "amd": pyamdgpuinfo.detect_gpus(),
+            "amd": pyamdgpuinfo.detect_gpus()
         }
+        if which("nvidia-smi") is not None:
+            self.gpu_ids["nvidia"] = len(list(nvsmi.get_gpus()))
+        else:
+            self.gpu_ids["nvidia"] = 0
 
     def getControlInfo(self):
         gpus = {}
