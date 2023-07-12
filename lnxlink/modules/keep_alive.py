@@ -50,7 +50,6 @@ class Addon():
 
         return any(enabled_list)
 
-
     def startControl(self, topic, data):
         if data.lower() == 'off':
             subprocess.run(
@@ -84,6 +83,3 @@ class Addon():
                 shell=True,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE)
-
-
-print(Addon("").startControl("", "off"))
