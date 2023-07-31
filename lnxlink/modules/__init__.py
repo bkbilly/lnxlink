@@ -41,15 +41,12 @@ def parse_modules(list_modules=None, auto_exclude=[]):
                 addon.service = module_name
                 modules[module_name] = addon
                 retries = -1
-                logger.info(f"Loaded addon: {module_name}")
             except ModuleNotFoundError as e:
-                logger.info(f"Addon {module_name} is not supported, please remove it from your config")
-                logger.info(e)
+                logger.error(f"Addon {module_name} is not supported, please remove it from your config: {e}")
                 retries = -1
             except Exception as e:
-                logger.info("----------------")
-                logger.info(f"Error with module: {module_name}")
-                logger.info(e)
+                logger.error(f"Error with module {module_name}: {e}")
                 time.sleep(2)
                 retries -= 1
+    logger.info(f"Loaded addons: {', '.join(modules)}")
     return modules
