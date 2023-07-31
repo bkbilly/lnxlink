@@ -15,4 +15,9 @@ class Addon():
         }
 
     def startControl(self, topic, data):
-        subprocess.call(f"{data}", shell=True)
+        stdout = subprocess.run(
+            data,
+            shell=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE).stdout.decode("UTF-8")
+        return stdout

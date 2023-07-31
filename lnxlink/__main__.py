@@ -197,7 +197,14 @@ class LNXlink():
         if addon is not None:
             if hasattr(addon, 'startControl'):
                 try:
-                    addon.startControl(select_service, message)
+                    result = addon.startControl(select_service, message)
+                    if result is not None:
+                        result_topic = f"{self.pref_topic}/command_result/{topic.strip('/')}"
+                        self.client.publish(
+                            result_topic,
+                            payload=result,
+                            retain=False
+                        )
                     self.monitor_run()
                 except Exception as e:
                     logger.error(e)
