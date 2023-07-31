@@ -1,9 +1,11 @@
 from importlib import import_module
 import time
-import traceback
+import logging
 import glob
 import os
 import sys
+
+logger = logging.getLogger('lnxlink')
 
 
 def autoload_modules(auto_exclude):
@@ -20,6 +22,7 @@ def autoload_modules(auto_exclude):
 
 
 def parse_modules(list_modules=None, auto_exclude=[]):
+    os.environ["DISPLAY"] = ':0'
     if list_modules is None:
         list_modules = autoload_modules(auto_exclude)
     modules = {}
@@ -38,15 +41,15 @@ def parse_modules(list_modules=None, auto_exclude=[]):
                 addon.service = module_name
                 modules[module_name] = addon
                 retries = -1
-                print(f"Loaded addon: {module_name}")
+                logger.info(f"Loaded addon: {module_name}")
             except ModuleNotFoundError as e:
-                print(f"Addon {module_name} is not supported, please remove it from your config")
-                print(e)
+                logger.info(f"Addon {module_name} is not supported, please remove it from your config")
+                logger.info(e)
                 retries = -1
             except Exception as e:
-                print("----------------")
-                print(f"Error with module: {module_name}")
-                traceback.print_exc()
+                logger.info("----------------")
+                logger.info(f"Error with module: {module_name}")
+                logger.info(e)
                 time.sleep(2)
                 retries -= 1
     return modules

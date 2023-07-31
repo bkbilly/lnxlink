@@ -3,10 +3,13 @@
 import threading
 import signal
 import dbus
+import logging
 from dbus.mainloop.glib import DBusGMainLoop
 import pgi
 pgi.install_as_gi()
 from gi.repository import GLib
+
+logger = logging.getLogger('lnxlink')
 
 
 class MonitorSuspend():
@@ -48,6 +51,6 @@ class GracefulKiller():
         signal.signal(signal.SIGTERM, self.exit_gracefully)
 
     def exit_gracefully(self, signum, frame):
-        print("stopped gracefully")
+        logger.info("stopped gracefully")
         self.callback(1)
         self.kill_now = True

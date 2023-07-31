@@ -3,22 +3,25 @@
 import yaml
 import os
 import subprocess
+import logging
 import shutil
 from pathlib import Path
 from .consts import service_headless, service_user, config_temp
 
+logger = logging.getLogger('lnxlink')
+
 
 def setup_config(config_path):
     if not os.path.exists(config_path):
-        print("Config file not found.")
+        logger.info("Config file not found.")
 
         try:
             Path(config_path).parent.mkdir(parents=True, exist_ok=True)
             with open(config_path, 'wb') as config:
                 config.write(config_temp.encode())
-            print(f"Created new template: {config_path}")
+            logger.info(f"Created new template: {config_path}")
         except IOError:
-            print("Permision denied")
+            logger.info("Permision denied")
             return False
         userprompt_config(config_path)
     return True
@@ -41,26 +44,26 @@ def query_true_false(question, default="false"):
         elif choice in valid:
             return valid[choice]
         else:
-            print("Please respond with 'true' or 'false' (or 't' or 'f').")
+            logger.info("Please respond with 'true' or 'false' (or 't' or 'f').")
 
 
 def userprompt_config(config_path):
     with open(config_path) as f:
         y = yaml.safe_load(f)
 
-        # Print config
-        print('This will update the MQTT credentials and topics, these are the default topics:')
-        print(" MQTT Topic prefix for for monitoring: {}/{}/{}/...".format(
+        # logger.info config
+        logger.info('This will update the MQTT credentials and topics, these are the default topics:')
+        logger.info(" MQTT Topic prefix for for monitoring: {}/{}/{}/...".format(
             y['mqtt']['prefix'],
             y['mqtt']['clientId'],
             y['mqtt']['statsPrefix']
         ))
-        print(" MQTT Topic prefix for for commands: {}/{}/commands/...".format(
+        logger.info(" MQTT Topic prefix for for commands: {}/{}/commands/...".format(
             y['mqtt']['prefix'],
             y['mqtt']['clientId']
         ))
 
-        print("\nLeave empty for default")
+        logger.info("\nLeave empty for default")
 
         # Change default values
         y['mqtt']['discovery']['enabled'] = query_true_false("Enable MQTT automatic discovery", y['mqtt']['discovery']['enabled'])
@@ -78,13 +81,13 @@ def userprompt_config(config_path):
     with open(config_path, 'w') as fw:
         fw.write(yaml.dump(y, default_flow_style=False, sort_keys=False))
 
-    print('\nAll changes have been saved.')
-    print(" MQTT Topic prefix for for monitoring: {}/{}/{}/...".format(
+    logger.info('\nAll changes have been saved.')
+    logger.info(" MQTT Topic prefix for for monitoring: {}/{}/{}/...".format(
         y['mqtt']['prefix'],
         y['mqtt']['clientId'],
         y['mqtt']['statsPrefix']
     ))
-    print(" MQTT Topic prefix for for commands: {}/{}/commands/...".format(
+    logger.info(" MQTT Topic prefix for for commands: {}/{}/commands/...".format(
         y['mqtt']['prefix'],
         y['mqtt']['clientId']
     ))
@@ -127,7 +130,7 @@ def setup_systemd(config_path):
 
     if installed_as == 0:
         # Service not found or not running
-        print("SystemD service not found or it's not running...")
+        logger.info("SystemD service not found or it's not running...")
         user_service = query_true_false("Install as a user service?", True)
         sudo, cmd_user, systemd_service, service_location = get_service_vars(user_service)
 

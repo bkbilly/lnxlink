@@ -1,7 +1,9 @@
 import importlib.metadata
 import time
 import requests
-import traceback
+import logging
+
+logger = logging.getLogger('lnxlink')
 
 
 class Addon():
@@ -45,5 +47,5 @@ class Addon():
             self.message['latest_version'] = resp['tag_name']
             self.message['release_summary'] = resp['body']
             self.message['release_url'] = resp['html_url']
-        except:
-            traceback.print_exc()
+        except Exception as e:
+            logger.error(e)

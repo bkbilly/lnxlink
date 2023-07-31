@@ -6,7 +6,7 @@ import time
 import json
 import distro
 import threading
-import traceback
+import logging
 import importlib.metadata
 import platform
 import argparse
@@ -16,12 +16,14 @@ from . import config
 from .system_monitor import MonitorSuspend, GracefulKiller
 
 version = importlib.metadata.version(__package__ or __name__)
+logger = logging.getLogger('lnxlink')
 
 
 class LNXlink():
 
     def __init__(self, config_path):
-        print(f"LNXlink {version} started: {platform.python_version()}")
+
+        logger.info(f"LNXlink {version} started: {platform.python_version()}")
         self.kill = False
 
         # Read configuration from yaml file
@@ -39,15 +41,14 @@ class LNXlink():
                 tmp_addon = addon(self)
                 self.Addons[addon.service] = tmp_addon
             except Exception as e:
-                print(f"Error with addon {addon.service}, please remove it from your config")
-                traceback.print_exc()
+                logger.info(f"Error with addon {addon.service}, please remove it from your config: {e}")
 
         # Setup MQTT
         self.client = mqtt.Client()
         self.setup_mqtt()
 
     def publish_monitor_data(self, topic, pub_data):
-        # print(topic, pub_data, type(pub_data))
+        # logger.info(topic, pub_data, type(pub_data))
         if pub_data is None:
             return
         if isinstance(pub_data, bool):
@@ -86,8 +87,7 @@ class LNXlink():
                         pub_data = addon.getControlInfo()
                         self.publish_monitor_data(topic, pub_data)
                 except Exception as e:
-                    print(f"Can't load addon: {service}")
-                    traceback.print_exc()
+                    logger.error(f"Error with addon {service}: {e}")
 
     def monitor_run_thread(self):
         '''Runs method to get sensor information every prespecified interval'''
@@ -126,7 +126,7 @@ class LNXlink():
     def on_connect(self, client, userdata, flags, rc):
         '''Callback for MQTT connect which reports the connection status
         back to MQTT server'''
-        print(f"Connected to MQTT with code {rc}")
+        logger.info(f"Connected to MQTT with code {rc}")
         client.subscribe(f"{self.pref_topic}/commands/#")
         if self.config['mqtt']['lwt']['enabled']:
             self.client.publish(
@@ -142,7 +142,7 @@ class LNXlink():
 
     def disconnect(self, *args):
         '''Reports to MQTT server that the service has stopped'''
-        print("Disconnected from MQTT.")
+        logger.info("Disconnected from MQTT.")
         if self.config['mqtt']['lwt']['enabled']:
             self.client.publish(
                 f"{self.pref_topic}/lwt",
@@ -154,7 +154,7 @@ class LNXlink():
         try:
             self.monitor.cancel()
         except Exception as e:
-            pass
+            logger.debug(e)
         self.client.disconnect()
 
     def temp_connection_callback(self, status):
@@ -162,7 +162,7 @@ class LNXlink():
         self.kill = True
         if self.config['mqtt']['lwt']['enabled']:
             if status:
-                print("Power Down detected.")
+                logger.info("Power Down detected.")
                 self.client.publish(
                     f"{self.pref_topic}/lwt",
                     payload=self.config['mqtt']['lwt']['disconnectMsg'],
@@ -170,7 +170,7 @@ class LNXlink():
                     retain=self.config['mqtt']['lwt']['retain']
                 )
             else:
-                print("Power Up detected.")
+                logger.info("Power Up detected.")
                 if self.kill:
                     self.kill = False
                     self.monitor_run_thread()
@@ -185,13 +185,12 @@ class LNXlink():
         '''MQTT message is received with a module command to excecute'''
         topic = msg.topic.replace(f"{self.pref_topic}/commands/", "")
         message = msg.payload
-        print(f"Message received {topic}: {message}")
+        logger.info(f"Message received {topic}: {message}")
         try:
             message = json.loads(message)
         except Exception as e:
             message = message.decode()
-            # print("String could not be converted to JSON")
-            # traceback.print_exc()
+            logger.debug(f"String could not be converted to JSON: {e}")
 
         select_service = topic.split('/')
         addon = self.Addons.get(select_service[0])
@@ -201,7 +200,7 @@ class LNXlink():
                     addon.startControl(select_service, message)
                     self.monitor_run()
                 except Exception as e:
-                    traceback.print_exc()
+                    logger.error(e)
 
     def setup_discovery_monitoring(self, discovery_template, addon, service):
         '''Send discovery information on Home Assistant for sensors'''
@@ -295,7 +294,7 @@ class LNXlink():
             discovery["state_topic"] = state_topic
             discovery["options"] = addon.options
         else:
-            print("Not supported:", options['type'])
+            logger.info("Not supported:", options['type'])
             return
         self.client.publish(
             f"homeassistant/{options['type']}/lnxlink/{discovery['unique_id']}/config",
@@ -324,13 +323,26 @@ class LNXlink():
                 try:
                     self.setup_discovery_monitoring(discovery_template, addon, service)
                 except Exception as e:
-                    traceback.print_exc()
+                    logger.error(e)
             if hasattr(addon, 'exposedControls'):
                 for control_name, options in addon.exposedControls().items():
                     try:
                         self.setup_discovery_control(discovery_template, addon, service, control_name, options)
                     except Exception as e:
-                        traceback.print_exc()
+                        logger.error(e)
+
+
+def setup_logger(config_path):
+    config_dir = os.path.dirname(os.path.realpath(config_path))
+    print(config_dir)
+    logging.basicConfig(level=logging.INFO)
+    start_sec = str(int(time.time()))[-4:]
+    logFormatter = logging.Formatter("%(asctime)s [" + start_sec + ":%(threadName)s.%(module)s.%(funcName)s.%(lineno)d] [%(levelname)s]  %(message)s")
+    logger = logging.getLogger('lnxlink')
+
+    fileHandler = logging.FileHandler(f"{config_dir}/lnxlink.log")
+    fileHandler.setFormatter(logFormatter)
+    logger.addHandler(fileHandler)
 
 
 def main():
@@ -345,6 +357,7 @@ def main():
     args = parser.parse_args()
 
     config_file = os.path.abspath(args.config)
+    setup_logger(config_file)
     config.setup_config(config_file)
     config.setup_systemd(config_file)
     lnxlink = LNXlink(config_file)

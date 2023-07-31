@@ -1,5 +1,8 @@
 import subprocess
 import re
+import logging
+
+logger = logging.getLogger('lnxlink')
 
 
 class Addon():
@@ -41,7 +44,7 @@ class Addon():
                     "enabled": False,
                 }
         except Exception as e:
-            print(e)
+            logger.error(e)
         return controls
 
     def startControl(self, topic, data):
