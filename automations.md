@@ -172,3 +172,50 @@ action:
         image: >-
           https://homeassistant.local/local/hikvision.jpg
 ```
+
+## Share Video from phone
+
+This is used when you share a video link like youtube. It checks if the media player is available, pauses if something is playing, opens the link on your browser and presses the "f" button to activate the full screen.
+
+```yaml
+alias: Mobile App Shared
+mode: single
+trigger:
+  - platform: event
+    event_type: mobile_app.share
+condition: []
+action:
+  - if:
+      - condition: not
+        conditions:
+          - condition: state
+            entity_id: sensor.desktop_linux_media_info
+            state: unavailable
+    then:
+      - if:
+          - condition: state
+            entity_id: media_player.desktop_linux
+            state: playing
+        then:
+          - service: media_player.media_play_pause
+            data: {}
+            target:
+              entity_id: media_player.desktop_linux
+      - service: mqtt.publish
+        data:
+          qos: 0
+          retain: false
+          topic: lnxlink/desktop-linux/commands/xdg_open
+          payload: "{{ trigger.event.data.url }}"
+      - delay:
+          hours: 0
+          minutes: 0
+          seconds: 3
+          milliseconds: 0
+      - service: text.set_value
+        data:
+          value: f
+        target:
+          entity_id: text.desktop_linux_send_keys
+```
+
