@@ -1,14 +1,18 @@
+"""Open URLs or files"""
 import subprocess
 import logging
 
-logger = logging.getLogger('lnxlink')
+logger = logging.getLogger("lnxlink")
 
 
-class Addon():
+class Addon:
+    """Addon module"""
 
     def __init__(self, lnxlink):
-        self.name = 'xdg_open'
+        """Setup addon"""
+        self.name = "xdg_open"
 
-    def startControl(self, topic, data):
+    def start_control(self, topic, data):
+        """Control system"""
         logger.info(f"/usr/bin/xdg-open {data}")
         subprocess.call(f"/usr/bin/xdg-open {data}", shell=True)

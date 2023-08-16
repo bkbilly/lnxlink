@@ -1,12 +1,17 @@
-import subprocess
+"""Gets the battery information of connected devices"""
 import jc
 
 
-class Addon():
-    def __init__(self, lnxlink):
-        self.name = 'Battery'
+class Addon:
+    """Addon module"""
 
-    def exposedControls(self):
+    def __init__(self, lnxlink):
+        """Setup addon"""
+        self.name = "Battery"
+        self.lnxlink = lnxlink
+
+    def exposed_controls(self):
+        """Exposes to home assistant"""
         return {
             "Battery": {
                 "type": "sensor",
@@ -18,25 +23,23 @@ class Addon():
             },
         }
 
+    def get_info(self):
+        """Gather information from the system"""
+        stdout, _ = self.lnxlink.subprocess("upower --dump")
+        upower_json = jc.parse("upower", stdout)
 
-    def getControlInfo(self):
-        stdout = subprocess.run(
-            'upower --dump',
-            shell=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE).stdout.decode("UTF-8")
-        upower_json = jc.parse('upower', stdout)
-
-        devices = {'status': None}
+        devices = {"status": None}
         for device in upower_json:
-            if 'detail' in device:
-                if 'percentage' in device['detail']:
-                    name = ''.join([
-                        device.get('vendor', ''),
-                        device.get('model', ''),
-                    ]).strip()
+            if "detail" in device:
+                if "percentage" in device["detail"]:
+                    name = "".join(
+                        [
+                            device.get("vendor", ""),
+                            device.get("model", ""),
+                        ]
+                    ).strip()
                     if name != "":
-                        devices[name] = device['detail']['percentage']
-                        if devices['status'] is None:
-                            devices['status'] = device['detail']['percentage']
+                        devices[name] = device["detail"]["percentage"]
+                        if devices["status"] is None:
+                            devices["status"] = device["detail"]["percentage"]
         return devices

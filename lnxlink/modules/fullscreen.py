@@ -1,12 +1,16 @@
+"""Checks if a window is in fullscreen"""
 from ewmh import EWMH
 
 
-class Addon():
+class Addon:
+    """Addon module"""
 
     def __init__(self, lnxlink):
-        self.name = 'Fullscreen'
+        """Setup addon"""
+        self.name = "Fullscreen"
 
-    def exposedControls(self):
+    def exposed_controls(self):
+        """Exposes to home assistant"""
         return {
             "Fullscreen": {
                 "type": "binary_sensor",
@@ -15,16 +19,17 @@ class Addon():
             },
         }
 
-    def getControlInfo(self):
+    def get_info(self):
+        """Gather information from the system"""
         data = {
             "is_fullscreen": "OFF",
             "window": "",
         }
         ewmh = EWMH()
-        wins = ewmh.getClientList()
-        for w in wins:
-            state = ewmh.getWmState(w, True)
-            name = ewmh.getWmName(w)
+        windows = ewmh.getClientList()
+        for win in windows:
+            state = ewmh.getWmState(win, True)
+            name = ewmh.getWmName(win)
             if "_NET_WM_STATE_FULLSCREEN" in state:
                 data["is_fullscreen"] = "ON"
                 data["window"] = name.decode()

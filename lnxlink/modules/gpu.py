@@ -1,23 +1,32 @@
+"""Gets GPU information"""
+import logging
+from shutil import which
 import pyamdgpuinfo
 import nvsmi
-from shutil import which
+
+logger = logging.getLogger("lnxlink")
 
 
-class Addon():
+class Addon:
+    """Addon module"""
 
     def __init__(self, lnxlink):
-        self.name = 'GPU'
-        self.gpu_ids = {
-            "amd": pyamdgpuinfo.detect_gpus()
-        }
+        """Setup addon"""
+        self.name = "GPU"
+        self.gpu_ids = {"amd": pyamdgpuinfo.detect_gpus()}
         if which("nvidia-smi") is not None:
-            self.gpu_ids["nvidia"] = len(list(nvsmi.get_gpus()))
+            try:
+                self.gpu_ids["nvidia"] = len(list(nvsmi.get_gpus()))
+            except Exception as err:
+                logger.error("Found nvidia-smi, but there was an error: %s", err)
+                self.gpu_ids["nvidia"] = 0
         else:
             self.gpu_ids["nvidia"] = 0
 
-    def getControlInfo(self):
+    def get_info(self):
+        """Gather information from the system"""
         gpus = {}
-        for gpu_id in range(self.gpu_ids['amd']):
+        for gpu_id in range(self.gpu_ids["amd"]):
             amd_gpu = pyamdgpuinfo.get_gpu(gpu_id)
             gpus[f"amd_{gpu_id}"] = {
                 "name": amd_gpu.name,
@@ -28,7 +37,7 @@ class Addon():
                 "Power": amd_gpu.query_power(),
                 "Voltage": amd_gpu.query_graphics_voltage(),
             }
-        for gpu_id in range(self.gpu_ids['nvidia']):
+        for gpu_id in range(self.gpu_ids["nvidia"]):
             nvidia_gpu = list(nvsmi.get_gpus())[gpu_id]
             gpus[f"nvidia_{gpu_id}"] = {
                 "name": nvidia_gpu.name,
@@ -38,9 +47,10 @@ class Addon():
             }
         return gpus
 
-    def exposedControls(self):
+    def exposed_controls(self):
+        """Exposes to home assistant"""
         discovery_info = {}
-        for gpu_id in range(self.gpu_ids['amd']):
+        for gpu_id in range(self.gpu_ids["amd"]):
             discovery_info[f"GPU AMD {gpu_id}"] = {
                 "type": "sensor",
                 "icon": "mdi:expansion-card-variant",
@@ -49,7 +59,7 @@ class Addon():
                 "value_template": f"{{{{ value_json.amd_{gpu_id}.load }}}}",
                 "enabled": True,
             }
-        for gpu_id in range(self.gpu_ids['nvidia']):
+        for gpu_id in range(self.gpu_ids["nvidia"]):
             discovery_info[f"GPU NVIDIA {gpu_id}"] = {
                 "type": "sensor",
                 "icon": "mdi:expansion-card-variant",

@@ -1,16 +1,20 @@
-import psutil
+"""Gets the network usage"""
 from datetime import datetime
+import psutil
 
 
-class Addon():
+class Addon:
+    """Addon module"""
 
     def __init__(self, lnxlink):
-        self.name = 'Network'
-        self.timeOld = datetime.now()
-        self.recvOld = psutil.net_io_counters().bytes_recv
-        self.sentOld = psutil.net_io_counters().bytes_sent
+        """Setup addon"""
+        self.name = "Network"
+        self.time_old = datetime.now()
+        self.recv_old = psutil.net_io_counters().bytes_recv
+        self.sent_old = psutil.net_io_counters().bytes_sent
 
-    def exposedControls(self):
+    def exposed_controls(self):
+        """Exposes to home assistant"""
         return {
             "Network Upload": {
                 "type": "sensor",
@@ -30,25 +34,25 @@ class Addon():
             },
         }
 
-    def getControlInfo(self):
-        """ Returns Mbps"""
-        timeNew = datetime.now()
+    def get_info(self):
+        """Returns Mbps"""
+        time_new = datetime.now()
         netio = psutil.net_io_counters()
-        recvNew = netio.bytes_recv
-        sentNew = netio.bytes_sent
+        recv_new = netio.bytes_recv
+        sent_new = netio.bytes_sent
 
-        timeDiff = (timeNew - self.timeOld).total_seconds()
-        self.timeOld = timeNew
+        time_diff = (time_new - self.time_old).total_seconds()
+        self.time_old = time_new
 
-        recvDiff = recvNew - self.recvOld
-        sentDiff = sentNew - self.sentOld
-        self.recvOld = recvNew
-        self.sentOld = sentNew
+        recv_diff = recv_new - self.recv_old
+        sent_diff = sent_new - self.sent_old
+        self.recv_old = recv_new
+        self.sent_old = sent_new
 
-        recvSpeed = round(recvDiff * 8 / timeDiff / 1024 / 1024, 2)
-        sentSpeed = round(sentDiff * 8 / timeDiff / 1024 / 1024, 2)
+        recv_speed = round(recv_diff * 8 / time_diff / 1024 / 1024, 2)
+        sent_speed = round(sent_diff * 8 / time_diff / 1024 / 1024, 2)
 
         return {
-            "upload": recvSpeed,
-            "download": sentSpeed,
+            "upload": recv_speed,
+            "download": sent_speed,
         }

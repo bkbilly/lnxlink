@@ -1,12 +1,16 @@
+"""Checks if restart is needed"""
 import os
 
 
-class Addon():
+class Addon:
+    """Addon module"""
 
     def __init__(self, lnxlink):
-        self.name = 'Required Restart'
+        """Setup addon"""
+        self.name = "Required Restart"
 
-    def exposedControls(self):
+    def exposed_controls(self):
+        """Exposes to home assistant"""
         return {
             "Required Restart": {
                 "type": "binary_sensor",
@@ -15,8 +19,8 @@ class Addon():
             },
         }
 
-    def getControlInfo(self):
-        if os.path.exists('/var/run/reboot-required'):
+    def get_info(self):
+        """Gather information from the system"""
+        if os.path.exists("/var/run/reboot-required"):
             return "ON"
-        else:
-            return "OFF"
+        return "OFF"

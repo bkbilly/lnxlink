@@ -1,15 +1,19 @@
+"""Checks for system updates"""
 import subprocess
 import time
 
 
-class Addon():
+class Addon:
+    """Addon module"""
 
     def __init__(self, lnxlink):
-        self.name = 'System Updates'
+        """Setup addon"""
+        self.name = "System Updates"
         self.last_time = 0
         self.update_interval = 7200  # Check for updates every 2 hours
 
-    def exposedControls(self):
+    def exposed_controls(self):
+        """Exposes to home assistant"""
         return {
             "System Updates": {
                 "type": "binary_sensor",
@@ -18,15 +22,16 @@ class Addon():
             },
         }
 
-    def getControlInfo(self):
+    def get_info(self):
+        """Gather information from the system"""
         packages = [
             {
-                'command': 'apt list --upgradable | wc -l',
-                'logic': '> 2',
+                "command": "apt list --upgradable | wc -l",
+                "logic": "> 2",
             },
             {
-                'command': 'yum -q updateinfo list updates | wc -l',
-                'logic': '> 2',
+                "command": "yum -q updateinfo list updates | wc -l",
+                "logic": "> 2",
             },
         ]
 
@@ -35,10 +40,12 @@ class Addon():
         if cur_time - self.last_time > self.update_interval:
             for package in packages:
                 proc = subprocess.run(
-                    package['command'],
+                    package["command"],
                     shell=True,
                     stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE)
+                    stderr=subprocess.PIPE,
+                    check=False,
+                )
                 result = proc.stdout.strip().decode()
                 update_available = eval(f"{result}{package['logic']}")
                 if update_available:

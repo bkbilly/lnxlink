@@ -1,12 +1,17 @@
+"""Turns on or off the screen"""
 import subprocess
 
 
-class Addon():
+class Addon:
+    """Addon module"""
 
     def __init__(self, lnxlink):
-        self.name = 'Screen OnOff'
+        """Setup addon"""
+        self.name = "Screen OnOff"
+        self.lnxlink = lnxlink
 
-    def exposedControls(self):
+    def exposed_controls(self):
+        """Exposes to home assistant"""
         return {
             "Screen OnOff": {
                 "type": "switch",
@@ -14,19 +19,19 @@ class Addon():
             }
         }
 
-    def getControlInfo(self):
-        stdout = subprocess.run(
+    def get_info(self):
+        """Gather information from the system"""
+        stdout, _ = self.lnxlink.subprocess(
             "xset q | grep -i 'monitor is'",
-            shell=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE).stdout.decode("UTF-8")
+        )
         results = stdout.lower()
 
-        status = results.strip().replace('monitor is', '').strip().upper()
+        status = results.strip().replace("monitor is", "").strip().upper()
         return status
 
-    def startControl(self, topic, data):
-        if data.lower() == 'off':
-            subprocess.call('xset dpms force off', shell=True)
-        elif data.lower() == 'on':
-            subprocess.call('xset dpms force on', shell=True)
+    def start_control(self, topic, data):
+        """Control system"""
+        if data.lower() == "off":
+            subprocess.call("xset dpms force off", shell=True)
+        elif data.lower() == "on":
+            subprocess.call("xset dpms force on", shell=True)

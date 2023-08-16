@@ -1,12 +1,16 @@
-import subprocess
+"""Run a terminal command"""
 
 
-class Addon():
+class Addon:
+    """Addon module"""
 
     def __init__(self, lnxlink):
-        self.name = 'bash'
+        """Setup addon"""
+        self.name = "bash"
+        self.lnxlink = lnxlink
 
-    def exposedControls(self):
+    def exposed_controls(self):
+        """Exposes to home assistant"""
         return {
             "Bash_Command": {
                 "type": "text",
@@ -14,10 +18,7 @@ class Addon():
             }
         }
 
-    def startControl(self, topic, data):
-        stdout = subprocess.run(
-            data,
-            shell=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE).stdout.decode("UTF-8")
+    def start_control(self, topic, data):
+        """Control system"""
+        stdout, _ = self.lnxlink.subprocess(data)
         return stdout

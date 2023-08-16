@@ -1,0 +1,30 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v2.3.0
+    hooks:
+      - id: check-yaml
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+  - repo: https://github.com/psf/black
+    rev: 22.10.0
+    hooks:
+      - id: black
+  - repo: https://github.com/PyCQA/flake8
+    rev: 4.0.1
+    hooks:
+      - id: flake8
+        # E402 module level import not at top of file
+        # W503 line break before binary operator
+        args: ["--max-line-length=105", "-j8", "--ignore=E402,W503"]
+  - repo: local
+    hooks:
+      - id: pylint
+        name: pylint
+        entry: pylint
+        args: [
+          "--generated-members=cv2.*,player.*,alsaaudio.Mixer",
+          "--disable=line-too-long,eval-used,wrong-import-position,too-few-public-methods,broad-exception-caught,unused-argument,logging-fstring-interpolation,too-many-branches,too-many-statements,too-many-arguments,unexpected-keyword-arg"
+        ]
+        language: system
+        types: [python]
+        require_serial: true

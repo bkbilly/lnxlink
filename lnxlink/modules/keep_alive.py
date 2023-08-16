@@ -1,14 +1,18 @@
-import subprocess
+"""Keeps display on"""
 import re
 
 
-class Addon():
+class Addon:
+    """Addon module"""
 
     def __init__(self, lnxlink):
-        self.name = 'Keep Alive'
-        self.keepalive = 'OFF'
+        """Setup addon"""
+        self.lnxlink = lnxlink
+        self.name = "Keep Alive"
+        self.keepalive = "OFF"
 
-    def exposedControls(self):
+    def exposed_controls(self):
+        """Exposes to home assistant"""
         return {
             "Keep Alive": {
                 "type": "switch",
@@ -16,70 +20,52 @@ class Addon():
             }
         }
 
-    def getControlInfo(self):
+    def get_info(self):
+        """Gather information from the system"""
         enabled_list = []
 
         # Check if Gnome Idle Time is active
-        stdout_dim = subprocess.run(
-            'gsettings get org.gnome.desktop.session idle-delay',
-            shell=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE).stdout.decode("UTF-8")
-        stdout_suspend = subprocess.run(
-            'gsettings get org.gnome.settings-daemon.plugins.power sleep-inactive-ac-type',
-            shell=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE).stdout.decode("UTF-8")
-        if stdout_dim != '':
-            disabled_dim = '0' == stdout_dim.split()[1]
-            if disabled_dim and stdout_suspend != '':
-                enabled_list.append('nothing' in stdout_suspend)
+        stdout_dim, _ = self.lnxlink.subprocess(
+            "gsettings get org.gnome.desktop.session idle-delay"
+        )
+        stdout_suspend, _ = self.lnxlink.subprocess(
+            "gsettings get org.gnome.settings-daemon.plugins.power sleep-inactive-ac-type"
+        )
+        if stdout_dim != "":
+            disabled_dim = "0" == stdout_dim.split()[1]
+            if disabled_dim and stdout_suspend != "":
+                enabled_list.append("nothing" in stdout_suspend)
 
         # Check if DPMS is active
-        stdout_xset = subprocess.run(
-            'xset q',
-            shell=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE).stdout.decode("UTF-8")
+        stdout_xset, _ = self.lnxlink.subprocess("xset q")
         xset_pattern = re.compile(r"Standby: (\d+)\s+Suspend: (\d+)\s+Off: (\d+)")
         xset_match = re.findall(xset_pattern, stdout_xset)
         for nums in xset_match:
-            enabled_list.append(all(num != '0' for num in nums))
+            enabled_list.append(all(num != "0" for num in nums))
             if enabled_list[-1]:
-                enabled_list.append('DPMS is Enabled' in stdout_xset)
+                enabled_list.append("DPMS is Enabled" in stdout_xset)
 
         return any(enabled_list)
 
-    def startControl(self, topic, data):
-        if data.lower() == 'off':
-            subprocess.run(
-                'gsettings set org.gnome.desktop.session idle-delay 600',
-                shell=True,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE)
-            subprocess.run(
+    def start_control(self, topic, data):
+        """Control system"""
+        if data.lower() == "off":
+            self.lnxlink.subprocess(
+                "gsettings set org.gnome.desktop.session idle-delay 600",
+            )
+            self.lnxlink.subprocess(
                 'gsettings set org.gnome.settings-daemon.plugins.power sleep-inactive-ac-type "suspend"',
-                shell=True,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE)
-            subprocess.run(
-                'xset +dpms',
-                shell=True,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE)
-        elif data.lower() == 'on':
-            subprocess.run(
-                'gsettings set org.gnome.desktop.session idle-delay 0',
-                shell=True,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE)
-            subprocess.run(
+            )
+            self.lnxlink.subprocess(
+                "xset +dpms",
+            )
+        elif data.lower() == "on":
+            self.lnxlink.subprocess(
+                "gsettings set org.gnome.desktop.session idle-delay 0",
+            )
+            self.lnxlink.subprocess(
                 'gsettings set org.gnome.settings-daemon.plugins.power sleep-inactive-ac-type "nothing"',
-                shell=True,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE)
-            subprocess.run(
-                'xset -dpms',
-                shell=True,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE)
+            )
+            self.lnxlink.subprocess(
+                "xset -dpms",
+            )

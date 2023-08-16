@@ -1,19 +1,23 @@
+"""Gets disk usage from all disks"""
 import psutil
 
 
-class Addon():
+class Addon:
+    """Addon module"""
 
     def __init__(self, lnxlink):
-        self.name = 'Disk Usage'
+        """Setup addon"""
+        self.name = "Disk Usage"
 
-    def exposedControls(self):
+    def exposed_controls(self):
+        """Exposes to home assistant"""
         discovery_info = {}
         for disk in psutil.disk_partitions():
-            if disk.fstype == 'squashfs':
+            if disk.fstype == "squashfs":
                 continue
-            if 'docker/overlay' in disk.mountpoint:
+            if "docker/overlay" in disk.mountpoint:
                 continue
-            device = disk.device.replace('/', '_').strip('_')
+            device = disk.device.replace("/", "_").strip("_")
             discovery_info[f"Disk {device}"] = {
                 "type": "sensor",
                 "icon": "mdi:harddisk",
@@ -24,14 +28,15 @@ class Addon():
             }
         return discovery_info
 
-    def getControlInfo(self):
+    def get_info(self):
+        """Gather information from the system"""
         disks = {}
         for disk in psutil.disk_partitions():
-            if disk.fstype == 'squashfs':
+            if disk.fstype == "squashfs":
                 continue
-            if 'docker/overlay' in disk.mountpoint:
+            if "docker/overlay" in disk.mountpoint:
                 continue
-            device = disk.device.replace('/', '_').strip('_')
+            device = disk.device.replace("/", "_").strip("_")
             disks[device] = {}
             disk_stats = psutil.disk_usage(disk.mountpoint)
             disks[device]["total"] = self._bytetomb(disk_stats.total)

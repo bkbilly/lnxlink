@@ -1,17 +1,22 @@
+"""Shutdown the system"""
 import subprocess
 
 
-class Addon():
+class Addon:
+    """Addon module"""
 
     def __init__(self, lnxlink):
-        self.name = 'Shutdown'
+        """Setup addon"""
+        self.name = "Shutdown"
         self.lnxlink = lnxlink
 
-    def startControl(self, topic, data):
+    def start_control(self, topic, data):
+        """Control system"""
         self.lnxlink.temp_connection_callback(True)
         subprocess.call(["shutdown", "1", "&"])
 
-    def exposedControls(self):
+    def exposed_controls(self):
+        """Exposes to home assistant"""
         return {
             "shutdown": {
                 "type": "button",

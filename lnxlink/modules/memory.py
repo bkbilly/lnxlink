@@ -1,12 +1,16 @@
+"""Gets memory usage information"""
 import psutil
 
 
-class Addon():
+class Addon:
+    """Addon module"""
 
     def __init__(self, lnxlink):
-        self.name = 'Memory Usage'
+        """Setup addon"""
+        self.name = "Memory Usage"
 
-    def exposedControls(self):
+    def exposed_controls(self):
+        """Exposes to home assistant"""
         return {
             "Memory Usage": {
                 "type": "sensor",
@@ -35,10 +39,11 @@ class Addon():
             },
         }
 
-    def getControlInfo(self):
+    def get_info(self):
+        """Gather information from the system"""
         vmem = psutil.virtual_memory()
         return {
             "percent": vmem.percent,
-            "used": round(vmem.used / 1024 ** 2, 0),
-            "available": round(vmem.available / 1024 ** 2, 0),
+            "used": round(vmem.used / 1024**2, 0),
+            "available": round(vmem.available / 1024**2, 0),
         }

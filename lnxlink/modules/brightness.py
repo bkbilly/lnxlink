@@ -1,16 +1,21 @@
+"""Controls the brightness of the displays"""
 import subprocess
 import re
 import logging
 
-logger = logging.getLogger('lnxlink')
+logger = logging.getLogger("lnxlink")
 
 
-class Addon():
+class Addon:
+    """Addon module"""
 
     def __init__(self, lnxlink=None):
-        self.name = 'Brightness'
+        """Setup addon"""
+        self.name = "Brightness"
+        self.lnxlink = lnxlink
 
-    def getControlInfo(self):
+    def get_info(self):
+        """Gather information from the system"""
         displays = self._get_displays()
         avg_brightness = sum(displays.values()) / max(1, len(displays.values()))
 
@@ -20,7 +25,8 @@ class Addon():
             info[display] = brightness
         return info
 
-    def exposedControls(self):
+    def exposed_controls(self):
+        """Exposes to home assistant"""
         controls = {
             "Brightness": {
                 "type": "number",
@@ -32,7 +38,7 @@ class Addon():
             }
         }
         try:
-            for display in self._get_displays().keys():
+            for display in self._get_displays():
                 json_display = display.replace("-", "_")
                 controls[f"Brightness {display}"] = {
                     "type": "number",
@@ -43,25 +49,31 @@ class Addon():
                     "value_template": "{{ value_json." + json_display + " }}",
                     "enabled": False,
                 }
-        except Exception as e:
-            logger.error(e)
+        except Exception as err:
+            logger.error(err)
         return controls
 
-    def startControl(self, topic, data):
-        if topic[1] == 'Brightness':
-            for display in self._get_displays().keys():
-                subprocess.call(f"xrandr --output {display} --brightness {data}", shell=True)
+    def start_control(self, topic, data):
+        """Control system"""
+        if topic[1] == "Brightness":
+            for display in self._get_displays():
+                subprocess.call(
+                    f"xrandr --output {display} --brightness {data}", shell=True
+                )
         else:
-            display = topic[1].replace('Brightness_', '')
-            subprocess.call(f"xrandr --output {display} --brightness {data}", shell=True)
+            display = topic[1].replace("Brightness_", "")
+            subprocess.call(
+                f"xrandr --output {display} --brightness {data}", shell=True
+            )
 
     def _get_displays(self):
-        stdout = subprocess.run(
-            'xrandr --verbose --current',
-            shell=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE).stdout.decode("UTF-8")
-        pattern = re.compile(r"(\S+) \bconnected\b.*[\s\S]*?(?=Brightness)Brightness: ([\d\.\d]+)")
+        """Get all the displays"""
+        stdout, _ = self.lnxlink.subprocess(
+            "xrandr --verbose --current",
+        )
+        pattern = re.compile(
+            r"(\S+) \bconnected\b.*[\s\S]*?(?=Brightness)Brightness: ([\d\.\d]+)"
+        )
 
         displays = {}
         for match in pattern.findall(stdout):

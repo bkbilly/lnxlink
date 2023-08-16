@@ -1,15 +1,20 @@
+"""Suspend/sleep the system"""
 import subprocess
 
 
-class Addon():
+class Addon:
+    """Addon module"""
 
     def __init__(self, lnxlink):
-        self.name = 'Suspend'
+        """Setup addon"""
+        self.name = "Suspend"
 
-    def startControl(self, topic, data):
+    def start_control(self, topic, data):
+        """Control system"""
         subprocess.call(["systemctl", "suspend"])
 
-    def exposedControls(self):
+    def exposed_controls(self):
+        """Exposes to home assistant"""
         return {
             "suspend": {
                 "type": "button",
