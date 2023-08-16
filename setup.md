@@ -80,7 +80,7 @@ This installs LNXlink as a development platform which is helpful if you want to 
 # Install system dependencies
 sudo apt install git patchelf meson libdbus-glib-1-dev libglib2.0-dev libasound2-dev python3-pip
 # Upgrade PIP to the latest version
-sudo pip3 install -U lnxlink
+sudo pip3 install -U pip
 # Fork my repository and then download it
 git clone git@github.com:<yourusername>/lnxlink.git
 # Install lnxlink as editable package
