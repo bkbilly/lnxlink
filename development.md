@@ -19,7 +19,10 @@ Create a python app which starts with the class Addon:
 
 ```python
 class Addon():
+    """Addon module"""
+
     def __init__(self, lnxlink):
+        """Setup addon"""
         self.name = "New Module"
 ```
 
@@ -33,7 +36,8 @@ The method `getControlInfo` should return the value of the sensor you want to cr
 * JSON that contains keys with any of the above types
 
 ```python
-    def getControlInfo(self):
+    def get_info(self):
+        """Gather information from the system"""
         return {
             "status": 5
         }
@@ -44,7 +48,8 @@ The method `getControlInfo` should return the value of the sensor you want to cr
 A new method under the `Addon` class has to be created which returns a dictionary with options specific for the sensor you want:
 
 ```python
-    def exposedControls(self):
+    def exposed_controls(self):
+        """Exposes to home assistant"""
         return {
             "New Module": {
                 "type": "sensor",
@@ -152,8 +157,9 @@ This is used only for the `update` sensor.
 You can write the command you want to run when the topic containing the `commands` string is published to the MQTT server. The argument topic is a list separated with a slash (`/`). The argument data is a string or a json.
 
 ```python
-def startControl(self, topic, data):
-    print(topic)
-    print(data)
+    def start_control(self, topic, data):
+        """Control system"""
+        print(topic)
+        print(data)
 ```
 
