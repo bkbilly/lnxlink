@@ -23,7 +23,7 @@ repos:
         entry: pylint
         args: [
           "--generated-members=cv2.*,player.*,alsaaudio.Mixer",
-          "--disable=line-too-long,eval-used,wrong-import-position,too-few-public-methods,broad-exception-caught,unused-argument,logging-fstring-interpolation,too-many-branches,too-many-statements,too-many-arguments,unexpected-keyword-arg"
+          "--disable=line-too-long,eval-used,wrong-import-position,too-few-public-methods,broad-exception-caught,unused-argument,too-many-arguments,unexpected-keyword-arg"
         ]
         language: system
         types: [python]

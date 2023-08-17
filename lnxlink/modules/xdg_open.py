@@ -14,5 +14,5 @@ class Addon:
 
     def start_control(self, topic, data):
         """Control system"""
-        logger.info(f"/usr/bin/xdg-open {data}")
+        logger.info("/usr/bin/xdg-open %s", data)
         subprocess.call(f"/usr/bin/xdg-open {data}", shell=True)

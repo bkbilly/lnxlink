@@ -40,6 +40,7 @@ mqtt:
   auth:
     user: 'user'
     pass: 'pass'
+    tls: false
   discovery:
     enabled: true
   lwt:

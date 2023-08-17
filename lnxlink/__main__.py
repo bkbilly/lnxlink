@@ -10,6 +10,7 @@ import argparse
 import platform
 import subprocess
 import importlib.metadata
+import ssl
 
 import yaml
 import distro
@@ -128,6 +129,10 @@ class LNXlink:
         self.client.username_pw_set(
             self.config["mqtt"]["auth"]["user"], self.config["mqtt"]["auth"]["pass"]
         )
+        if self.config["mqtt"]["auth"].get("tls", False):
+            self.client.tls_set(
+                certfile=None, keyfile=None, cert_reqs=ssl.CERT_REQUIRED
+            )
         self.client.connect(
             self.config["mqtt"]["server"], self.config["mqtt"]["port"], 60
         )
@@ -227,7 +232,7 @@ class LNXlink:
                 except Exception as err:
                     logger.error(err)
 
-    def setup_discovery_monitoring(self, discovery_template, addon, service):
+    def setup_discovery_entities_old(self, discovery_template, addon, service):
         """Send discovery information on Home Assistant for sensors"""
         subtopic = addon.name.lower().replace(" ", "/")
         state_topic = (
@@ -266,70 +271,79 @@ class LNXlink:
                 retain=self.config["mqtt"]["lwt"]["retain"],
             )
 
-    def setup_discovery_control(
+    def setup_discovery_entities(
         self, discovery_template, addon, service, control_name, options
     ):
         """Send discovery information on Home Assistant for controls"""
+        control_name_topic = control_name.lower().replace(" ", "_")
         subtopic = addon.name.lower().replace(" ", "/")
+        unique_id = f"{self.config['mqtt']['clientId']}_{control_name_topic}"
         state_topic = f"{self.pref_topic}/monitor_controls/{subtopic}"
-        command_topic = (
-            f"{self.pref_topic}/commands/{service}/{control_name.replace(' ', '_')}/"
-        )
+        command_topic = f"{self.pref_topic}/commands/{service}/{control_name_topic}/"
+
+        lookup_options = {
+            "value_template": {
+                "value_template": options.get("value_template", ""),
+                "json_attributes_topic": state_topic,
+                "json_attributes_template": "{{ value_json | tojson }}",
+            },
+            "icon": {"icon": options.get("icon", "")},
+            "unit": {"unit_of_measurement": options.get("unit", "")},
+            "title": {"title": options.get("title", "")},
+            "entity_picture": {"entity_picture": options.get("entity_picture", "")},
+            "device_class": {"device_class": options.get("device_class", "")},
+            "state_class": {"state_class": options.get("state_class", "")},
+            "entity_category": {"entity_category": options.get("entity_category", "")},
+            "enabled": {"enabled_by_default": options.get("enabled", True)},
+        }
+        lookup_entities = {
+            "sensor": {
+                "state_topic": state_topic,
+                "expire_after": self.config.get("update_interval", 5) * 2,
+            },
+            "binary_sensor": {
+                "state_topic": state_topic,
+                "expire_after": self.config.get("update_interval", 5) * 2,
+            },
+            "camera": {"state_topic": state_topic},
+            "update": {"state_topic": state_topic},
+            "button": {"command_topic": command_topic},
+            "switch": {
+                "state_topic": state_topic,
+                "command_topic": command_topic,
+                "payload_off": "OFF",
+                "payload_on": "ON",
+            },
+            "text": {
+                "state_topic": state_topic,
+                "command_topic": command_topic,
+            },
+            "number": {
+                "state_topic": state_topic,
+                "command_topic": command_topic,
+                "min": options.get("min", 1),
+                "max": options.get("max", 100),
+                "step": options.get("step", 1),
+            },
+            "select": {
+                "state_topic": state_topic,
+                "command_topic": command_topic,
+                "options": options.get("options", []),
+            },
+        }
         discovery = discovery_template.copy()
         discovery["name"] = f"{self.config['mqtt']['clientId']} {control_name}"
-        discovery[
-            "unique_id"
-        ] = f"{self.config['mqtt']['clientId']}_{control_name.lower().replace(' ', '_')}"
-        discovery["enabled_by_default"] = options.get("enabled", True)
-        if "value_template" in options:
-            discovery["value_template"] = options["value_template"]
-            if options["type"] != "camera":
-                discovery["json_attributes_topic"] = state_topic
-                discovery["json_attributes_template"] = "{{ value_json | tojson }}"
-        if "icon" in options:
-            discovery["icon"] = options.get("icon", "")
-        if "unit" in options:
-            discovery["unit_of_measurement"] = options.get("unit", "")
-        if "title" in options:
-            discovery["title"] = options.get("title", "")
-        if "entity_picture" in options:
-            discovery["entity_picture"] = options.get("entity_picture", "")
-        if "device_class" in options:
-            discovery["device_class"] = options.get("device_class", "")
-        if "state_class" in options:
-            discovery["state_class"] = options.get("state_class", "")
-        if "entity_category" in options:
-            discovery["entity_category"] = options.get("entity_category", "")
+        discovery["unique_id"] = unique_id
+        discovery.update(lookup_entities.get(options["type"], {}))
+        for option in options:
+            discovery.update(lookup_options.get(option, {}))
 
-        if options["type"] in ["sensor", "binary_sensor"]:
-            discovery["state_topic"] = state_topic
-            discovery["expire_after"] = self.config.get("update_interval", 5) * 2
-        elif options["type"] in ["camera", "update"]:
-            discovery["state_topic"] = state_topic
-        elif options["type"] == "button":
-            discovery["command_topic"] = command_topic
-            discovery["state_topic"] = f"{self.pref_topic}/lwt"
-        elif options["type"] == "switch":
-            discovery["command_topic"] = command_topic
-            discovery["state_topic"] = state_topic
-            discovery["payload_off"] = "OFF"
-            discovery["payload_on"] = "ON"
-        elif options["type"] == "text":
-            discovery["command_topic"] = command_topic
-            discovery["state_topic"] = state_topic
-        elif options["type"] == "number":
-            discovery["command_topic"] = command_topic
-            discovery["state_topic"] = state_topic
-            discovery["min"] = options.get("min", 1)
-            discovery["max"] = options.get("max", 100)
-            discovery["step"] = options.get("step", 1)
-        elif options["type"] == "select":
-            discovery["command_topic"] = command_topic
-            discovery["state_topic"] = state_topic
-            discovery["options"] = addon.options
-        else:
-            logger.info("Not supported: %s", options["type"])
+        if options["type"] not in lookup_entities:
+            logger.error("Not supported: %s", options["type"])
             return
+        if "value_template" in discovery and options["type"] == "camera":
+            del discovery["json_attributes_topic"]
+            del discovery["json_attributes_template"]
         self.client.publish(
             f"homeassistant/{options['type']}/lnxlink/{discovery['unique_id']}/config",
             payload=json.dumps(discovery),
@@ -355,13 +369,15 @@ class LNXlink:
         for service, addon in self.addons.items():
             if hasattr(addon, "get_old_info"):
                 try:
-                    self.setup_discovery_monitoring(discovery_template, addon, service)
+                    self.setup_discovery_entities_old(
+                        discovery_template, addon, service
+                    )
                 except Exception as err:
                     logger.error(err)
             if hasattr(addon, "exposed_controls"):
                 for control_name, options in addon.exposed_controls().items():
                     try:
-                        self.setup_discovery_control(
+                        self.setup_discovery_entities(
                             discovery_template, addon, service, control_name, options
                         )
                     except Exception as err:

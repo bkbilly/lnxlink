@@ -94,6 +94,9 @@ def userprompt_config(config_path):
             input(f" MQTT port [{config['mqtt']['port']}]: ") or config["mqtt"]["port"]
         )
         config["mqtt"]["port"] = int(config["mqtt"]["port"])
+        config["mqtt"]["auth"]["tls"] = query_true_false(
+            "Enable TLS", config["mqtt"]["auth"]["tls"]
+        )
         config["mqtt"]["auth"]["user"] = (
             input(f" MQTT username [{config['mqtt']['auth']['user']}]: ")
             or config["mqtt"]["auth"]["user"]
