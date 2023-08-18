@@ -57,6 +57,7 @@ class Addon:
                 "unit": "%",
                 "state_class": "measurement",
                 "value_template": f"{{{{ value_json.amd_{gpu_id}.load }}}}",
+                "attributes_template": f"{{{{ value_json.amd_{gpu_id} | tojson }}}}",
                 "enabled": True,
             }
         for gpu_id in range(self.gpu_ids["nvidia"]):
@@ -66,6 +67,7 @@ class Addon:
                 "unit": "%",
                 "state_class": "measurement",
                 "value_template": f"{{{{ value_json.nvidia_{gpu_id}.load }}}}",
+                "attributes_template": f"{{{{ value_json.nvidia_{gpu_id} | tojson }}}}",
                 "enabled": True,
             }
         return discovery_info

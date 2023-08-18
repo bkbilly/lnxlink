@@ -46,7 +46,7 @@ class Addon:
                     "min": 0.1,
                     "max": 1,
                     "step": 0.1,
-                    "value_template": "{{ value_json." + json_display + " }}",
+                    "value_template": f"{{{{ value_json.{json_display} }}}}",
                     "enabled": False,
                 }
         except Exception as err:

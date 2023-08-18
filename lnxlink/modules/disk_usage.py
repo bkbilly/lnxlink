@@ -24,6 +24,7 @@ class Addon:
                 "unit": "%",
                 "state_class": "measurement",
                 "value_template": f"{{{{ value_json.{device}.percent }}}}",
+                "attributes_template": f"{{{{ value_json.{device} | tojson }}}}",
                 "enabled": True,
             }
         return discovery_info

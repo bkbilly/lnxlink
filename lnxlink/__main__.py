@@ -289,7 +289,9 @@ class LNXlink:
             "value_template": {
                 "value_template": options.get("value_template", ""),
                 "json_attributes_topic": state_topic,
-                "json_attributes_template": "{{ value_json | tojson }}",
+                "json_attributes_template": options.get(
+                    "json_attributes_template", "{{ value_json | tojson }}"
+                ),
             },
             "icon": {"icon": options.get("icon", "")},
             "unit": {"unit_of_measurement": options.get("unit", "")},

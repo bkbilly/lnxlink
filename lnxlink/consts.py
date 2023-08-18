@@ -51,4 +51,5 @@ mqtt:
     disconnectMsg: 'OFF'
 update_interval: 5
 modules:
+custom_modules:
 """
