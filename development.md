@@ -7,7 +7,7 @@ You can create custom modules and import them to your configuration with their f
 Code examples can be found [here](https://github.com/bkbilly/lnxlink/blob/master/lnxlink/modules) and this is how to add the `mytest` module to your configuration.
 
 ```yaml
-modules:
+custom_modules:
 - /home/user/mytest.py
 ```
 
