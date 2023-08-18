@@ -25,11 +25,13 @@ def autoload_modules(auto_exclude=None):
     return modules
 
 
-def parse_modules(list_modules=None, auto_exclude=None):
+def parse_modules(list_modules=None, custom_modules=None, auto_exclude=None):
     """Import all modules and return them as a dict"""
     os.environ["DISPLAY"] = ":0"
     if list_modules is None:
         list_modules = autoload_modules(auto_exclude)
+    if custom_modules is not None:
+        list_modules.extend(custom_modules)
     modules = {}
     for module_name in list_modules:
         retries = 10

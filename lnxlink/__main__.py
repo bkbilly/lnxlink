@@ -38,9 +38,12 @@ class LNXlink:
         # Run each addon included in the modules folder
         self.addons = {}
         conf_modules = self.config.get("modules", None)
+        custom_modules = self.config.get("custom_modules", None)
         conf_exclude = self.config.get("exclude", [])
         conf_exclude = [] if conf_exclude is None else conf_exclude
-        loaded_modules = modules.parse_modules(conf_modules, conf_exclude)
+        loaded_modules = modules.parse_modules(
+            conf_modules, custom_modules, conf_exclude
+        )
         for _, addon in loaded_modules.items():
             try:
                 tmp_addon = addon(self)
@@ -141,16 +144,17 @@ class LNXlink:
     def read_config(self, config_path):
         """Reads the config file and prepares module names for import"""
         with open(config_path, "r", encoding="utf8") as file:
-            config = yaml.load(file, Loader=yaml.FullLoader)
+            conf = yaml.load(file, Loader=yaml.FullLoader)
 
-        if "prefix" in config["mqtt"] and "clientId" in config["mqtt"]:
-            self.pref_topic = f"{config['mqtt']['prefix']}/{config['mqtt']['clientId']}"
+        if "prefix" in conf["mqtt"] and "clientId" in conf["mqtt"]:
+            self.pref_topic = f"{conf['mqtt']['prefix']}/{conf['mqtt']['clientId']}"
         self.pref_topic = self.pref_topic.lower()
 
-        config["modules"] = config.get("modules")
-        if config["modules"] is not None:
-            config["modules"] = [x.lower().replace("-", "_") for x in config["modules"]]
-        return config
+        conf["modules"] = conf.get("modules")
+        conf["custom_modules"] = conf.get("custom_modules")
+        if conf["modules"] is not None:
+            conf["modules"] = [x.lower().replace("-", "_") for x in conf["modules"]]
+        return conf
 
     def on_connect(self, client, userdata, flags, rcode):
         """Callback for MQTT connect which reports the connection status
