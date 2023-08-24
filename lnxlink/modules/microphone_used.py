@@ -10,8 +10,6 @@ class Addon:
     def __init__(self, lnxlink):
         """Setup addon"""
         self.name = "Microphone used"
-        self.icon = "mdi:microphone"
-        self.sensor_type = "binary_sensor"
         self.lnxlink = lnxlink
 
         _, returncode = self.lnxlink.subprocess(
@@ -21,7 +19,7 @@ class Addon:
         if returncode == 0:
             self.use_pactl = True
 
-    def get_old_info(self):
+    def get_info(self):
         """Gather information from the system"""
         if self.use_pactl:
             stdout, _ = self.lnxlink.subprocess(
@@ -40,3 +38,12 @@ class Addon:
                 if mic_status != "closed":
                     return "ON"
         return "OFF"
+
+    def exposed_controls(self):
+        """Exposes to home assistant"""
+        return {
+            "Microphone used": {
+                "type": "binary_sensor",
+                "icon": "mdi:microphone",
+            },
+        }

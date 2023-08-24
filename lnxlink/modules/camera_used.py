@@ -9,10 +9,8 @@ class Addon:
     def __init__(self, lnxlink):
         """Setup addon"""
         self.name = "Camera used"
-        self.icon = "mdi:webcam"
-        self.sensor_type = "binary_sensor"
 
-    def get_old_info(self):
+    def get_info(self):
         """Gather information from the system"""
         videos = glob.glob("/dev/video*", recursive=True)
         cam_used = False
@@ -30,3 +28,12 @@ class Addon:
         if cam_used:
             return "ON"
         return "OFF"
+
+    def exposed_controls(self):
+        """Exposes to home assistant"""
+        return {
+            "Camera used": {
+                "type": "binary_sensor",
+                "icon": "mdi:webcam",
+            },
+        }

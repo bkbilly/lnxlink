@@ -12,13 +12,15 @@ class Addon:
     def __init__(self, lnxlink):
         """Setup addon"""
         self.name = "Media Info"
-        self.sensor_type = "sensor"
-        self.icon = "mdi:music"
         self.players = []
 
     def exposed_controls(self):
         """Exposes to home assistant"""
         return {
+            "Media Info": {
+                "type": "sensor",
+                "icon": "mdi:music",
+            },
             "playpause": {
                 "type": "button",
                 "icon": "mdi:play-pause",
@@ -65,7 +67,7 @@ class Addon:
             url = data["media_id"]
             subprocess.call(["cvlc", "--play-and-exit", url])
 
-    def get_old_info(self) -> dict:
+    def get_info(self) -> dict:
         """Gather information from the system"""
         self.__get_players()
         info = {

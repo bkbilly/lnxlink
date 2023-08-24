@@ -11,13 +11,8 @@ class Addon:
     def __init__(self, lnxlink):
         """Setup addon"""
         self.name = "Idle"
-        self.sensor_type = "sensor"
-        self.icon = "mdi:timer-sand"
-        self.unit = "s"
-        self.state_class = "total_increasing"
-        self.device_class = "duration"
 
-    def get_old_info(self):
+    def get_info(self):
         """Gather information from the system"""
         monitor = IdleMonitor.get_monitor()
         idle_ms = monitor.get_dbus_idle()
@@ -27,3 +22,15 @@ class Addon:
             logging.debug(err)
             return 0
         return idle_sec
+
+    def exposed_controls(self):
+        """Exposes to home assistant"""
+        return {
+            "Idle": {
+                "type": "sensor",
+                "icon": "mdi:timer-sand",
+                "unit": "s",
+                "state_class": "total_increasing",
+                "device_class": "duration",
+            },
+        }
