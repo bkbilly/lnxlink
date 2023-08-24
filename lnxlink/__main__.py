@@ -104,7 +104,7 @@ class LNXlink:
                 try:
                     subtopic = addon.name.lower().replace(" ", "_")
                     if hasattr(addon, "get_old_info"):
-                        topic = f"{self.pref_topic}/{self.config['mqtt']['statsPrefix']}/{subtopic}"
+                        topic = f"{self.pref_topic}/monitor_old/{subtopic}"
                         pub_data = addon.get_old_info()
                         self.publish_monitor_data(topic, pub_data)
                     if hasattr(addon, "get_info"):
@@ -240,7 +240,7 @@ class LNXlink:
         """Send discovery information on Home Assistant for sensors"""
         subtopic = addon.name.lower().replace(" ", "_")
         state_topic = (
-            f"{self.pref_topic}/{self.config['mqtt']['statsPrefix']}/{subtopic}"
+            f"{self.pref_topic}/monitor_old/{subtopic}"
         )
 
         discovery = discovery_template.copy()

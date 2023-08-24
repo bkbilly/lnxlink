@@ -34,7 +34,6 @@ CONFIGTEMP = """
 mqtt:
   prefix: 'lnxlink'
   clientId: 'DESKTOP-Linux'
-  statsPrefix: 'monitor/stats'
   server: '192.168.1.1'
   port: 1883
   auth:
