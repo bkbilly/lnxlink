@@ -102,7 +102,7 @@ class LNXlink:
         for service, addon in self.addons.items():
             if hasattr(addon, "get_old_info") or hasattr(addon, "get_info"):
                 try:
-                    subtopic = addon.name.lower().replace(" ", "/")
+                    subtopic = addon.name.lower().replace(" ", "_")
                     if hasattr(addon, "get_old_info"):
                         topic = f"{self.pref_topic}/{self.config['mqtt']['statsPrefix']}/{subtopic}"
                         pub_data = addon.get_old_info()
@@ -238,7 +238,7 @@ class LNXlink:
 
     def setup_discovery_entities_old(self, discovery_template, addon, service):
         """Send discovery information on Home Assistant for sensors"""
-        subtopic = addon.name.lower().replace(" ", "/")
+        subtopic = addon.name.lower().replace(" ", "_")
         state_topic = (
             f"{self.pref_topic}/{self.config['mqtt']['statsPrefix']}/{subtopic}"
         )
@@ -280,7 +280,7 @@ class LNXlink:
     ):
         """Send discovery information on Home Assistant for controls"""
         control_name_topic = control_name.lower().replace(" ", "_")
-        subtopic = addon.name.lower().replace(" ", "/")
+        subtopic = addon.name.lower().replace(" ", "_")
         unique_id = f"{self.config['mqtt']['clientId']}_{control_name_topic}"
         state_topic = f"{self.pref_topic}/monitor_controls/{subtopic}"
         command_topic = f"{self.pref_topic}/commands/{service}/{control_name_topic}/"
