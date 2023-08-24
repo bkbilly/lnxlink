@@ -69,10 +69,9 @@ def userprompt_config(config_path):
             "This will update the MQTT credentials and topics, these are the default topics:"
         )
         logger.info(
-            " MQTT Topic prefix for for monitoring: %s/%s/%s/...",
+            " MQTT Topic prefix for for monitoring: %s/%s/...",
             config["mqtt"]["prefix"],
             config["mqtt"]["clientId"],
-            config["mqtt"]["statsPrefix"],
         )
         logger.info(
             " MQTT Topic prefix for for commands: %s/%s/commands/...",
@@ -114,20 +113,15 @@ def userprompt_config(config_path):
             input(f" Change clientId [{config['mqtt']['clientId']}]: ")
             or config["mqtt"]["clientId"]
         )
-        config["mqtt"]["statsPrefix"] = (
-            input(f" Change statsPrefix [{config['mqtt']['statsPrefix']}]: ")
-            or config["mqtt"]["statsPrefix"]
-        )
 
     with open(config_path, "w", encoding="UTF-8") as file:
         file.write(yaml.dump(config, default_flow_style=False, sort_keys=False))
 
     logger.info("\nAll changes have been saved.")
     logger.info(
-        " MQTT Topic prefix for for monitoring: %s/%s/%s/...",
+        " MQTT Topic prefix for for monitoring: %s/%s/...",
         config["mqtt"]["prefix"],
         config["mqtt"]["clientId"],
-        config["mqtt"]["statsPrefix"],
     )
     logger.info(
         " MQTT Topic prefix for for commands: %s/%s/commands/...",
