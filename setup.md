@@ -144,6 +144,21 @@ modules:
 - brightness
 ```
 
+### Custom module
+
+You can create custom modules and import them to your configuration with their full path. The name has to be unique so that it won't conflict with another python library.
+
+Code examples can be found [here](https://github.com/bkbilly/lnxlink/blob/master/lnxlink/modules) and this is how to add the `mytest` module to your configuration.
+
+```yaml
+custom_modules:
+- /home/user/mytest.py
+```
+
+3rd party custom modules:
+
+* [https://github.com/PW999/lnxlink\_gpu\_nvidia\_settings](https://github.com/PW999/lnxlink\_gpu\_nvidia\_settings)
+
 ### Exclude Modules
 
 In case you have empty modules config which auto loads all the available modules, you can have this option that excludes modules from auto loading:

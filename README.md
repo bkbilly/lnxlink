@@ -33,10 +33,10 @@ Home Assistant companion app for linux that uses the MQTT integration to get inf
 | Disk usage       | Keep Alive     |
 | Restart required | Brightness     |
 | Update required  | Boot select    |
-| Webcam           |                |
+| Webcam           | Power Profile  |
 | Screenshot       |                |
-| Fullscreen       |                |
+| Full Screen      |                |
 
 ## Supported OS
 
-Only Linux is supported and there is no plan on supporting Windows or any other operating system because it has many system dependencies that can't be ported. A recommended companion app for windows is HASS.Agent.
+Only Linux is supported and there is no plan on supporting Windows or MAC because it has many system dependencies that can't be ported. A recommended companion app for windows is [HASS.Agent](https://lab02-research.org/hassagent/).
