@@ -17,5 +17,4 @@ It's very usefull for remote controling a linux PC, receiving notifications and 
  - **Easily expanded:** Any new module is automatically imported and custom modules can be added.
 
 # Get started
-
-The documentation with the installation instructions and all the information that you might need has been moved [here](https://bkbilly.gitbook.io/lnxlink).
+Read more about this project and the installation instructions [here](https://bkbilly.gitbook.io/lnxlink).

@@ -239,9 +239,7 @@ class LNXlink:
     def setup_discovery_entities_old(self, discovery_template, addon, service):
         """Send discovery information on Home Assistant for sensors"""
         subtopic = addon.name.lower().replace(" ", "_")
-        state_topic = (
-            f"{self.pref_topic}/monitor_old/{subtopic}"
-        )
+        state_topic = f"{self.pref_topic}/monitor_old/{subtopic}"
 
         discovery = discovery_template.copy()
         discovery["name"] = f"{self.config['mqtt']['clientId']} {addon.name}"
