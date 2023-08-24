@@ -21,7 +21,7 @@ class Addon:
         return {
             "Power Profile": {
                 "type": "select",
-                "icon": "mdi:harddisk-plus",
+                "icon": "mdi:leaf",
                 "options": self.options,
             }
         }
