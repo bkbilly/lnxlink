@@ -20,6 +20,8 @@ class Addon:
             "Media Info": {
                 "type": "sensor",
                 "icon": "mdi:music",
+                "value_template": "{{ value_json.status }}",
+                "attributes_template": "{{ value_json | tojson }}",
             },
             "playpause": {
                 "type": "button",

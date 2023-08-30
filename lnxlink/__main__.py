@@ -69,7 +69,7 @@ class LNXlink:
             check=False,
             timeout=3,
         )
-        stdout = result.stdout.decode("UTF-8")
+        stdout = result.stdout.decode("UTF-8").strip()
         returncode = result.returncode
         return stdout, returncode
 
