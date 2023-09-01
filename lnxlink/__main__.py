@@ -242,7 +242,7 @@ class LNXlink:
         state_topic = f"{self.pref_topic}/monitor_old/{subtopic}"
 
         discovery = discovery_template.copy()
-        discovery["name"] = f"{self.config['mqtt']['clientId']} {addon.name}"
+        discovery["name"] = addon.name
         discovery["unique_id"] = f"{self.config['mqtt']['clientId']}_{service}"
         discovery["state_topic"] = state_topic
         discovery["topic"] = state_topic
@@ -336,7 +336,7 @@ class LNXlink:
             },
         }
         discovery = discovery_template.copy()
-        discovery["name"] = f"{self.config['mqtt']['clientId']} {control_name}"
+        discovery["name"] = control_name
         discovery["unique_id"] = unique_id
         discovery.update(lookup_entities.get(options["type"], {}))
         for option in options:
