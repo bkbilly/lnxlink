@@ -20,8 +20,8 @@ class Addon:
                 "icon": "mdi:harddisk",
                 "unit": "%",
                 "state_class": "measurement",
-                "value_template": f"{{{{ value_json.{device}.percent }}}}",
-                "attributes_template": f"{{{{ value_json.{device} | tojson }}}}",
+                "value_template": f"{{{{ value_json.get('{device}', {{}}).get('percent') }}}}",
+                "attributes_template": f"{{{{ value_json.get('{device}', {{}}) | tojson }}}}",
                 "enabled": True,
             }
         return discovery_info
@@ -35,6 +35,7 @@ class Addon:
         for disk_name in unmounted:
             disks[disk_name] = self.disks[disk_name]
             self.disks[disk_name]['connected'] = False
+            self.disks[disk_name]['percent'] = None
         self.disks = disks
         for disk_name in mounted:
             self.lnxlink.setup_discovery()
