@@ -1,4 +1,5 @@
 """Shows an image of the desktop as a camera entity"""
+import base64
 from mss import mss
 import numpy as np
 import cv2
@@ -10,24 +11,22 @@ class Addon:
     def __init__(self, lnxlink):
         """Setup addon"""
         self.name = "Screenshot"
-        self.sensor_type = "camera"
-        self.sct = None
+        self.run = False
 
-    def get_old_info(self):
-        """Gather information from the system"""
-        if self.sct is not None:
-            sct_img = self.sct.grab(self.sct.monitors[1])
-            frame = np.array(sct_img)
+    def get_camera_frame(self):
+        """Convert screen image to Base64 text"""
+        if self.run:
+            with mss() as sct:
+                sct_img = sct.grab(sct.monitors[1])
+                frame = np.array(sct_img)
             _, buffer = cv2.imencode(".jpg", frame)
-            frame = buffer.tobytes()
+            frame = base64.b64encode(buffer)
             return frame
         return None
 
     def get_info(self):
         """Gather information from the system"""
-        if self.sct is not None:
-            return True
-        return False
+        return self.run
 
     def exposed_controls(self):
         """Exposes to home assistant"""
@@ -36,12 +35,17 @@ class Addon:
                 "type": "switch",
                 "icon": "mdi:monitor-screenshot",
                 "entity_category": "config",
+            },
+            "Screenshot feed": {
+                "type": "camera",
+                "method": self.get_camera_frame,
+                "encoding": "b64",
             }
         }
 
     def start_control(self, topic, data):
         """Control system"""
         if data.lower() == "off":
-            self.sct = None
+            self.run = False
         elif data.lower() == "on":
-            self.sct = mss()
+            self.run = True

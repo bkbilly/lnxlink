@@ -100,19 +100,26 @@ class LNXlink:
     def monitor_run(self):
         """Gets information from each Addon and sends it to MQTT"""
         for service, addon in self.addons.items():
-            if hasattr(addon, "get_old_info") or hasattr(addon, "get_info"):
+            subtopic = addon.name.lower().replace(" ", "_")
+            if hasattr(addon, "get_info"):
                 try:
-                    subtopic = addon.name.lower().replace(" ", "_")
-                    if hasattr(addon, "get_old_info"):
-                        topic = f"{self.pref_topic}/monitor_old/{subtopic}"
-                        pub_data = addon.get_old_info()
-                        self.publish_monitor_data(topic, pub_data)
-                    if hasattr(addon, "get_info"):
-                        topic = f"{self.pref_topic}/monitor_controls/{subtopic}"
-                        pub_data = addon.get_info()
-                        self.publish_monitor_data(topic, pub_data)
+                    topic = f"{self.pref_topic}/monitor_controls/{subtopic}"
+                    pub_data = addon.get_info()
+                    self.publish_monitor_data(topic, pub_data)
                 except Exception as err:
                     logger.error("Error with addon %s: %s", service, err)
+            if hasattr(addon, "exposed_controls"):
+                for exp_name, options in addon.exposed_controls().items():
+                    if options.get("method") is not None:
+                        subcontrol = exp_name.lower().replace(" ", "_")
+                        subtopic = f"{subtopic}/info_{subcontrol}"
+                        topic = f"{self.pref_topic}/monitor_controls/{subtopic}"
+                        try:
+                            pub_data = options["method"]()
+                            self.publish_monitor_data(topic, pub_data)
+                        except Exception as err:
+                            logger.error("Error with addon %s, %s: %s",
+                                         service, exp_name, err)
 
     def monitor_run_thread(self):
         """Runs method to get sensor information every prespecified interval"""
@@ -236,50 +243,30 @@ class LNXlink:
                 except Exception as err:
                     logger.error(err)
 
-    def setup_discovery_entities_old(self, discovery_template, addon, service):
-        """Send discovery information on Home Assistant for sensors"""
-        subtopic = addon.name.lower().replace(" ", "_")
-        state_topic = f"{self.pref_topic}/monitor_old/{subtopic}"
-
-        discovery = discovery_template.copy()
-        discovery["name"] = addon.name
-        discovery["unique_id"] = f"{self.config['mqtt']['clientId']}_{service}"
-        discovery["state_topic"] = state_topic
-        discovery["topic"] = state_topic
-        if addon.get_old_info.__annotations__.get("return") == dict:
-            discovery["value_template"] = "{{ value_json.status }}"
-            discovery["json_attributes_topic"] = state_topic
-            discovery["json_attributes_template"] = "{{ value_json | tojson }}"
-        if hasattr(addon, "icon"):
-            discovery["icon"] = addon.icon
-        if hasattr(addon, "unit"):
-            discovery["unit_of_measurement"] = addon.unit
-        if hasattr(addon, "title"):
-            discovery["title"] = addon.title
-        if hasattr(addon, "entity_picture"):
-            discovery["entity_picture"] = addon.entity_picture
-        if hasattr(addon, "device_class"):
-            discovery["device_class"] = addon.device_class
-        if hasattr(addon, "state_class"):
-            discovery["state_class"] = addon.state_class
-
-        sensor_type = getattr(addon, "sensor_type", None)
-        if sensor_type in ["sensor", "binary_sensor"]:
-            discovery["expire_after"] = self.config.get("update_interval", 5) * 5
-        if sensor_type is not None:
-            self.client.publish(
-                f"homeassistant/{sensor_type}/lnxlink/{discovery['unique_id']}/config",
-                payload=json.dumps(discovery),
-                retain=self.config["mqtt"]["lwt"]["retain"],
-            )
-
     def setup_discovery_entities(
-        self, discovery_template, addon, service, control_name, options
+        self, addon, service, exp_name, options
     ):
         """Send discovery information on Home Assistant for controls"""
-        control_name_topic = control_name.lower().replace(" ", "_")
-        subtopic = addon.name.lower().replace(" ", "_")
+        discovery_template = {
+            "availability": {
+                "topic": f"{self.pref_topic}/lwt",
+                "payload_available": "ON",
+                "payload_not_available": "OFF",
+            },
+            "device": {
+                "identifiers": [self.config["mqtt"]["clientId"]],
+                "name": self.config["mqtt"]["clientId"],
+                "model": f"{distro.name()} {distro.version()}",
+                "manufacturer": "LNXlink",
+                "sw_version": version,
+            },
+        }
+        control_name_topic = exp_name.lower().replace(" ", "_")
         unique_id = f"{self.config['mqtt']['clientId']}_{control_name_topic}"
+        subtopic = addon.name.lower().replace(" ", "_")
+        if "method" in options:
+            subcontrol = exp_name.lower().replace(" ", "_")
+            subtopic = f"{subtopic}/info_{subcontrol}"
         state_topic = f"{self.pref_topic}/monitor_controls/{subtopic}"
         command_topic = f"{self.pref_topic}/commands/{service}/{control_name_topic}/"
 
@@ -309,7 +296,10 @@ class LNXlink:
                 "state_topic": state_topic,
                 "expire_after": self.config.get("update_interval", 5) * 2,
             },
-            "camera": {"state_topic": state_topic},
+            "camera": {
+                "topic": state_topic,
+                "image_encoding": options.get("encoding"),
+            },
             "update": {"state_topic": state_topic},
             "button": {"command_topic": command_topic},
             "switch": {
@@ -336,7 +326,7 @@ class LNXlink:
             },
         }
         discovery = discovery_template.copy()
-        discovery["name"] = control_name
+        discovery["name"] = exp_name
         discovery["unique_id"] = unique_id
         discovery.update(lookup_entities.get(options["type"], {}))
         for option in options:
@@ -356,33 +346,12 @@ class LNXlink:
 
     def setup_discovery(self):
         """First time setup of discovery for Home Assistant"""
-        discovery_template = {
-            "availability": {
-                "topic": f"{self.pref_topic}/lwt",
-                "payload_available": "ON",
-                "payload_not_available": "OFF",
-            },
-            "device": {
-                "identifiers": [self.config["mqtt"]["clientId"]],
-                "name": self.config["mqtt"]["clientId"],
-                "model": f"{distro.name()} {distro.version()}",
-                "manufacturer": "LNXlink",
-                "sw_version": version,
-            },
-        }
         for service, addon in self.addons.items():
-            if hasattr(addon, "get_old_info"):
-                try:
-                    self.setup_discovery_entities_old(
-                        discovery_template, addon, service
-                    )
-                except Exception as err:
-                    logger.error(err)
             if hasattr(addon, "exposed_controls"):
-                for control_name, options in addon.exposed_controls().items():
+                for exp_name, options in addon.exposed_controls().items():
                     try:
                         self.setup_discovery_entities(
-                            discovery_template, addon, service, control_name, options
+                            addon, service, exp_name, options
                         )
                     except Exception as err:
                         logger.error(err)

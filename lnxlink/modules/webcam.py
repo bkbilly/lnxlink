@@ -1,5 +1,6 @@
 """Shows an image from the webcamera"""
 import cv2
+import base64
 
 
 class Addon:
@@ -8,15 +9,14 @@ class Addon:
     def __init__(self, lnxlink):
         """Setup addon"""
         self.name = "Webcam"
-        self.sensor_type = "camera"
         self.vid = None
 
-    def get_old_info(self):
-        """Gather information from the system"""
+    def get_camera_frame(self):
+        """Convert camera feed to Base64 text"""
         if self.vid is not None:
             _, frame = self.vid.read()
             _, buffer = cv2.imencode(".jpg", frame)
-            frame = buffer.tobytes()
+            frame = base64.b64encode(buffer)
             return frame
         return None
 
@@ -33,6 +33,11 @@ class Addon:
                 "type": "switch",
                 "icon": "mdi:webcam",
                 "entity_category": "config",
+            },
+            "Webcam feed": {
+                "type": "camera",
+                "method": self.get_camera_frame,
+                "encoding": "b64",
             }
         }
 
