@@ -243,7 +243,6 @@ class LNXlink:
                             f"{self.pref_topic}/command_result/{topic.strip('/')}"
                         )
                         self.client.publish(result_topic, payload=result, retain=False)
-                    self.monitor_run()
                 except Exception as err:
                     logger.error(err)
 

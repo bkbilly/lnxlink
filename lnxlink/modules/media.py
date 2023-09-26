@@ -52,7 +52,7 @@ class Addon:
         """Control system"""
         if topic[1] == "volume_set":
             mixer = alsaaudio.Mixer()
-            if data < 1:
+            if data <= 1:
                 data *= 100
             data = min(data, 100)
             mixer.setvolume(int(data))
