@@ -10,7 +10,7 @@ class Addon:
         """Setup addon"""
         self.name = "System Updates"
         self.last_time = 0
-        self.update_interval = 7200  # Check for updates every 2 hours
+        self.update_interval = 360  # Check for updates every 6 minutes
 
     def exposed_controls(self):
         """Exposes to home assistant"""
@@ -38,6 +38,7 @@ class Addon:
         update_available = False
         cur_time = time.time()
         if cur_time - self.last_time > self.update_interval:
+            self.last_time = cur_time
             for package in packages:
                 proc = subprocess.run(
                     package["command"],

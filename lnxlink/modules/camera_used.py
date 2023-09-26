@@ -1,6 +1,5 @@
 """Checks if the webcam is used"""
 import subprocess
-import glob
 
 
 class Addon:
@@ -12,22 +11,18 @@ class Addon:
 
     def get_info(self):
         """Gather information from the system"""
-        videos = glob.glob("/dev/video*", recursive=True)
+        proc = subprocess.run(
+            "fuser /dev/video*",
+            shell=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=False,
+        )
         cam_used = False
-        for video in videos:
-            proc = subprocess.run(
-                f"fuser {video}",
-                shell=True,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                check=False,
-            )
-            if proc.returncode == 0:
-                cam_used = True
+        if proc.returncode == 0:
+            cam_used = True
 
-        if cam_used:
-            return "ON"
-        return "OFF"
+        return cam_used
 
     def exposed_controls(self):
         """Exposes to home assistant"""

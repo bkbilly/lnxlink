@@ -67,7 +67,7 @@ class Addon:
                 self.players[0]["player"].Next()
         elif topic[1] == "play_media":
             url = data["media_id"]
-            subprocess.call(["cvlc", "--play-and-exit", url])
+            subprocess.Popen(["cvlc", "--play-and-exit", url])
 
     def get_info(self) -> dict:
         """Gather information from the system"""

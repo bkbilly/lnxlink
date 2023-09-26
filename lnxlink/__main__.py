@@ -104,7 +104,10 @@ class LNXlink:
             if hasattr(addon, "get_info"):
                 try:
                     topic = f"{self.pref_topic}/monitor_controls/{subtopic}"
+                    start_time = time.time()
                     pub_data = addon.get_info()
+                    diff_time = round(time.time() - start_time, 3)
+                    logger.debug("%s sec to run %s", diff_time, service)
                     self.publish_monitor_data(topic, pub_data)
                 except Exception as err:
                     logger.error("Error with addon %s: %s", service, err)
