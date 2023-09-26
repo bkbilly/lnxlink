@@ -13,7 +13,7 @@ Prepare your system:
 {% code overflow="wrap" lineNumbers="true" %}
 ```bash
 # For debian based distros:
-sudo apt install patchelf meson libdbus-glib-1-dev libglib2.0-dev libasound2-dev python3-pip xdotool xprintidle xdg-utils
+sudo apt install patchelf meson libdbus-glib-1-dev libglib2.0-dev libasound2-dev python3-pip xdotool xprintidle xdg-utils python3-pyaudio
 # For Red Hat based distros:
 sudo dnf install python39-pip.noarch gcc cmake dbus-devel glib2-devel python39-devel alsa-lib-devel
 # Upgrade PIP to the latest version
@@ -46,7 +46,7 @@ The headless installation is used for linux environments that don't use a Graphi
 
 {% code overflow="wrap" lineNumbers="true" fullWidth="false" %}
 ```bash
-sudo apt install patchelf meson libdbus-glib-1-dev libglib2.0-dev libasound2-dev python3-pip
+sudo apt install patchelf meson libdbus-glib-1-dev libglib2.0-dev libasound2-dev python3-pip python3-pyaudio
 # Upgrade PIP to the latest version
 sudo pip3 install -U pip
 ```
@@ -78,7 +78,7 @@ This installs LNXlink as a development platform which is helpful if you want to 
 {% code overflow="wrap" lineNumbers="true" %}
 ```bash
 # Install system dependencies
-sudo apt install git patchelf meson libdbus-glib-1-dev libglib2.0-dev libasound2-dev python3-pip
+sudo apt install git patchelf meson libdbus-glib-1-dev libglib2.0-dev libasound2-dev python3-pip python3-pyaudio
 # Upgrade PIP to the latest version
 sudo pip3 install -U pip
 # Fork my repository and then download it

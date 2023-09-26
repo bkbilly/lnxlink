@@ -19,23 +19,23 @@ Home Assistant companion app for linux that uses the MQTT integration to get inf
 
 ## Supported Modules
 
-| Sensors          | Controls       |
-| ---------------- | -------------- |
-| CPU              | Shutdown       |
-| RAM              | Restart        |
-| GPU              | Suspend        |
-| Network Speed    | Notify         |
-| Media info       | Media Controls |
-| Microphone used  | Send Keys      |
-| Camera used      | Screen On/Off  |
-| Idle time        | Open URL/File  |
-| Battery          | Bash commands  |
-| Disk usage       | Keep Alive     |
-| Restart required | Brightness     |
-| Update required  | Boot select    |
-| Webcam           | Power Profile  |
-| Screenshot       |                |
-| Full Screen      |                |
+| Sensors          | Controls           |
+| ---------------- | ------------------ |
+| CPU              | Shutdown           |
+| RAM              | Restart            |
+| GPU              | Suspend            |
+| Network Speed    | Notify             |
+| Media info       | Media Controls     |
+| Microphone used  | Send Keys          |
+| Camera used      | Screen On/Off      |
+| Idle time        | Open URL/File      |
+| Battery          | Bash commands      |
+| Disk usage       | Keep Alive         |
+| Restart required | Brightness         |
+| Update required  | Boot select        |
+| Webcam           | Power Profile      |
+| Screenshot       | Speech Recognition |
+| Full Screen      |                    |
 
 ## Supported OS
 

@@ -141,6 +141,14 @@ This is used only for the `update` sensor.
   "title": "LNXlink"
 ```
 
+#### method
+
+This is used when we want to create a new entity with different attributes and options. This will replace the get\_info method with the one you write on this key.
+
+```python
+  "method": self.my_method
+```
+
 ### Control System
 
 You can write the command you want to run when the topic containing the `commands` string is published to the MQTT server. The argument topic is a list separated with a slash (`/`). The argument data is a string or a json.

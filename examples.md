@@ -1,5 +1,72 @@
 # 🤯 Examples
 
+## Voice Assistant
+
+The Speech Recognition module listens to the user's input and sends the response as an attribute to the binary sensor of speech recognition entity.
+
+For the automation to work you will need to setup the Media Player.
+
+<details>
+
+<summary>LNXlink Speech Recognition</summary>
+
+Set the volume to the desired level and then if a successful speech is recognized it is sent to the conversation agent of Home Assistant to run. The result is then sent as an audio to the host machine.
+
+```yaml
+alias: LNXlink Speech Recognition
+mode: single
+trigger:
+  - platform: state
+    entity_id:
+      - binary_sensor.desktop_linux_speech_recognition
+    from: "off"
+    to: "on"
+condition: []
+action:
+  - variables:
+      volume: "{{ state_attr('media_player.desktop_linux', 'volume_level') }}"
+  - service: media_player.volume_set
+    data:
+      volume_level: 0.15
+    target:
+      entity_id: media_player.desktop_linux
+  - wait_for_trigger:
+      - platform: state
+        entity_id:
+          - binary_sensor.desktop_linux_speech_recognition
+        to: "off"
+  - if:
+      - condition: not
+        conditions:
+          - condition: state
+            entity_id: binary_sensor.desktop_linux_speech_recognition
+            attribute: speech
+            state: "\"\""
+    then:
+      - service: conversation.process
+        data:
+          agent_id: homeassistant
+          text: >-
+            {{ state_attr('binary_sensor.desktop_linux_speech_recognition',
+            'speech') }}
+        response_variable: agent
+  - service: media_player.volume_set
+    data:
+      volume_level: "{{ volume }}"
+    target:
+      entity_id: media_player.desktop_linux
+  - service: tts.speak
+    data:
+      cache: true
+      media_player_entity_id: media_player.desktop_linux
+      message: "{{ agent.response.speech.plain.speech }}"
+    target:
+      entity_id: tts.piper
+
+```
+
+</details>
+
 ## Notification
 
 Sends a notification with an image as a preview
@@ -94,6 +161,7 @@ You can create a virtual keyboard on your frontend:
 <figure><img src=".gitbook/assets/Screenshot from 2023-06-22 01-17-12.png" alt=""><figcaption></figcaption></figure>
 
 </div>
+
 <details>
 
 <summary>Lovelace Card Config</summary>
