@@ -35,7 +35,8 @@ dependencies = [
     "pyamdgpuinfo>=2.1.4",
     "nvsmi>=0.4.2",
     "distro>=1.7.0",
-    "ewmh>=0.1.6"
+    "ewmh>=0.1.6",
+    "SpeechRecognition>=3.10.0"
 ]
 
 

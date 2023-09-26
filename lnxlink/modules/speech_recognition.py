@@ -1,7 +1,7 @@
 """Checks if the microphone is used"""
-import speech_recognition as sr
 from threading import Thread
 import logging
+import speech_recognition as sr
 
 logger = logging.getLogger("lnxlink")
 
@@ -42,10 +42,10 @@ class Addon:
     def start_recognition(self):
         """Start a voice recognition"""
         try:
-            r = sr.Recognizer()
+            recognizer = sr.Recognizer()
             with sr.Microphone() as source:
-                audio = r.listen(source)
-                self.speech = r.recognize_google(audio)
+                audio = recognizer.listen(source)
+                self.speech = recognizer.recognize_google(audio)
         except Exception as err:
             logger.error("Error with speech recognition: %s", err)
             self.speech = ""
@@ -55,5 +55,5 @@ class Addon:
         """Control system"""
         if not self.run:
             self.run = True
-            self.bg = Thread(target=self.start_recognition)
-            self.bg.start()
+            background = Thread(target=self.start_recognition)
+            background.start()

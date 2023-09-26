@@ -1,6 +1,6 @@
 """Shows an image from the webcamera"""
-import cv2
 import base64
+import cv2
 
 
 class Addon:
@@ -38,7 +38,7 @@ class Addon:
                 "type": "camera",
                 "method": self.get_camera_frame,
                 "encoding": "b64",
-            }
+            },
         }
 
     def start_control(self, topic, data):

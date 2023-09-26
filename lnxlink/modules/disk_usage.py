@@ -34,8 +34,8 @@ class Addon:
         # print(mounted, unmounted)
         for disk_name in unmounted:
             disks[disk_name] = self.disks[disk_name]
-            self.disks[disk_name]['connected'] = False
-            self.disks[disk_name]['percent'] = None
+            self.disks[disk_name]["connected"] = False
+            self.disks[disk_name]["percent"] = None
         self.disks = disks
         for disk_name in mounted:
             self.lnxlink.setup_discovery()

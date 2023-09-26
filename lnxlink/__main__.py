@@ -118,8 +118,9 @@ class LNXlink:
                             pub_data = options["method"]()
                             self.publish_monitor_data(topic, pub_data)
                         except Exception as err:
-                            logger.error("Error with addon %s, %s: %s",
-                                         service, exp_name, err)
+                            logger.error(
+                                "Error with addon %s, %s: %s", service, exp_name, err
+                            )
 
     def monitor_run_thread(self):
         """Runs method to get sensor information every prespecified interval"""
@@ -243,9 +244,7 @@ class LNXlink:
                 except Exception as err:
                     logger.error(err)
 
-    def setup_discovery_entities(
-        self, addon, service, exp_name, options
-    ):
+    def setup_discovery_entities(self, addon, service, exp_name, options):
         """Send discovery information on Home Assistant for controls"""
         discovery_template = {
             "availability": {
@@ -262,7 +261,6 @@ class LNXlink:
             },
         }
         control_name_topic = exp_name.lower().replace(" ", "_")
-        unique_id = f"{self.config['mqtt']['clientId']}_{control_name_topic}"
         subtopic = addon.name.lower().replace(" ", "_")
         if "method" in options:
             subcontrol = exp_name.lower().replace(" ", "_")
@@ -327,7 +325,9 @@ class LNXlink:
         }
         discovery = discovery_template.copy()
         discovery["name"] = exp_name
-        discovery["unique_id"] = unique_id
+        discovery[
+            "unique_id"
+        ] = f"{self.config['mqtt']['clientId']}_{control_name_topic}"
         discovery.update(lookup_entities.get(options["type"], {}))
         for option in options:
             discovery.update(lookup_options.get(option, {}))
@@ -350,9 +350,7 @@ class LNXlink:
             if hasattr(addon, "exposed_controls"):
                 for exp_name, options in addon.exposed_controls().items():
                     try:
-                        self.setup_discovery_entities(
-                            addon, service, exp_name, options
-                        )
+                        self.setup_discovery_entities(addon, service, exp_name, options)
                     except Exception as err:
                         logger.error(err)
 
