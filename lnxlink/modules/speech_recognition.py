@@ -44,7 +44,7 @@ class Addon:
         try:
             recognizer = sr.Recognizer()
             with sr.Microphone() as source:
-                audio = recognizer.listen(source, timeout=2, phrase_time_limit=4)
+                audio = recognizer.listen(source, timeout=2, phrase_time_limit=3)
                 self.speech = recognizer.recognize_google(audio)
         except Exception as err:
             logger.error("Error with speech recognition: %s", err)
