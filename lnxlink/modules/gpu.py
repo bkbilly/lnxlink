@@ -56,7 +56,7 @@ class Addon:
         """For older GPUs, use nvidia-settings to get gpu usage"""
         if math.isnan(gpu_util):
             if which("nvidia-settings") is not None:
-                settings_out = self.lnxlink.subprocess(
+                settings_out, _ = self.lnxlink.subprocess(
                     f"nvidia-settings -q '[gpu:{gpu_id}]/GPUUtilization'"
                 )
                 match = re.findall(r"graphics=(\d+)", settings_out)
