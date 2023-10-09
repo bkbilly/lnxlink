@@ -1,4 +1,6 @@
 """Gets GPU information"""
+import re
+import math
 import logging
 from shutil import which
 import pyamdgpuinfo
@@ -13,6 +15,7 @@ class Addon:
     def __init__(self, lnxlink):
         """Setup addon"""
         self.name = "GPU"
+        self.lnxlink = lnxlink
         self.gpu_ids = {"amd": pyamdgpuinfo.detect_gpus()}
         if which("nvidia-smi") is not None:
             try:
@@ -39,13 +42,31 @@ class Addon:
             }
         for gpu_id in range(self.gpu_ids["nvidia"]):
             nvidia_gpu = list(nvsmi.get_gpus())[gpu_id]
+            gpu_util = nvidia_gpu.gpu_util
+            gpu_util = self._older_gpu_load(gpu_id, gpu_util)
             gpus[f"nvidia_{gpu_id}"] = {
                 "name": nvidia_gpu.name,
                 "Memory usage": round(nvidia_gpu.mem_util, 1),
-                "load": min(100, round(nvidia_gpu.gpu_util, 1)),
+                "load": min(100, round(gpu_util, 1)),
                 "Temperature": nvidia_gpu.temperature,
             }
         return gpus
+
+    def _older_gpu_load(self, gpu_id, gpu_util):
+        """For older GPUs, use nvidia-settings to get gpu usage"""
+        if math.isnan(gpu_util):
+            if which("nvidia-settings") is not None:
+                settings_out = self.lnxlink.subprocess(
+                    f"nvidia-settings -q '[gpu:{gpu_id}]/GPUUtilization'"
+                )
+                match = re.findall(r"graphics=(\d+)", settings_out)
+                if match:
+                    gpu_util = int(match[0])
+            else:
+                logger.error(
+                    "Older NVIDIA GPUs need nvidia-settings which is not installed."
+                )
+        return gpu_util
 
     def exposed_controls(self):
         """Exposes to home assistant"""
