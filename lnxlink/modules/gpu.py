@@ -32,7 +32,7 @@ class Addon:
         for gpu_id in range(self.gpu_ids["amd"]):
             amd_gpu = pyamdgpuinfo.get_gpu(gpu_id)
             gpus[f"amd_{gpu_id}"] = {
-                "name": amd_gpu.name,
+                "Name": amd_gpu.name,
                 "VRAM usage": amd_gpu.query_vram_usage(),
                 "GTT usage": amd_gpu.query_gtt_usage(),
                 "Temperature": amd_gpu.query_temperature(),
@@ -45,7 +45,7 @@ class Addon:
             gpu_util = nvidia_gpu.gpu_util
             gpu_util = self._older_gpu_load(gpu_id, gpu_util)
             gpus[f"nvidia_{gpu_id}"] = {
-                "name": nvidia_gpu.name,
+                "Name": nvidia_gpu.name,
                 "Memory usage": round(nvidia_gpu.mem_util, 1),
                 "load": gpu_util,
                 "Temperature": nvidia_gpu.temperature,
