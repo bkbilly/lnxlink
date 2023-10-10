@@ -47,7 +47,7 @@ class Addon:
             gpus[f"nvidia_{gpu_id}"] = {
                 "name": nvidia_gpu.name,
                 "Memory usage": round(nvidia_gpu.mem_util, 1),
-                "load": min(100, round(gpu_util, 1)),
+                "load": gpu_util,
                 "Temperature": nvidia_gpu.temperature,
             }
         return gpus
@@ -55,6 +55,7 @@ class Addon:
     def _older_gpu_load(self, gpu_id, gpu_util):
         """For older GPUs, use nvidia-settings to get gpu usage"""
         if math.isnan(gpu_util):
+            gpu_util = None
             if which("nvidia-settings") is not None:
                 settings_out, _ = self.lnxlink.subprocess(
                     f"nvidia-settings -q '[gpu:{gpu_id}]/GPUUtilization'"
