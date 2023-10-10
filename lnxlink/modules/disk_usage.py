@@ -31,7 +31,6 @@ class Addon:
         disks = self._get_disks()
         mounted = set(disks) - set(self.disks)
         unmounted = set(self.disks) - set(disks)
-        # print(mounted, unmounted)
         for disk_name in unmounted:
             disks[disk_name] = self.disks[disk_name]
             self.disks[disk_name]["connected"] = False
@@ -52,6 +51,8 @@ class Addon:
                 continue
             if "docker/overlay" in disk.mountpoint:
                 continue
+            if "/snap/" in disk.mountpoint:
+                continue
             device = disk.device.replace("/", "_").strip("_")
             disks[device] = {}
             disk_stats = psutil.disk_usage(disk.mountpoint)
@@ -60,4 +61,5 @@ class Addon:
             disks[device]["free"] = self._bytetomb(disk_stats.free)
             disks[device]["percent"] = disk_stats.percent
             disks[device]["connected"] = True
+            disks[device]["mountpoint"] = disk.mountpoint
         return disks
