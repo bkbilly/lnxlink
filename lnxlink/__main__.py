@@ -289,11 +289,11 @@ class LNXlink:
         lookup_entities = {
             "sensor": {
                 "state_topic": state_topic,
-                "expire_after": self.config.get("update_interval", 5) * 2,
+                # "expire_after": self.config.get("update_interval", 5) * 2,
             },
             "binary_sensor": {
                 "state_topic": state_topic,
-                "expire_after": self.config.get("update_interval", 5) * 2,
+                # "expire_after": self.config.get("update_interval", 5) * 2,
             },
             "camera": {
                 "topic": state_topic,
