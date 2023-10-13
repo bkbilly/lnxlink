@@ -1,5 +1,6 @@
 """Selects the Power Profile"""
 import re
+from .scripts.helpers import syscommand
 
 
 class Addon:
@@ -13,7 +14,7 @@ class Addon:
 
     def get_info(self):
         """Gather information from the system"""
-        stdout, _ = self.lnxlink.subprocess("powerprofilesctl get")
+        stdout, _, _ = syscommand("powerprofilesctl get")
         return stdout
 
     def exposed_controls(self):
@@ -28,13 +29,13 @@ class Addon:
 
     def start_control(self, topic, data):
         """Control system"""
-        self.lnxlink.subprocess(f"powerprofilesctl set {data}")
+        syscommand(f"powerprofilesctl set {data}")
 
     def _get_power_profiles(self):
         """Get the power profiles in the correct order"""
         profiles_pattern = re.compile(r"([\w-]+):\n")
 
-        stdout, _ = self.lnxlink.subprocess("powerprofilesctl list")
+        stdout, _, _ = syscommand("powerprofilesctl list")
         profiles = re.findall(profiles_pattern, stdout)
 
         return profiles

@@ -3,8 +3,7 @@ import re
 import math
 import logging
 from shutil import which
-import pyamdgpuinfo
-import nvsmi
+from .scripts.helpers import import_install_package, syscommand
 
 logger = logging.getLogger("lnxlink")
 
@@ -16,21 +15,28 @@ class Addon:
         """Setup addon"""
         self.name = "GPU"
         self.lnxlink = lnxlink
-        self.gpu_ids = {"amd": pyamdgpuinfo.detect_gpus()}
+        self._requirements()
+        self.gpu_ids = {"amd": self.lib["amd"].detect_gpus()}
         if which("nvidia-smi") is not None:
             try:
-                self.gpu_ids["nvidia"] = len(list(nvsmi.get_gpus()))
+                self.gpu_ids["nvidia"] = len(list(self.lib["nvidia"].get_gpus()))
             except Exception as err:
                 logger.error("Found nvidia-smi, but there was an error: %s", err)
                 self.gpu_ids["nvidia"] = 0
         else:
             self.gpu_ids["nvidia"] = 0
 
+    def _requirements(self):
+        self.lib = {
+            "amd": import_install_package("pyamdgpuinfo", ">=2.1.4"),
+            "nvidia": import_install_package("nvsmi", ">=0.4.2"),
+        }
+
     def get_info(self):
         """Gather information from the system"""
         gpus = {}
         for gpu_id in range(self.gpu_ids["amd"]):
-            amd_gpu = pyamdgpuinfo.get_gpu(gpu_id)
+            amd_gpu = self.lib["amd"].get_gpu(gpu_id)
             gpus[f"amd_{gpu_id}"] = {
                 "Name": amd_gpu.name,
                 "VRAM usage": amd_gpu.query_vram_usage(),
@@ -41,7 +47,7 @@ class Addon:
                 "Voltage": amd_gpu.query_graphics_voltage(),
             }
         for gpu_id in range(self.gpu_ids["nvidia"]):
-            nvidia_gpu = list(nvsmi.get_gpus())[gpu_id]
+            nvidia_gpu = list(self.lib["nvidia"].get_gpus())[gpu_id]
             gpu_util = nvidia_gpu.gpu_util
             gpu_util = self._older_gpu_load(gpu_id, gpu_util)
             gpus[f"nvidia_{gpu_id}"] = {
@@ -57,7 +63,7 @@ class Addon:
         if math.isnan(gpu_util):
             gpu_util = None
             if which("nvidia-settings") is not None:
-                settings_out, _ = self.lnxlink.subprocess(
+                settings_out, _, _ = syscommand(
                     f"nvidia-settings -q '[gpu:{gpu_id}]/GPUUtilization'"
                 )
                 match = re.findall(r"graphics=(\d+)", settings_out)

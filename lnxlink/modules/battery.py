@@ -1,5 +1,6 @@
 """Gets the battery information of connected devices"""
 import jc
+from .scripts.helpers import syscommand
 
 
 class Addon:
@@ -25,7 +26,7 @@ class Addon:
 
     def get_info(self):
         """Gather information from the system"""
-        stdout, _ = self.lnxlink.subprocess("upower --dump")
+        stdout, _, _ = syscommand("upower --dump")
         upower_json = jc.parse("upower", stdout)
 
         devices = {"status": None}

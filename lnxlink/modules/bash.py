@@ -1,4 +1,5 @@
 """Run a terminal command"""
+from .scripts.helpers import syscommand
 
 
 class Addon:
@@ -20,5 +21,5 @@ class Addon:
 
     def start_control(self, topic, data):
         """Control system"""
-        stdout, _ = self.lnxlink.subprocess(data)
+        stdout, _, _ = syscommand(data)
         return stdout

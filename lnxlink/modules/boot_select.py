@@ -1,5 +1,6 @@
 """Selects the OS to boot from on GRUB at the next restart"""
 import re
+from .scripts.helpers import syscommand
 
 
 class Addon:
@@ -13,7 +14,7 @@ class Addon:
 
     def get_info(self):
         """Gather information from the system"""
-        stdout, _ = self.lnxlink.subprocess("grub-editenv list")
+        stdout, _, _ = syscommand("grub-editenv list")
         nextentry_pattern = re.compile(r"^next_entry=(\d+)")
         nextentry_match = re.match(nextentry_pattern, stdout)
         entry_ind = 0
@@ -35,7 +36,7 @@ class Addon:
     def start_control(self, topic, data):
         """Control system"""
         ind = self.options.index(data)
-        self.lnxlink.subprocess(f"sudo grub-reboot {ind}")
+        syscommand(f"sudo grub-reboot {ind}")
 
     def _get_grub_entries(self):
         """Get the grub entities in the correct order"""

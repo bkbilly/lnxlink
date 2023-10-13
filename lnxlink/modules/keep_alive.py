@@ -1,5 +1,6 @@
 """Keeps display on"""
 import re
+from .scripts.helpers import syscommand
 
 
 class Addon:
@@ -25,10 +26,10 @@ class Addon:
         enabled_list = []
 
         # Check if Gnome Idle Time is active
-        stdout_dim, _ = self.lnxlink.subprocess(
+        stdout_dim, _, _ = syscommand(
             "gsettings get org.gnome.desktop.session idle-delay"
         )
-        stdout_suspend, _ = self.lnxlink.subprocess(
+        stdout_suspend, _, _ = syscommand(
             "gsettings get org.gnome.settings-daemon.plugins.power sleep-inactive-ac-type"
         )
         if stdout_dim != "":
@@ -37,7 +38,7 @@ class Addon:
                 enabled_list.append("nothing" in stdout_suspend)
 
         # Check if DPMS is active
-        stdout_xset, _ = self.lnxlink.subprocess("xset q")
+        stdout_xset, _, _ = syscommand("xset q")
         xset_pattern = re.compile(r"Standby: (\d+)\s+Suspend: (\d+)\s+Off: (\d+)")
         xset_match = re.findall(xset_pattern, stdout_xset)
         for nums in xset_match:
@@ -50,22 +51,22 @@ class Addon:
     def start_control(self, topic, data):
         """Control system"""
         if data.lower() == "off":
-            self.lnxlink.subprocess(
+            syscommand(
                 "gsettings set org.gnome.desktop.session idle-delay 600",
             )
-            self.lnxlink.subprocess(
+            syscommand(
                 'gsettings set org.gnome.settings-daemon.plugins.power sleep-inactive-ac-type "suspend"',
             )
-            self.lnxlink.subprocess(
+            syscommand(
                 "xset +dpms",
             )
         elif data.lower() == "on":
-            self.lnxlink.subprocess(
+            syscommand(
                 "gsettings set org.gnome.desktop.session idle-delay 0",
             )
-            self.lnxlink.subprocess(
+            syscommand(
                 'gsettings set org.gnome.settings-daemon.plugins.power sleep-inactive-ac-type "nothing"',
             )
-            self.lnxlink.subprocess(
+            syscommand(
                 "xset -dpms",
             )

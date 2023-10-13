@@ -8,7 +8,6 @@ import threading
 import logging
 import argparse
 import platform
-import subprocess
 import importlib.metadata
 import ssl
 
@@ -58,20 +57,6 @@ class LNXlink:
         # Setup MQTT
         self.client = mqtt.Client()
         self.setup_mqtt()
-
-    def subprocess(self, command):
-        """Global subprocess command"""
-        result = subprocess.run(
-            command,
-            shell=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            check=False,
-            timeout=3,
-        )
-        stdout = result.stdout.decode("UTF-8").strip()
-        returncode = result.returncode
-        return stdout, returncode
 
     def publish_monitor_data(self, topic, pub_data):
         """Publish info data to mqtt in the correct format"""

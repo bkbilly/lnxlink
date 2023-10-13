@@ -1,7 +1,7 @@
 """Checks if the microphone is used"""
 from threading import Thread
 import logging
-import speech_recognition as sr
+from .scripts.helpers import import_install_package
 
 logger = logging.getLogger("lnxlink")
 
@@ -14,6 +14,15 @@ class Addon:
         self.name = "Speech Recognition"
         self.run = False
         self.speech = ""
+        self._requirements()
+
+    def _requirements(self):
+        self.lib = {
+            "alsaaudio": import_install_package("pyalsaaudio", ">=0.9.2", "alsaaudio"),
+            "sr": import_install_package(
+                "SpeechRecognition", ">=3.10.0", "speech_recognition"
+            ),
+        }
 
     def get_info(self):
         """Gather information from the system"""
@@ -42,8 +51,8 @@ class Addon:
     def start_recognition(self):
         """Start a voice recognition"""
         try:
-            recognizer = sr.Recognizer()
-            with sr.Microphone() as source:
+            recognizer = self.lib["sr"].Recognizer()
+            with self.lib["sr"].Microphone() as source:
                 audio = recognizer.listen(source, timeout=2, phrase_time_limit=3)
                 self.speech = recognizer.recognize_google(audio)
         except Exception as err:

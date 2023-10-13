@@ -2,6 +2,7 @@
 import glob
 import json
 import re
+from .scripts.helpers import syscommand
 
 
 class Addon:
@@ -12,7 +13,7 @@ class Addon:
         self.name = "Microphone used"
         self.lnxlink = lnxlink
 
-        _, returncode = self.lnxlink.subprocess(
+        _, _, returncode = syscommand(
             "which pactl && pactl -f json list short source-outputs",
         )
         self.use_pactl = False
@@ -22,7 +23,7 @@ class Addon:
     def get_info(self):
         """Gather information from the system"""
         if self.use_pactl:
-            stdout, _ = self.lnxlink.subprocess(
+            stdout, _, _ = syscommand(
                 "pactl -f json list short source-outputs",
             )
             # Replace 0,00 values with 0.00

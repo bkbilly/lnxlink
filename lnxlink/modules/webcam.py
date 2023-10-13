@@ -1,6 +1,6 @@
 """Shows an image from the webcamera"""
 import base64
-import cv2
+from .scripts.helpers import import_install_package
 
 
 class Addon:
@@ -10,12 +10,18 @@ class Addon:
         """Setup addon"""
         self.name = "Webcam"
         self.vid = None
+        self._requirements()
+
+    def _requirements(self):
+        self.lib = {
+            "cv2": import_install_package("opencv-python", ">=4.7.0.68", "cv2"),
+        }
 
     def get_camera_frame(self):
         """Convert camera feed to Base64 text"""
         if self.vid is not None:
             _, frame = self.vid.read()
-            _, buffer = cv2.imencode(".jpg", frame)
+            _, buffer = self.lib["cv2"].imencode(".jpg", frame)
             frame = base64.b64encode(buffer)
             return frame
         return None
@@ -47,4 +53,4 @@ class Addon:
             self.vid.release()
             self.vid = None
         elif data.lower() == "on":
-            self.vid = cv2.VideoCapture(0)
+            self.vid = self.lib["cv2"].VideoCapture(0)

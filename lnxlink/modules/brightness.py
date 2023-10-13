@@ -2,6 +2,7 @@
 import subprocess
 import re
 import logging
+from .scripts.helpers import syscommand
 
 logger = logging.getLogger("lnxlink")
 
@@ -68,7 +69,7 @@ class Addon:
 
     def _get_displays(self):
         """Get all the displays"""
-        stdout, _ = self.lnxlink.subprocess(
+        stdout, _, _ = syscommand(
             "xrandr --verbose --current",
         )
         pattern = re.compile(

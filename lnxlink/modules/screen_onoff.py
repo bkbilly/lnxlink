@@ -1,5 +1,6 @@
 """Turns on or off the screen"""
 import subprocess
+from .scripts.helpers import syscommand
 
 
 class Addon:
@@ -21,7 +22,7 @@ class Addon:
 
     def get_info(self):
         """Gather information from the system"""
-        stdout, _ = self.lnxlink.subprocess(
+        stdout, _, _ = syscommand(
             "xset q | grep -i 'monitor is'",
         )
         results = stdout.lower()
