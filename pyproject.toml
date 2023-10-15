@@ -30,7 +30,8 @@ dependencies = [
     "notify2>=0.3.1",
     "mpris2>=1.0.2",
     "dbus-idle>=2023.3.2",
-    "ewmh>=0.1.6"
+    "ewmh>=0.1.6",
+    "pyalsaaudio>=0.10.0"
 ]
 
 
