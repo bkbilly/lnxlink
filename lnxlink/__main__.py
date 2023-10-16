@@ -10,6 +10,7 @@ import argparse
 import platform
 import importlib.metadata
 import ssl
+import traceback
 
 import yaml
 import distro
@@ -49,9 +50,10 @@ class LNXlink:
                 self.addons[addon.service] = tmp_addon
             except Exception as err:
                 logger.error(
-                    "Error with addon %s, please remove it from your config: %s",
+                    "Error with addon %s, please remove it from your config: %s, %s",
                     addon.service,
                     err,
+                    traceback.format_exc(),
                 )
 
         # Setup MQTT
@@ -228,7 +230,12 @@ class LNXlink:
                         )
                         self.client.publish(result_topic, payload=result, retain=False)
                 except Exception as err:
-                    logger.error(err)
+                    logger.error(
+                        "Couldn't run command for module %s: %s, %s",
+                        addon,
+                        err,
+                        traceback.format_exc(),
+                    )
 
     def setup_discovery_entities(self, addon, service, exp_name, options):
         """Send discovery information on Home Assistant for controls"""
@@ -338,7 +345,9 @@ class LNXlink:
                     try:
                         self.setup_discovery_entities(addon, service, exp_name, options)
                     except Exception as err:
-                        logger.error(err)
+                        logger.error(
+                            "%s: %s, %s", exp_name, err, traceback.format_exc()
+                        )
 
 
 def setup_logger(config_path):
