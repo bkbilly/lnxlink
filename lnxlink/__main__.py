@@ -30,6 +30,7 @@ class LNXlink:
 
         logger.info("LNXlink %s started: %s", version, platform.python_version())
         self.kill = False
+        self.inference_times = {}
 
         # Read configuration from yaml file
         self.pref_topic = "lnxlink"
@@ -93,9 +94,10 @@ class LNXlink:
                     topic = f"{self.pref_topic}/monitor_controls/{subtopic}"
                     start_time = time.time()
                     pub_data = addon.get_info()
-                    diff_time = round(time.time() - start_time, 3)
+                    diff_time = round(time.time() - start_time, 5)
                     logger.debug("%s sec to run %s", diff_time, service)
                     self.publish_monitor_data(topic, pub_data)
+                    self.inference_times[service] = diff_time
                 except Exception as err:
                     logger.error("Error with addon %s: %s", service, err)
             if hasattr(addon, "exposed_controls"):
@@ -105,8 +107,12 @@ class LNXlink:
                         subtopic = f"{subtopic}/info_{subcontrol}"
                         topic = f"{self.pref_topic}/monitor_controls/{subtopic}"
                         try:
+                            start_time = time.time()
                             pub_data = options["method"]()
+                            diff_time = round(time.time() - start_time, 5)
+                            logger.debug("%s sec to run %s", diff_time, service)
                             self.publish_monitor_data(topic, pub_data)
+                            self.inference_times[f"{service}_{subcontrol}"] = diff_time
                         except Exception as err:
                             logger.error(
                                 "Error with addon %s, %s: %s", service, exp_name, err
