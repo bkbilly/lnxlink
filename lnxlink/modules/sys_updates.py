@@ -11,6 +11,7 @@ class Addon:
         self.name = "System Updates"
         self.last_time = 0
         self.update_interval = 360  # Check for updates every 6 minutes
+        self.update_available = False
 
     def exposed_controls(self):
         """Exposes to home assistant"""
@@ -35,7 +36,6 @@ class Addon:
             },
         ]
 
-        update_available = False
         cur_time = time.time()
         if cur_time - self.last_time > self.update_interval:
             self.last_time = cur_time
@@ -48,7 +48,7 @@ class Addon:
                     check=False,
                 )
                 result = proc.stdout.strip().decode()
-                update_available = eval(f"{result}{package['logic']}")
-                if update_available:
+                self.update_available = eval(f"{result}{package['logic']}")
+                if self.update_available:
                     return True
-        return update_available
+        return self.update_available
