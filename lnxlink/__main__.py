@@ -91,11 +91,19 @@ class LNXlink:
             subtopic = method["name"].lower().replace(" ", "_")
             topic = f"{self.pref_topic}/monitor_controls/{subtopic}"
 
-            start_time = time.time()
-            pub_data = method["method"]()
-            diff_time = round(time.time() - start_time, 5)
-            self.inference_times[f"{method['name']}"] = diff_time
-            self.publish_monitor_data(topic, pub_data)
+            try:
+                start_time = time.time()
+                pub_data = method["method"]()
+                diff_time = round(time.time() - start_time, 5)
+                self.inference_times[f"{method['name']}"] = diff_time
+                self.publish_monitor_data(topic, pub_data)
+            except Exception as err:
+                logger.error(
+                    "Error with addon %s: %s, %s",
+                    method["name"],
+                    err,
+                    traceback.format_exc(),
+                )
 
     def monitor_run(self):
         """Gets information from each Addon and sends it to MQTT"""
