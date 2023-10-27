@@ -53,6 +53,8 @@ class Addon:
                 continue
             if "/snap/" in disk.mountpoint:
                 continue
+            if "/docker/btrfs" in disk.mountpoint:
+                continue
             device = disk.device.replace("/", "_").strip("_")
             disks[device] = {}
             disk_stats = psutil.disk_usage(disk.mountpoint)
