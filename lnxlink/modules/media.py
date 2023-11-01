@@ -3,7 +3,8 @@ import subprocess
 from dbus.mainloop.glib import DBusGMainLoop
 from mpris2 import get_players_uri
 from mpris2 import Player
-import alsaaudio
+
+from .scripts.helpers import import_install_package
 
 
 class Addon:
@@ -13,6 +14,12 @@ class Addon:
         """Setup addon"""
         self.name = "Media Info"
         self.players = []
+        self._requirements()
+
+    def _requirements(self):
+        self.lib = {
+            "alsaaudio": import_install_package("pyalsaaudio", ">=0.9.2", "alsaaudio"),
+        }
 
     def exposed_controls(self):
         """Exposes to home assistant"""
@@ -51,7 +58,7 @@ class Addon:
     def start_control(self, topic, data):
         """Control system"""
         if topic[1] == "volume_set":
-            mixer = alsaaudio.Mixer()
+            mixer = self.lib["alsaaudio"].Mixer()
             if data <= 1:
                 data *= 100
             data = min(data, 100)
@@ -92,7 +99,7 @@ class Addon:
 
     def __get_volume(self):
         """Get system volume"""
-        mixer = alsaaudio.Mixer()
+        mixer = self.lib["alsaaudio"].Mixer()
         volume = mixer.getvolume()[0]
         if mixer.getmute()[0] == 1:
             volume = 0
