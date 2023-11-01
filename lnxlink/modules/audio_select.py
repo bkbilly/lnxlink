@@ -31,13 +31,13 @@ class Addon:
         discovery_info = {
             "Microphone Select": {
                 "type": "select",
-                "icon": "mdi:harddisk",
+                "icon": "mdi:microphone-variant",
                 "options": list(self.devices["microphone"].keys()),
                 "value_template": "{{ value_json.microphone }}",
             },
             "Speaker Select": {
                 "type": "select",
-                "icon": "mdi:harddisk",
+                "icon": "mdi:audio-input-rca",
                 "options": list(self.devices["speaker"].keys()),
                 "value_template": "{{ value_json.speaker }}",
             },
