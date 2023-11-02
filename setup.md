@@ -2,24 +2,24 @@
 
 ## Installation
 
-Select the installation type you want.
-
-{% tabs %}
-{% tab title="Desktop" %}
-Recommended installation if you have a graphical interface.
-
 Prepare your system:
 
 {% code overflow="wrap" lineNumbers="true" %}
 ```bash
 # For debian based distros:
-sudo apt install patchelf meson libdbus-glib-1-dev libglib2.0-dev libasound2-dev python3-pip xdotool xprintidle xdg-utils python3-pyaudio
+sudo apt install patchelf meson libdbus-glib-1-dev libglib2.0-dev libasound2-dev python3-pip xdotool xdg-utils python3-pyaudio
 # For Red Hat based distros:
 sudo dnf install python39-pip.noarch gcc cmake dbus-devel glib2-devel python39-devel alsa-lib-devel
 # Upgrade PIP to the latest version
 sudo pip3 install -U pip
 ```
 {% endcode %}
+
+Select the installation type you want:
+
+{% tabs %}
+{% tab title="Desktop" %}
+Recommended installation if you have a graphical interface.
 
 Install or Update LNXlink:
 
@@ -43,14 +43,6 @@ systemctl --user restart lnxlink.service
 
 {% tab title="Server" %}
 The headless installation is used for linux environments that don't use a Graphical Interface like servers.
-
-{% code overflow="wrap" lineNumbers="true" fullWidth="false" %}
-```bash
-sudo apt install patchelf meson libdbus-glib-1-dev libglib2.0-dev libasound2-dev python3-pip python3-pyaudio
-# Upgrade PIP to the latest version
-sudo pip3 install -U pip
-```
-{% endcode %}
 
 Install or Update LNXlink:
 
@@ -77,17 +69,39 @@ This installs LNXlink as a development platform which is helpful if you want to 
 
 {% code overflow="wrap" lineNumbers="true" %}
 ```bash
-# Install system dependencies
-sudo apt install git patchelf meson libdbus-glib-1-dev libglib2.0-dev libasound2-dev python3-pip python3-pyaudio
-# Upgrade PIP to the latest version
-sudo pip3 install -U pip
 # Fork my repository and then download it
-git clone git@github.com:<yourusername>/lnxlink.git
+git clone https://github.com/bkbilly/lnxlink.git
 # Install lnxlink as editable package
 cd lnxlink
 pip3 install -e .
 # Run it manually
 lnxlink -c config.yaml
+```
+{% endcode %}
+{% endtab %}
+
+{% tab title="VENV" %}
+Newer versions of LNXlink don't allow installation of packages on the system, so a virtual environment can be used.
+
+Install or Update LNXlink:
+
+{% code overflow="wrap" lineNumbers="true" %}
+```bash
+# Install VirtualEnv package on the system
+sudo pip3 install virtualenv --break-system-packages
+# Install LNXlink on a virtual environment folder.
+python3 -m venv lnxlink_venv
+source lnxlink_venv/bin/activate
+pip install lnxlink
+lnxlink -c config.yaml
+```
+{% endcode %}
+
+You can manually update the configuration file `config.yaml` and restart the service with the use of systemctl:
+
+{% code overflow="wrap" lineNumbers="true" %}
+```bash
+systemctl --user restart lnxlink.service
 ```
 {% endcode %}
 {% endtab %}

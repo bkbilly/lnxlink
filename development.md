@@ -90,9 +90,8 @@ This is used only for types `sensor` and `number` which defines the unit of meas
 
 This is used for the sensors `binary_sensor`, `button`, `number`, `sensor`, `switch`, `update` and defines. Each sensor has different options, so you will have to read the documentation on each integration on [Home Assistant website](https://www.home-assistant.io/integrations/).
 
-```python
-"device_class": "battery"
-```
+<pre class="language-python"><code class="lang-python"><strong>  "device_class": "battery"
+</strong></code></pre>
 
 state\_class
 
@@ -147,6 +146,14 @@ This is used when we want to create a new entity with different attributes and o
 
 ```python
   "method": self.my_method
+```
+
+#### expire\_after
+
+This is used only for types `sensor` and `binary_sensor` which defines the number of seconds after the sensor’s state expires, if it’s not updated. After expiry, the sensor’s state becomes `unavailable`.
+
+```python
+  "expire_after": 5
 ```
 
 ### Control System
