@@ -294,15 +294,14 @@ class LNXlink:
             "state_class": {"state_class": options.get("state_class", "")},
             "entity_category": {"entity_category": options.get("entity_category", "")},
             "enabled": {"enabled_by_default": options.get("enabled", True)},
+            "expire_after": {"expire_after": options.get("expire_after", "")},
         }
         lookup_entities = {
             "sensor": {
                 "state_topic": state_topic,
-                # "expire_after": self.config.get("update_interval", 5) * 2,
             },
             "binary_sensor": {
                 "state_topic": state_topic,
-                # "expire_after": self.config.get("update_interval", 5) * 2,
             },
             "camera": {
                 "topic": state_topic,
