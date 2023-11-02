@@ -103,44 +103,13 @@ switch:
             entity_id: button.shutdown
 ```
 
-## Media Player
-
-Create a media player using [mqtt-mediaplayer](https://github.com/bkbilly/hass-mqtt-mediaplayer) using the information collected from the media sensor which supports playing remote or local media using `cvlc` which should be installed on your system.
-
-<div align="left">
-
-<figure><img src="https://user-images.githubusercontent.com/518494/193397441-f18bb5fa-de37-4d95-9158-32cd81b31c72.png" alt=""><figcaption></figcaption></figure>
-
-</div>
-
-### Text To Speech
+## Open a URL or File
 
 ```yaml
-service: tts.google_say
+service: mqtt.publish
 data:
-  entity_id: media_player.desktop_linux
-  message: Hello world!
-```
-
-### Play Media
-
-```yaml
-service: media_player.play_media
-data:
-  media_content_id: /home/user/imag.jpg
-  media_content_type: media  # Not used, but required by home assistant
-target:
-  entity_id: media_player.desktop_linux
-```
-
-### Stream Camera
-
-```yaml
-service: camera.play_stream
-data:
-  media_player: media_player.desktop_linux
-target:
-  entity_id: camera.demo_camera
+  topic: lnxlink/desktop-linux/commands/xdg_open
+  payload: "https://www.google.com"  # or "myimg.jpeg" for file
 ```
 
 ## Keys Send
@@ -952,11 +921,3 @@ card:
 
 </details>
 
-## Open a URL or File
-
-```yaml
-service: mqtt.publish
-data:
-  topic: lnxlink/desktop-linux/commands/xdg_open
-  payload: "https://www.google.com"  # or "myimg.jpeg" for file
-```
