@@ -54,7 +54,7 @@ class Addon:
                 "value_template": "{{ value_json.volume }}",
             },
             "thumbnail": {
-                "type": "camera",
+                "type": "image",
                 "method": self.get_thumbnail,
                 "encoding": "b64",
                 "enabled": False,

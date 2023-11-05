@@ -307,6 +307,10 @@ class LNXlink:
                 "topic": state_topic,
                 "image_encoding": options.get("encoding"),
             },
+            "image": {
+                "image_topic": state_topic,
+                "image_encoding": options.get("encoding"),
+            },
             "update": {"state_topic": state_topic},
             "button": {"command_topic": command_topic},
             "switch": {
@@ -344,7 +348,7 @@ class LNXlink:
         if options["type"] not in lookup_entities:
             logger.error("Not supported: %s", options["type"])
             return
-        if "value_template" in discovery and options["type"] == "camera":
+        if "value_template" in discovery and options["type"] in ["camera", "image"]:
             del discovery["json_attributes_topic"]
             del discovery["json_attributes_template"]
         self.client.publish(
