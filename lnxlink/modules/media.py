@@ -1,10 +1,14 @@
 """Control and show information of currently playing media"""
+import traceback
+import logging
 import base64
 from dbus.mainloop.glib import DBusGMainLoop
 from mpris2 import get_players_uri
 from mpris2 import Player
 
 from .scripts.helpers import import_install_package, syscommand
+
+logger = logging.getLogger("lnxlink")
 
 
 class Addon:
@@ -117,8 +121,10 @@ class Addon:
                     with open(arturl, "rb") as image_file:
                         image_thumbnail = base64.b64encode(image_file.read()).decode()
                         return image_thumbnail
-                except Exception as e:
-                    print(e)
+                except Exception as err:
+                    logger.debug(
+                        "Can't create thumbnail: %s, %s", err, traceback.format_exc()
+                    )
         return " "
 
     def __get_volume(self):
