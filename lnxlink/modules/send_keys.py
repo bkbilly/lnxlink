@@ -1,5 +1,5 @@
 """Uses xdotool to press keyboard keys"""
-import subprocess
+from .scripts.helpers import syscommand
 
 
 class Addon:
@@ -20,4 +20,4 @@ class Addon:
 
     def start_control(self, topic, data):
         """Control system"""
-        subprocess.call(f"xdotool key {data}", shell=True)
+        syscommand(f"xdotool key {data}")

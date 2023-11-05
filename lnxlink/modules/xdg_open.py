@@ -1,6 +1,6 @@
 """Open URLs or files"""
-import subprocess
 import logging
+from .scripts.helpers import syscommand
 
 logger = logging.getLogger("lnxlink")
 
@@ -15,4 +15,4 @@ class Addon:
     def start_control(self, topic, data):
         """Control system"""
         logger.info("/usr/bin/xdg-open %s", data)
-        subprocess.call(f"/usr/bin/xdg-open {data}", shell=True)
+        syscommand(f"/usr/bin/xdg-open {data}")

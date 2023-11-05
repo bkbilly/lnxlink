@@ -1,5 +1,4 @@
 """Controls the brightness of the displays"""
-import subprocess
 import re
 import logging
 from .scripts.helpers import syscommand
@@ -58,14 +57,10 @@ class Addon:
         """Control system"""
         if topic[1] == "Brightness":
             for display in self._get_displays():
-                subprocess.call(
-                    f"xrandr --output {display} --brightness {data}", shell=True
-                )
+                syscommand(f"xrandr --output {display} --brightness {data}")
         else:
             display = topic[1].replace("Brightness_", "")
-            subprocess.call(
-                f"xrandr --output {display} --brightness {data}", shell=True
-            )
+            syscommand(f"xrandr --output {display} --brightness {data}")
 
     def _get_displays(self):
         """Get all the displays"""

@@ -1,5 +1,5 @@
 """Suspend/sleep the system"""
-import subprocess
+from .scripts.helpers import syscommand
 
 
 class Addon:
@@ -11,7 +11,7 @@ class Addon:
 
     def start_control(self, topic, data):
         """Control system"""
-        subprocess.call(["systemctl", "suspend"])
+        syscommand("systemctl suspend")
 
     def exposed_controls(self):
         """Exposes to home assistant"""

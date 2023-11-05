@@ -1,5 +1,5 @@
 """Turns on or off the screen"""
-import subprocess
+import re
 from .scripts.helpers import syscommand
 
 
@@ -22,17 +22,17 @@ class Addon:
 
     def get_info(self):
         """Gather information from the system"""
-        stdout, _, _ = syscommand(
-            "xset q | grep -i 'monitor is'",
-        )
-        results = stdout.lower()
+        stdout, _, _ = syscommand("xset q")
+        match = re.findall(r"Monitor is (\w*)", stdout)
+        status = "ON"
+        if match:
+            status = match[0].upper()
 
-        status = results.strip().replace("monitor is", "").strip().upper()
         return status
 
     def start_control(self, topic, data):
         """Control system"""
         if data.lower() == "off":
-            subprocess.call("xset dpms force off", shell=True)
+            syscommand("xset dpms force off")
         elif data.lower() == "on":
-            subprocess.call("xset dpms force on", shell=True)
+            syscommand("xset dpms force on")

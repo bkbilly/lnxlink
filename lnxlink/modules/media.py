@@ -1,10 +1,9 @@
 """Control and show information of currently playing media"""
-import subprocess
 from dbus.mainloop.glib import DBusGMainLoop
 from mpris2 import get_players_uri
 from mpris2 import Player
 
-from .scripts.helpers import import_install_package
+from .scripts.helpers import import_install_package, syscommand
 
 
 class Addon:
@@ -74,7 +73,7 @@ class Addon:
                 self.players[0]["player"].Next()
         elif topic[1] == "play_media":
             url = data["media_id"]
-            subprocess.Popen(["cvlc", "--play-and-exit", url])
+            syscommand(f"cvlc --play-and-exit {url}")
 
     def get_info(self) -> dict:
         """Gather information from the system"""

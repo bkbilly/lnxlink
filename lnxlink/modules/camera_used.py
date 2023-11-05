@@ -1,5 +1,5 @@
 """Checks if the webcam is used"""
-import subprocess
+from .scripts.helpers import syscommand
 
 
 class Addon:
@@ -11,15 +11,9 @@ class Addon:
 
     def get_info(self):
         """Gather information from the system"""
-        proc = subprocess.run(
-            "fuser /dev/video*",
-            shell=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            check=False,
-        )
+        _, _, returncode = syscommand("fuser /dev/video*", ignore_errors=True)
         cam_used = False
-        if proc.returncode == 0:
+        if returncode == 0:
             cam_used = True
 
         return cam_used
