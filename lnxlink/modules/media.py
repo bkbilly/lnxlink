@@ -1,4 +1,5 @@
 """Control and show information of currently playing media"""
+import base64
 from dbus.mainloop.glib import DBusGMainLoop
 from mpris2 import get_players_uri
 from mpris2 import Player
@@ -52,6 +53,12 @@ class Addon:
                 "enabled": False,
                 "value_template": "{{ value_json.volume }}",
             },
+            "thumbnail": {
+                "type": "camera",
+                "method": self.get_thumbnail,
+                "encoding": "b64",
+                "enabled": False,
+            },
         }
 
     def start_control(self, topic, data):
@@ -85,6 +92,7 @@ class Addon:
             "status": "idle",
             "volume": self.__get_volume(),
             "playing": False,
+            "position": "",
         }
         if len(self.players) > 0:
             player = self.players[0]
@@ -93,8 +101,23 @@ class Addon:
             info["album"] = player["album"]
             info["artist"] = player["artist"]
             info["status"] = player["status"]
+            info["position"] = player["position"]
 
         return info
+
+    def get_thumbnail(self):
+        """Returns the thumbnail if it exists as a base64 string"""
+        if len(self.players) > 0:
+            player = self.players[0]
+            if player["status"] != "stopped":
+                try:
+                    arturl = player["arturl"].replace("file://", "")
+                    with open(arturl, "rb") as image_file:
+                        image_thumbnail = base64.b64encode(image_file.read()).decode()
+                        return image_thumbnail
+                except Exception as e:
+                    print(e)
+        return " "
 
     def __get_volume(self):
         """Get system volume"""
@@ -114,7 +137,14 @@ class Addon:
             title = player.Metadata.get("xesam:title")
             artist = player.Metadata.get("xesam:artist")
             album = player.Metadata.get("xesam:album")
+            length = player.Metadata.get("mpris:length")
+            arturl = player.Metadata.get("mpris:artUrl")
+
             if p_status != "stopped":
+                position = None
+                if length > 0:
+                    position = round((player.Position * 100) / length)
+
                 artist_str = ""
                 if artist is not None:
                     artist_str = ",".join(artist)
@@ -125,6 +155,8 @@ class Addon:
                         "artist": artist_str,
                         "album": "" if album is None else str(album),
                         "player": player,
+                        "position": position,
+                        "arturl": arturl,
                     }
                 )
         return self.players
