@@ -92,7 +92,8 @@ class Addon:
             "status": "idle",
             "volume": self.__get_volume(),
             "playing": False,
-            "position": "",
+            "position": None,
+            "duration": None,
         }
         if len(self.players) > 0:
             player = self.players[0]
@@ -102,6 +103,7 @@ class Addon:
             info["artist"] = player["artist"]
             info["status"] = player["status"]
             info["position"] = player["position"]
+            info["duration"] = player["duration"]
 
         return info
 
@@ -142,8 +144,10 @@ class Addon:
 
             if p_status != "stopped":
                 position = None
-                if length > 0:
-                    position = round((player.Position * 100) / length)
+                duration = None
+                if length is not None:
+                    duration = round(length / 1000 / 1000)
+                    position = round(player.Position / 1000 / 1000)
 
                 artist_str = ""
                 if artist is not None:
@@ -155,6 +159,7 @@ class Addon:
                         "artist": artist_str,
                         "album": "" if album is None else str(album),
                         "player": player,
+                        "duration": duration,
                         "position": position,
                         "arturl": arturl,
                     }
