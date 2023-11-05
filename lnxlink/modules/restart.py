@@ -1,5 +1,5 @@
 """Restarts the system"""
-import subprocess
+from .scripts.helpers import syscommand
 
 
 class Addon:
@@ -13,7 +13,9 @@ class Addon:
     def start_control(self, topic, data):
         """Control system"""
         self.lnxlink.temp_connection_callback(True)
-        subprocess.call(["shutdown", "-r", "now", "&"])
+        _, _, returncode = syscommand("systemctl reboot")
+        if returncode != 0:
+            _, _, returncode = syscommand("shutdown -r now")
 
     def exposed_controls(self):
         """Exposes to home assistant"""
