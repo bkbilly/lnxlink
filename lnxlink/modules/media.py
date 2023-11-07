@@ -215,6 +215,15 @@ class Addon:
             "ad0e9d5ed077db5266ff315985114a4f",
             "102ec827703eeb509f12a2a0eb5b4e2d",
             "b6325a80293eb8e2c510a7a8e8468bc1",
+            "1841804c061e6f1890f1c7703f2d1bb3",
+            "9268d0b2d17670598c70045b0c7abf38",
+            "d12761d2356ddb5659c1bad9d46ebec0",
+            "36c029068925a76bbaa77670d6754841",
+            "f7c35a9cfd54951862e895bbebef145f",
+            "2b6d39e4dc4cdf1ebe3f1a2e80f18202",
+            "7bc66d4625c71a3bd3dd6e1505050616",
+            "6a1fccefbc7f074b5017884743cde766",
+            "fe81a4f28e6bd176efc8184d58544e66",
         ]
         words = re.split(r";|,|\*|\n| +|you|\.|\/|ing", title.strip().lower())
         for word in words:
