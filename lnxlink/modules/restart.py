@@ -1,5 +1,8 @@
 """Restarts the system"""
+import logging
 from .scripts.helpers import syscommand
+
+logger = logging.getLogger("lnxlink")
 
 
 class Addon:
@@ -16,6 +19,9 @@ class Addon:
         _, _, returncode = syscommand("systemctl reboot")
         if returncode != 0:
             _, _, returncode = syscommand("shutdown -r now")
+            if returncode != 0:
+                self.lnxlink.temp_connection_callback(False)
+                logger.error("Can't shutdown the computer")
 
     def exposed_controls(self):
         """Exposes to home assistant"""
