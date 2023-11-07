@@ -14,7 +14,7 @@ class Addon:
         self.lnxlink = lnxlink
 
         _, _, returncode = syscommand(
-            "which pactl && pactl -f json list short source-outputs",
+            "which pactl && pactl -f json list short source-outputs", ignore_errors=True
         )
         self.use_pactl = False
         if returncode == 0:
