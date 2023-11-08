@@ -60,8 +60,10 @@ class Addon:
 
     def start_control(self, topic, data):
         """Control system"""
-        if "+dev" in self.lnxlink.version:
-            syscommand("cd /opt/directory/ && git pull")
+        if "+edit" in self.lnxlink.version:
+            syscommand(f"cd {self.lnxlink.path}")
+            syscommand("git pull")
+            syscommand("pip install -e .")
         else:
             syscommand("pip install -U lnxlink")
         self.lnxlink.restart_script()
