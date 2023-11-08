@@ -21,6 +21,10 @@ from . import config_setup
 from .system_monitor import MonitorSuspend, GracefulKiller
 
 version = importlib.metadata.version(__package__ or __name__)
+path = os.path.dirname(os.path.realpath(__file__))
+if os.path.exists(os.path.join(path, "dev.txt")):
+    version += "+dev"
+
 logger = logging.getLogger("lnxlink")
 
 
@@ -29,7 +33,8 @@ class LNXlink:
 
     def __init__(self, config_path):
 
-        logger.info("LNXlink %s started: %s", version, platform.python_version())
+        self.version = version
+        logger.info("LNXlink %s, Python %s", self.version, platform.python_version())
         self.kill = False
         self.inference_times = {}
 

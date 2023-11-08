@@ -1,7 +1,7 @@
 """Checks for LNXlink updates"""
+import re
 import logging
 import time
-import importlib.metadata
 import requests
 from .scripts.helpers import syscommand
 
@@ -17,10 +17,9 @@ class Addon:
         self.lnxlink = lnxlink
         self.last_time = 0
         self.update_interval = 86400  # Check for updates every 24 hours
-        version = importlib.metadata.version("lnxlink")
         self.message = {
-            "installed_version": version,
-            "latest_version": version,
+            "installed_version": self.lnxlink.version,
+            "latest_version": self.lnxlink.version,
             "release_summary": "",
             "release_url": "https://github.com/bkbilly/lnxlink/releases/latest",
         }
@@ -52,13 +51,17 @@ class Addon:
         url = "https://api.github.com/repos/bkbilly/lnxlink/releases/latest"
         try:
             resp = requests.get(url=url, timeout=5).json()
+            body = re.sub(r"##.*\n", "", resp["body"])
             self.message["latest_version"] = resp["tag_name"]
-            self.message["release_summary"] = resp["body"]
+            self.message["release_summary"] = body
             self.message["release_url"] = resp["html_url"]
         except Exception as err:
             logger.error(err)
 
     def start_control(self, topic, data):
         """Control system"""
-        syscommand("pip install -U lnxlink")
+        if "+dev" in self.lnxlink.version:
+            syscommand("cd /opt/directory/ && git pull")
+        else:
+            syscommand("pip install -U lnxlink")
         self.lnxlink.restart_script()
