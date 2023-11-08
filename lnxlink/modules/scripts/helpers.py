@@ -6,7 +6,7 @@ import subprocess
 logger = logging.getLogger("lnxlink")
 
 
-def syscommand(command, ignore_errors=False):
+def syscommand(command, ignore_errors=False, timeout=3):
     """Global subprocess command"""
     if isinstance(command, list):
         command = " ".join(command)
@@ -16,7 +16,7 @@ def syscommand(command, ignore_errors=False):
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         check=False,
-        timeout=3,
+        timeout=timeout,
     )
     stderr = result.stderr.decode("UTF-8").strip()
     stdout = result.stdout.decode("UTF-8").strip()

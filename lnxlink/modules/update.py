@@ -62,8 +62,8 @@ class Addon:
         """Control system"""
         if "+edit" in self.lnxlink.version:
             syscommand(f"cd {self.lnxlink.path}")
-            syscommand("git pull")
-            syscommand("pip install -e .")
+            syscommand("git pull", timeout=10)
+            syscommand("pip install -e .", timeout=20)
         else:
             syscommand("pip install -U lnxlink")
         self.lnxlink.restart_script()
