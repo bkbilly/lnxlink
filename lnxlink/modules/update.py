@@ -3,6 +3,7 @@ import logging
 import time
 import importlib.metadata
 import requests
+from .scripts.helpers import syscommand
 
 logger = logging.getLogger("lnxlink")
 
@@ -13,6 +14,7 @@ class Addon:
     def __init__(self, lnxlink):
         """Setup addon"""
         self.name = "LNXlink"
+        self.lnxlink = lnxlink
         self.last_time = 0
         self.update_interval = 86400  # Check for updates every 24 hours
         version = importlib.metadata.version("lnxlink")
@@ -30,9 +32,9 @@ class Addon:
                 "type": "update",
                 "title": "LNXlink",
                 "icon": "mdi:update",
-                "device_class": "firmware",
                 "entity_category": "diagnostic",
                 "entity_picture": "https://github.com/bkbilly/lnxlink/raw/master/logo.png?raw=true",
+                "install": "install",
             },
         }
 
@@ -55,3 +57,8 @@ class Addon:
             self.message["release_url"] = resp["html_url"]
         except Exception as err:
             logger.error(err)
+
+    def start_control(self, topic, data):
+        """Control system"""
+        syscommand("pip install -U lnxlink")
+        self.lnxlink.restart_script()

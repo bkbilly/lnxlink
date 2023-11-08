@@ -2,6 +2,7 @@
 """Start the LNXlink service"""
 
 import os
+import sys
 import time
 import json
 import threading
@@ -295,6 +296,10 @@ class LNXlink:
             "entity_category": {"entity_category": options.get("entity_category", "")},
             "enabled": {"enabled_by_default": options.get("enabled", True)},
             "expire_after": {"expire_after": options.get("expire_after", "")},
+            "install": {
+                "command_topic": command_topic,
+                "payload_install": options.get("install", ""),
+            },
         }
         lookup_entities = {
             "sensor": {
@@ -369,11 +374,15 @@ class LNXlink:
                             "%s: %s, %s", exp_name, err, traceback.format_exc()
                         )
 
+    def restart_script(self):
+        """Restarts itself"""
+        logger.info("Restarting LNXlink...")
+        os.execv(sys.executable, ["python"] + sys.argv)
+
 
 def setup_logger(config_path):
     """Save logs on the same directory as the config file"""
     config_dir = os.path.dirname(os.path.realpath(config_path))
-    print(config_dir)
     logging.basicConfig(level=logging.INFO)
     start_sec = str(int(time.time()))[-4:]
     log_formatter = logging.Formatter(
