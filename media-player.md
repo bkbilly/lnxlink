@@ -25,6 +25,9 @@ media_player:
       song_album: "{{ state_attr('sensor.desktop_linux_media_info', 'album') }}"
       song_volume: "{{ state_attr('sensor.desktop_linux_media_info', 'volume') }}"
       player_status: "{{ state_attr('sensor.desktop_linux_media_info', 'status') }}"
+      track_duration: "{{ state_attr('sensor.desktop_linux_media_info', 'duration') }}"
+      track_position: "{{ state_attr('sensor.desktop_linux_media_info', 'position') }}"
+      album_art: "lnxlink/desktop-linux/monitor_controls/media_info/thumbnail"
       volume:
         service: mqtt.publish
         data:

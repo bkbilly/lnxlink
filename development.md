@@ -32,6 +32,17 @@ The method `getControlInfo` should return the value of the sensor you want to cr
         }
 ```
 
+### Control System
+
+You can write the command you want to run when the topic containing the `commands` string is published to the MQTT server. The argument topic is a list separated with a slash (`/`). The argument data is a string or a json.
+
+```python
+    def start_control(self, topic, data):
+        """Control system"""
+        print(topic)
+        print(data)
+```
+
 ### Expose Sensors and Controls
 
 A new method under the `Addon` class has to be created which returns a dictionary with options specific for the sensor you want:
@@ -60,6 +71,7 @@ This is required which is responsible for sending the appropriate type of comman
 * number
 * select
 * camera
+* image
 * update
 
 #### value\_template
@@ -93,7 +105,7 @@ This is used for the sensors `binary_sensor`, `button`, `number`, `sensor`, `swi
 <pre class="language-python"><code class="lang-python"><strong>  "device_class": "battery"
 </strong></code></pre>
 
-state\_class
+#### state\_class
 
 This is used only for the type `sensor` which is described [here](https://developers.home-assistant.io/docs/core/entity/sensor/#available-state-classes). These are the available options:
 
@@ -156,14 +168,10 @@ This is used only for types `sensor` and `binary_sensor` which defines the numbe
   "expire_after": 5
 ```
 
-### Control System
+#### install
 
-You can write the command you want to run when the topic containing the `commands` string is published to the MQTT server. The argument topic is a list separated with a slash (`/`). The argument data is a string or a json.
+This is used only for `update` sensor. It can be anything and it's used to enable the install option on Home Assistant.
 
-```python
-    def start_control(self, topic, data):
-        """Control system"""
-        print(topic)
-        print(data)
-```
+<pre class="language-python"><code class="lang-python"><strong>  "install": "install"
+</strong></code></pre>
 
