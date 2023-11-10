@@ -85,7 +85,7 @@ data:
 
 Combine with Wake on Lan to control your PC with one switch:
 
-```
+```yaml
 switch:
   - platform: template
     switches:
