@@ -7,6 +7,7 @@ import time
 import json
 import threading
 import logging
+from logging.handlers import RotatingFileHandler
 import argparse
 import platform
 import importlib.metadata
@@ -390,7 +391,6 @@ class LNXlink:
 def setup_logger(config_path):
     """Save logs on the same directory as the config file"""
     config_dir = os.path.dirname(os.path.realpath(config_path))
-    logging.basicConfig(level=logging.INFO)
     start_sec = str(int(time.time()))[-4:]
     log_formatter = logging.Formatter(
         "%(asctime)s ["
@@ -398,7 +398,12 @@ def setup_logger(config_path):
         + ":%(threadName)s.%(module)s.%(funcName)s.%(lineno)d] [%(levelname)s]  %(message)s"
     )
 
-    file_handler = logging.FileHandler(f"{config_dir}/lnxlink.log")
+    file_handler = RotatingFileHandler(
+        f"{config_dir}/lnxlink.log",
+        maxBytes=5 * 1024 * 1024,
+        backupCount=1,
+    )
+    logging.basicConfig(level=logging.INFO)
     file_handler.setFormatter(log_formatter)
     logger.addHandler(file_handler)
 

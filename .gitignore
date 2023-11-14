@@ -6,4 +6,5 @@ build/
 .venv/
 venv/
 *.log
+*.log.*
 *test*
