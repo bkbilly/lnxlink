@@ -3,14 +3,21 @@
 import threading
 import signal
 import logging
+import traceback
+
 import dbus
 from dbus.mainloop.glib import DBusGMainLoop
-import pgi
-
-pgi.install_as_gi()
-from gi.repository import GLib
 
 logger = logging.getLogger("lnxlink")
+
+try:
+    import pgi
+
+    pgi.install_as_gi()
+except ImportError:
+    logger.error("Can't use PGI: %s", traceback.format_exc())
+
+from gi.repository import GLib
 
 
 class MonitorSuspend:
