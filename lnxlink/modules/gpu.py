@@ -65,7 +65,7 @@ class Addon:
             if which("nvidia-settings") is not None:
                 display = self.lnxlink.display
                 settings_out, _, _ = syscommand(
-                    f"nvidia-settings -q '[gpu:{gpu_id}]/GPUUtilization' -c {display}"
+                    f"nvidia-settings -q '[gpu:{gpu_id}]/GPUUtilization' --display {display}"
                 )
                 match = re.findall(r"graphics=(\d+)", settings_out)
                 if match:
