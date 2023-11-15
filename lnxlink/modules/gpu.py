@@ -64,12 +64,13 @@ class Addon:
             gpu_util = None
             if which("nvidia-settings") is not None:
                 display = self.lnxlink.display
-                settings_out, _, _ = syscommand(
-                    f"nvidia-settings -q '[gpu:{gpu_id}]/GPUUtilization' --display {display}"
-                )
-                match = re.findall(r"graphics=(\d+)", settings_out)
-                if match:
-                    gpu_util = int(match[0])
+                if display:
+                    settings_out, _, _ = syscommand(
+                        f"nvidia-settings -q '[gpu:{gpu_id}]/GPUUtilization' --display {display}"
+                    )
+                    match = re.findall(r"graphics=(\d+)", settings_out)
+                    if match:
+                        gpu_util = int(match[0])
             else:
                 logger.error(
                     "Older NVIDIA GPUs need nvidia-settings which is not installed."
