@@ -19,6 +19,7 @@ class Addon:
         other_displays, _, _ = syscommand(
             "sed -zn 's/^DISPLAY=//p' /proc/*/environ 2> /dev/null | LC_ALL=C sort -zu | tr '\\0' '\\n'"
         )
+        other_displays = other_displays.split("\n")
         if len(other_displays) > 0:
             self.lnxlink.display = other_displays[0]
             return other_displays[0]
