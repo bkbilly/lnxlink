@@ -5,7 +5,6 @@ import logging
 import glob
 import os
 import sys
-from .scripts.helpers import syscommand
 
 logger = logging.getLogger("lnxlink")
 
@@ -28,8 +27,6 @@ def autoload_modules(auto_exclude=None):
 
 def parse_modules(list_modules=None, custom_modules=None, auto_exclude=None):
     """Import all modules and return them as a dict"""
-    stdout, _, _ = syscommand("echo $DISPLAY")
-    os.environ["DISPLAY"] = ":0" if not stdout else stdout
     if list_modules is None:
         list_modules = autoload_modules(auto_exclude)
     if custom_modules is not None:

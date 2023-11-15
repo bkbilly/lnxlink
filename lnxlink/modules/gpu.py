@@ -63,8 +63,9 @@ class Addon:
         if math.isnan(gpu_util):
             gpu_util = None
             if which("nvidia-settings") is not None:
+                display = self.lnxlink.display
                 settings_out, _, _ = syscommand(
-                    f"nvidia-settings -q '[gpu:{gpu_id}]/GPUUtilization'"
+                    f"nvidia-settings -q '[gpu:{gpu_id}]/GPUUtilization' -c {display}"
                 )
                 match = re.findall(r"graphics=(\d+)", settings_out)
                 if match:

@@ -39,6 +39,7 @@ class LNXlink:
 
         logger.info("LNXlink %s, Python %s", self.version, platform.python_version())
         self.kill = False
+        self.display = None
         self.inference_times = {}
 
         # Read configuration from yaml file

@@ -1,4 +1,5 @@
 """Checks if a window is in fullscreen"""
+import Xlib.display
 from ewmh import EWMH
 
 
@@ -8,6 +9,7 @@ class Addon:
     def __init__(self, lnxlink):
         """Setup addon"""
         self.name = "Fullscreen"
+        self.lnxlink = lnxlink
 
     def exposed_controls(self):
         """Exposes to home assistant"""
@@ -25,7 +27,10 @@ class Addon:
             "is_fullscreen": "OFF",
             "window": "",
         }
-        ewmh = EWMH()
+        if self.lnxlink.display is None:
+            return data
+        display = Xlib.display.Display(self.lnxlink.display)
+        ewmh = EWMH(_display=display)
         windows = ewmh.getClientList()
         for win in windows:
             state = ewmh.getWmState(win, True)
