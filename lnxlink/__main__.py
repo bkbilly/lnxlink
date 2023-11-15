@@ -411,9 +411,10 @@ def setup_logger(config_path):
 
 def main():
     """Starts the app with some arguments"""
-    parser = argparse.ArgumentParser(
-        prog="LNXlink", description="Send system information to MQTT broker"
+    description = (
+        f"LNXlink {version} bridges this OS with Home Assistant through an MQTT broker."
     )
+    parser = argparse.ArgumentParser(prog="lnxlink", description=description)
     parser.add_argument(
         "-c",
         "--config",
