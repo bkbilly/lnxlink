@@ -1,5 +1,9 @@
 """Gets disk usage from all disks"""
+import logging
+
 import psutil
+
+logger = logging.getLogger("lnxlink")
 
 
 class Addon:
@@ -47,21 +51,32 @@ class Addon:
         """Get a list of all disks"""
         disks = {}
         for disk in psutil.disk_partitions():
+            matches = [
+                "/snap/",
+                "/docker/overlay",
+                "/docker/btrfs",
+            ]
+            if any(x in disk.mountpoint for x in matches):
+                continue
             if disk.fstype == "squashfs":
                 continue
-            if "docker/overlay" in disk.mountpoint:
-                continue
-            if "/snap/" in disk.mountpoint:
-                continue
-            if "/docker/btrfs" in disk.mountpoint:
-                continue
-            device = disk.device.replace("/", "_").strip("_")
-            disks[device] = {}
-            disk_stats = psutil.disk_usage(disk.mountpoint)
-            disks[device]["total"] = self._bytetomb(disk_stats.total)
-            disks[device]["used"] = self._bytetomb(disk_stats.used)
-            disks[device]["free"] = self._bytetomb(disk_stats.free)
-            disks[device]["percent"] = disk_stats.percent
-            disks[device]["connected"] = True
-            disks[device]["mountpoint"] = disk.mountpoint
+
+            try:
+                device = disk.device.replace("/", "_").strip("_")
+                disks[device] = {}
+                disk_stats = psutil.disk_usage(disk.mountpoint)
+                disks[device]["total"] = self._bytetomb(disk_stats.total)
+                disks[device]["used"] = self._bytetomb(disk_stats.used)
+                disks[device]["free"] = self._bytetomb(disk_stats.free)
+                disks[device]["percent"] = disk_stats.percent
+                disks[device]["connected"] = True
+                disks[device]["mountpoint"] = disk.mountpoint
+            except Exception as err:
+                logger.error(
+                    "Error with disk usage [fstype: %s, device: %s, mountpoint: %s]: %s",
+                    disk.fstype,
+                    disk.device,
+                    disk.mountpoint,
+                    err,
+                )
         return disks
