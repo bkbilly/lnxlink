@@ -62,9 +62,9 @@ class Addon:
                 continue
 
             try:
+                disk_stats = psutil.disk_usage(disk.mountpoint)
                 device = disk.device.replace("/", "_").strip("_")
                 disks[device] = {}
-                disk_stats = psutil.disk_usage(disk.mountpoint)
                 disks[device]["total"] = self._bytetomb(disk_stats.total)
                 disks[device]["used"] = self._bytetomb(disk_stats.used)
                 disks[device]["free"] = self._bytetomb(disk_stats.free)
