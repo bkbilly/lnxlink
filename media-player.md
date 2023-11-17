@@ -8,7 +8,7 @@ This addon gets the information from the attributes of media\_info sensor. It su
 
 <div align="left">
 
-<figure><img src="https://user-images.githubusercontent.com/518494/193397441-f18bb5fa-de37-4d95-9158-32cd81b31c72.png" alt=""><figcaption></figcaption></figure>
+<figure><img src=".gitbook/assets/image.png" alt="" width="449"><figcaption></figcaption></figure>
 
 </div>
 

@@ -37,6 +37,7 @@ Home Assistant companion app for linux that uses the MQTT integration to get inf
 | Screenshot       | Speech Recognition                 |
 | Full Screen      | Audio Select (microphone, speaker) |
 | Inference Time   |                                    |
+| Display Variable |                                    |
 
 ## Supported OS
 

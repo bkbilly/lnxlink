@@ -7,7 +7,7 @@ Prepare your system:
 {% code overflow="wrap" lineNumbers="true" %}
 ```bash
 # For debian based distros:
-sudo apt install patchelf meson libdbus-glib-1-dev libglib2.0-dev libasound2-dev python3-pip xdotool xdg-utils python3-pyaudio
+sudo apt install patchelf meson libdbus-glib-1-dev libglib2.0-dev libasound2-dev libgirepository1.0-dev python3-pip xdotool xdg-utils python3-pyaudio
 # For Red Hat based distros:
 sudo dnf install python39-pip.noarch gcc cmake dbus-devel glib2-devel python39-devel alsa-lib-devel
 # Upgrade PIP to the latest version
@@ -172,6 +172,7 @@ custom_modules:
 3rd party custom modules:
 
 * [https://github.com/PW999/lnxlink\_gpu\_nvidia\_settings](https://github.com/PW999/lnxlink\_gpu\_nvidia\_settings)
+* [https://github.com/bkbilly/lnxlink/discussions/81](https://github.com/bkbilly/lnxlink/discussions/81)
 
 ### Exclude Modules
 
