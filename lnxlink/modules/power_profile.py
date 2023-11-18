@@ -19,13 +19,16 @@ class Addon:
 
     def exposed_controls(self):
         """Exposes to home assistant"""
-        return {
-            "Power Profile": {
-                "type": "select",
-                "icon": "mdi:leaf",
-                "options": self.options,
+        discovery_info = {}
+        if len(self.options) > 0:
+            discovery_info = {
+                "Power Profile": {
+                    "type": "select",
+                    "icon": "mdi:leaf",
+                    "options": self.options,
+                }
             }
-        }
+        return discovery_info
 
     def start_control(self, topic, data):
         """Control system"""
