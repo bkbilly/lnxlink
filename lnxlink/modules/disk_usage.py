@@ -40,7 +40,7 @@ class Addon:
             self.disks[disk_name]["connected"] = False
             self.disks[disk_name]["percent"] = None
         self.disks = disks
-        for disk_name in mounted:
+        if len(mounted) > 0:
             self.lnxlink.setup_discovery()
         return self.disks
 
