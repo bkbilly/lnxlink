@@ -3,7 +3,6 @@
 import threading
 import signal
 import logging
-import traceback
 
 import dbus
 from dbus.mainloop.glib import DBusGMainLoop
@@ -15,7 +14,7 @@ try:
 
     pgi.install_as_gi()
 except ImportError:
-    logger.error("Can't use PGI: %s", traceback.format_exc())
+    logger.error("Can't use PGI, so GI is used instead...")
 
 from gi.repository import GLib
 
