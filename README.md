@@ -22,6 +22,7 @@ With LNXlink, you can monitor your Linux machine's performance, execute commands
 To get started with LNXlink, follow these simple steps:
  - Download the LNXlink application and install it on your Linux machine: `pip install -U lnxlink`
  - Follow the configuration instructions to setup LNXlink: `lnxlink -c lnxlink.yaml`
+ - Install and configure on Home Assistant the [hass-mqtt-mediaplayer](https://github.com/bkbilly/hass-mqtt-mediaplayer) integration.
  - Enjoy real-time monitoring and control of your Linux machine from your Home Assistant dashboard.
 
 For detailed installation instructions, please refer to the documentation page: [bkbilly.gitbook.io/lnxlink](https://bkbilly.gitbook.io/lnxlink).
