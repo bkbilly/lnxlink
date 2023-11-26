@@ -1,30 +1,8 @@
-# 🚗 Automations
+---
+description: These are automation ideas that are really useful when Working From Home
+---
 
-## Set unavailable after shutdown
-
-Just before LNXlink stops, it sends to MQTT an OFF command, but sometimes it doesn't stop gracefully. To fix this, you will have to create an automation on Home Assistant which checks for when was the last time one of the sensors got a value and if it exceeds it sends the OFF command to the MQTT server.
-
-This is an example of the automation which checks events for the idle sensor:
-
-```yaml
-alias: lnxlink powered down
-description: ""
-mode: single
-trigger:
-  - platform: template
-    value_template: >-
-      {{ (now() | as_timestamp -
-      states.sensor.desktop_linux_idle.last_changed | as_timestamp) >
-      10 }}
-condition: []
-action:
-  - service: mqtt.publish
-    data:
-      qos: 0
-      retain: true
-      topic: lnxlink/desktop-linux/lwt
-      payload: "OFF"
-```
+# 🤯 Automations
 
 ## Pause media playback when I am on the phone
 

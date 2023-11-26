@@ -1,3 +1,7 @@
+---
+description: Get started with LNXlink
+---
+
 # 🖥 Setup
 
 ## Installation

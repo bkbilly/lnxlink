@@ -1,5 +1,5 @@
 ---
-description: Companion app
+description: Effortlessly manage your Linux machine
 ---
 
 # 🌩 LNXlink

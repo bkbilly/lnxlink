@@ -1,10 +1,14 @@
-# 🛠 Development
+---
+description: >-
+  You can easily create your own modules for exposing any sensor you want for
+  controlling or monitoring it.
+---
 
-## Programming
+# 🛠 Development
 
 ### How to start
 
-Create a python app which starts with the class Addon:
+Create a python app `yourmodule.py` with a unique name which starts with the class Addon:
 
 ```python
 class Addon():

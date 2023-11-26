@@ -1,3 +1,7 @@
+---
+description: Control your media
+---
+
 # 🎬 Media Player
 
 MQTT integration for a media player is not supported by home assistant, so a custom addon must be installed using HACS. I've modified an addon called [mqtt-mediaplayer](https://github.com/bkbilly/hass-mqtt-mediaplayer) for creating a new media\_player entity.
