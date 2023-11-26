@@ -25,8 +25,8 @@ from .modules.scripts.helpers import syscommand
 
 # Get the current version of the app
 version = importlib.metadata.version(__package__ or __name__)
-path = os.path.dirname(os.path.realpath(__file__))
-if os.path.exists(os.path.join(path, "edit.txt")):
+path = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+if os.path.exists(os.path.join(path, "lnxlink/edit.txt")):
     version += "+edit"
     git_hash, _, return_code = syscommand(f"git -C {path} rev-parse --short HEAD")
     if return_code == 0:
