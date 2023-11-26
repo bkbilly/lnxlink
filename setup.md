@@ -120,6 +120,7 @@ Some commands needs to run as a root user, but it's not recommended to run LNXli
 sudo visudo
 # Add this line at the end (replace USER with your username):
 USER ALL=(ALL) NOPASSWD: /usr/sbin/grub-reboot
+USER ALL=(ALL) NOPASSWD: /bin/systemctl
 ```
 
 ## Config

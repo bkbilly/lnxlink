@@ -963,3 +963,14 @@ action:
       payload: "OFF"
 ```
 
+## SystemD
+
+Not all services on a machine are needed to be controlled or monitored through a switch, so they need to be configured manually by adding this on your configuration.yaml file:
+
+```yaml
+settings:
+  systemd:
+    - docker.service
+    - anydesk.service
+```
+
