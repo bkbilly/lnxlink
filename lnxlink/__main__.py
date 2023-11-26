@@ -196,7 +196,7 @@ class LNXlink:
                 f"{self.pref_topic}/lwt",
                 payload=self.config["mqtt"]["lwt"]["connectMsg"],
                 qos=self.config["mqtt"]["lwt"]["qos"],
-                retain=self.config["mqtt"]["lwt"]["retain"],
+                retain=True,
             )
         if self.config["mqtt"]["discovery"]["enabled"]:
             self.setup_discovery()
@@ -211,7 +211,7 @@ class LNXlink:
                 f"{self.pref_topic}/lwt",
                 payload=self.config["mqtt"]["lwt"]["disconnectMsg"],
                 qos=self.config["mqtt"]["lwt"]["qos"],
-                retain=self.config["mqtt"]["lwt"]["retain"],
+                retain=True,
             )
         self.kill = True
         self.client.disconnect()
@@ -226,7 +226,7 @@ class LNXlink:
                     f"{self.pref_topic}/lwt",
                     payload=self.config["mqtt"]["lwt"]["disconnectMsg"],
                     qos=self.config["mqtt"]["lwt"]["qos"],
-                    retain=self.config["mqtt"]["lwt"]["retain"],
+                    retain=True,
                 )
             else:
                 logger.info("Power Up detected.")
@@ -237,7 +237,7 @@ class LNXlink:
                     f"{self.pref_topic}/lwt",
                     payload=self.config["mqtt"]["lwt"]["connectMsg"],
                     qos=self.config["mqtt"]["lwt"]["qos"],
-                    retain=self.config["mqtt"]["lwt"]["retain"],
+                    retain=True,
                 )
 
     def on_message(self, client, userdata, msg):
@@ -374,7 +374,7 @@ class LNXlink:
         self.client.publish(
             f"homeassistant/{options['type']}/lnxlink/{discovery['unique_id']}/config",
             payload=json.dumps(discovery),
-            retain=self.config["mqtt"]["lwt"]["retain"],
+            retain=True,
         )
 
     def setup_discovery(self):

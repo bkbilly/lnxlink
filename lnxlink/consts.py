@@ -45,11 +45,12 @@ mqtt:
   lwt:
     enabled: true
     qos: 1
-    retain: true
+    retain: false
     connectMsg: 'ON'
     disconnectMsg: 'OFF'
 update_interval: 5
 modules:
 custom_modules:
 exclude:
+settings:
 """
