@@ -57,22 +57,27 @@ class Addon:
         """Control system"""
         if topic[1] == "Brightness":
             for display in self._get_displays():
-                syscommand(f"xrandr --output {display} --brightness {data}")
+                syscommand(
+                    f"xrandr --output {display} --brightness {data} --display {self.lnxlink.display}"
+                )
         else:
             display = topic[1].replace("Brightness_", "")
-            syscommand(f"xrandr --output {display} --brightness {data}")
+            syscommand(
+                f"xrandr --output {display} --brightness {data} --display {self.lnxlink.display}"
+            )
 
     def _get_displays(self):
         """Get all the displays"""
-        stdout, _, _ = syscommand(
-            "xrandr --verbose --current",
-        )
-        pattern = re.compile(
-            r"(\S+) \bconnected\b.*[\s\S]*?(?=Brightness)Brightness: ([\d\.\d]+)"
-        )
-
         displays = {}
-        for match in pattern.findall(stdout):
-            displays[match[0]] = float(match[1])
+        if self.lnxlink.display is not None:
+            stdout, _, _ = syscommand(
+                f"xrandr --verbose --current --display {self.lnxlink.display}",
+            )
+            pattern = re.compile(
+                r"(\S+) \bconnected\b.*[\s\S]*?(?=Brightness)Brightness: ([\d\.\d]+)"
+            )
+
+            for match in pattern.findall(stdout):
+                displays[match[0]] = float(match[1])
 
         return displays
