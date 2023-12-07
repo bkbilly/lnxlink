@@ -1,8 +1,8 @@
 """Shows notifications"""
 import logging
-import notify2
 import requests
 from dbus.mainloop.glib import DBusGMainLoop
+from .scripts.helpers import import_install_package
 
 logger = logging.getLogger("lnxlink")
 
@@ -14,6 +14,12 @@ class Addon:
         """Setup addon"""
         self.name = "Notify OSD"
         DBusGMainLoop(set_as_default=True)
+        self._requirements()
+
+    def _requirements(self):
+        self.lib = {
+            "notify2": import_install_package("notify2", ">=0.3.1"),
+        }
 
     def start_control(self, topic, data):
         """Control system"""
@@ -32,5 +38,5 @@ class Addon:
             logger.error("Error downloading notification image: %s", err)
 
         # notify2
-        notify2.init("Test")
-        notify2.Notification(data["title"], data["message"], icon).show()
+        self.lib["notify2"].init("lnxlink")
+        self.lib["notify2"].Notification(data["title"], data["message"], icon).show()

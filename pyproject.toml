@@ -27,10 +27,7 @@ dependencies = [
     "jc>=1.23.0",
     "pgi>=0.0.11.2",
     "psutil>=5.8.0",
-    "notify2>=0.3.1",
-    "mpris2>=1.0.2",
-    "dbus-idle>=2023.3.2",
-    "ewmh>=0.1.6"
+    "dbus-idle>=2023.3.2"
 ]
 
 
