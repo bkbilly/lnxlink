@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name              = "lnxlink"
-version           = "2023.12.0"
+version           = "2023.12.1"
 description       = "Internet Of Things (IOT) integration with Linux using MQTT"
 readme            = "README.md"
 keywords          = ["lnxlink"]
@@ -26,8 +26,7 @@ dependencies = [
     "pyOpenSSL>=22.1.0",
     "jc>=1.23.0",
     "pgi>=0.0.11.2",
-    "psutil>=5.8.0",
-    "dbus-idle>=2023.3.2"
+    "psutil>=5.8.0"
 ]
 
 
