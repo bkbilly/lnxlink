@@ -428,12 +428,33 @@ def main():
         default="/etc/config.yaml",
         required=True,
     )
+    parser.add_argument(
+        "-i",
+        "--ignore-systemd",
+        help="Runs without setting up SystemD service",
+        action="store_true",
+    )
+    parser.add_argument(
+        "-s",
+        "--setup",
+        help="Runs only the setup configuration workflow",
+        action="store_true",
+    )
     args = parser.parse_args()
 
     config_file = os.path.abspath(args.config)
     setup_logger(config_file)
     config_setup.setup_config(config_file)
-    config_setup.setup_systemd(config_file)
+    if args.setup:
+        logger.info("The configuration exists under the file: %s", config_file)
+        sys.exit()
+    if not args.ignore_systemd:
+        config_setup.setup_systemd(config_file)
+    else:
+        logger.info(
+            "By not setting up the SystemD, LNXlink won't be able to start on boot..."
+        )
+
     lnxlink = LNXlink(config_file)
 
     # Monitor for system changes (Shutdown/Suspend/Sleep)

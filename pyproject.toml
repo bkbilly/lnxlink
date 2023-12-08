@@ -32,7 +32,7 @@ dependencies = [
 
 [project.urls]
 "Source Code" = "https://github.com/bkbilly/lnxlink"
-"Home Page"   = "https://bkbilly.github.io/lnxlink"
+"Documentation"   = "https://bkbilly.gitbook.io/lnxlink"
 
 [tool.setuptools.packages.find]
 include = ["lnxlink*"]

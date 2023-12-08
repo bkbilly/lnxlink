@@ -1,5 +1,4 @@
 """Checks if a window is in fullscreen"""
-import Xlib.display
 from .scripts.helpers import import_install_package
 
 
@@ -15,6 +14,7 @@ class Addon:
     def _requirements(self):
         self.lib = {
             "ewmh": import_install_package("ewmh", ">=0.1.6"),
+            "xlib": import_install_package("xlib", ">=0.33", "Xlib.display"),
         }
 
     def exposed_controls(self):
@@ -35,7 +35,7 @@ class Addon:
         }
         if self.lnxlink.display is None:
             return data
-        display = Xlib.display.Display(self.lnxlink.display)
+        display = self.lib["xlib"].display.Display(self.lnxlink.display)
         ewmh = self.lib["ewmh"].EWMH(_display=display)
         windows = ewmh.getClientList()
         for win in windows:

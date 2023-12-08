@@ -175,6 +175,8 @@ class Addon:
 
     def _filter_title(self, title):
         """Returns Title if it contains specific words"""
+        if title is None:
+            return title
         filter_md5 = [
             "89e55d4f580dd044088b9a003110b37a",
             "7f55a0ed8b021080de00960cc73768fb",

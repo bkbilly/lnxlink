@@ -32,6 +32,8 @@ For detailed installation instructions, please refer to the documentation page: 
  - **Enhanced System Insights:** Gain real-time insights into your Linux machine's performance by monitoring essential system metrics.
  - **Remote Command Execution:** Execute arbitrary commands directly from your Home Assistant dashboard, granting remote control over your Linux machine.
  - **Seamless Integration with Home Assistant:** Integrate your Linux machine into your smart home ecosystem for unified control and monitoring.
+ - **Automate tasks:** Set up automated tasks to perform repetitive actions and save yourself time and effort.
+
 
 # Support LNXlink's Development
 To contribute to the development of LNXlink, you can sponsor the project through [GitHub Sponsors](https://github.com/sponsors/bkbilly) or [PayPal](https://www.paypal.com/paypalme/bkbillybk). Your support will help maintain the project, add new features, and fix bugs.
