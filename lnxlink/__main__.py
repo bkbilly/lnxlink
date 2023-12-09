@@ -44,7 +44,7 @@ class LNXlink:
     def __init__(self, config_path):
 
         logger.info("LNXlink %s, Python %s", self.version, platform.python_version())
-        self.kill = False
+        self.kill = None
         self.display = None
         self.inference_times = {}
 
@@ -200,8 +200,9 @@ class LNXlink:
             )
         if self.config["mqtt"]["discovery"]["enabled"]:
             self.setup_discovery()
-        self.kill = False
-        self.monitor_run_thread()
+        if self.kill is None:
+            self.kill = False
+            self.monitor_run_thread()
 
     def disconnect(self, *args):
         """Reports to MQTT server that the service has stopped"""
