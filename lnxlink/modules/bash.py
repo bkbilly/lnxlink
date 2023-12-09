@@ -21,5 +21,5 @@ class Addon:
 
     def start_control(self, topic, data):
         """Control system"""
-        stdout, _, _ = syscommand(data)
+        stdout, _, _ = syscommand(data, timeout=120)
         return stdout
