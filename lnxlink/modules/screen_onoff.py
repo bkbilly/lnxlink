@@ -22,17 +22,18 @@ class Addon:
 
     def get_info(self):
         """Gather information from the system"""
-        stdout, _, _ = syscommand("xset q")
-        match = re.findall(r"Monitor is (\w*)", stdout)
         status = "ON"
-        if match:
-            status = match[0].upper()
+        if self.lnxlink.display is not None:
+            stdout, _, _ = syscommand(f"xset -display {self.lnxlink.display} q")
+            match = re.findall(r"Monitor is (\w*)", stdout)
+            if match:
+                status = match[0].upper()
 
         return status
 
     def start_control(self, topic, data):
         """Control system"""
         if data.lower() == "off":
-            syscommand("xset dpms force off")
+            syscommand(f"xset -display {self.lnxlink.display} dpms force off")
         elif data.lower() == "on":
-            syscommand("xset dpms force on")
+            syscommand(f"xset -display {self.lnxlink.display} dpms force on")

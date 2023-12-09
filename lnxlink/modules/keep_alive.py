@@ -38,13 +38,14 @@ class Addon:
                 enabled_list.append("nothing" in stdout_suspend)
 
         # Check if DPMS is active
-        stdout_xset, _, _ = syscommand("xset q")
-        xset_pattern = re.compile(r"Standby: (\d+)\s+Suspend: (\d+)\s+Off: (\d+)")
-        xset_match = re.findall(xset_pattern, stdout_xset)
-        for nums in xset_match:
-            enabled_list.append(all(num != "0" for num in nums))
-            if enabled_list[-1]:
-                enabled_list.append("DPMS is Enabled" in stdout_xset)
+        if self.lnxlink.display is not None:
+            stdout_xset, _, _ = syscommand(f"xset -display {self.lnxlink.display} q")
+            xset_pattern = re.compile(r"Standby: (\d+)\s+Suspend: (\d+)\s+Off: (\d+)")
+            xset_match = re.findall(xset_pattern, stdout_xset)
+            for nums in xset_match:
+                enabled_list.append(all(num != "0" for num in nums))
+                if enabled_list[-1]:
+                    enabled_list.append("DPMS is Enabled" in stdout_xset)
 
         return any(enabled_list)
 
