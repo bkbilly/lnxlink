@@ -101,36 +101,34 @@ class LNXlink:
             topic, payload=pub_data, retain=self.config["mqtt"]["lwt"]["retain"]
         )
 
-    def run_modules(self, methods_to_run):
-        """Runs the methods of each module"""
-        for method in methods_to_run:
-            subtopic = method["name"].lower().replace(" ", "_")
-            topic = f"{self.pref_topic}/monitor_controls/{subtopic}"
+    def run_module(self, name, method):
+        """Runs the method of a module"""
+        subtopic = name.lower().replace(" ", "_")
+        topic = f"{self.pref_topic}/monitor_controls/{subtopic}"
 
-            try:
-                start_time = time.time()
-                pub_data = method["method"]()
-                diff_time = round(time.time() - start_time, 5)
-                self.inference_times[f"{method['name']}"] = diff_time
-                self.publish_monitor_data(topic, pub_data)
-            except Exception as err:
-                logger.error(
-                    "Error with addon %s: %s, %s",
-                    method["name"],
-                    err,
-                    traceback.format_exc(),
-                )
+        try:
+            start_time = time.time()
+            pub_data = method()
+            diff_time = round(time.time() - start_time, 5)
+            self.inference_times[name] = diff_time
+            self.publish_monitor_data(topic, pub_data)
+        except Exception as err:
+            logger.error(
+                "Error with addon %s: %s, %s",
+                name,
+                err,
+                traceback.format_exc(),
+            )
 
     def monitor_run(self):
         """Gets information from each Addon and sends it to MQTT"""
         methods_to_run = []
-        for service, addon in self.addons.items():
+        for _, addon in self.addons.items():
             if hasattr(addon, "get_info"):
                 methods_to_run.append(
                     {
                         "name": addon.name,
                         "method": addon.get_info,
-                        "service": service,
                     }
                 )
             if hasattr(addon, "exposed_controls"):
@@ -140,10 +138,10 @@ class LNXlink:
                             {
                                 "name": f"{addon.name}/{exp_name}",
                                 "method": options["method"],
-                                "service": service,
                             }
                         )
-        self.run_modules(methods_to_run)
+        for method in methods_to_run:
+            self.run_module(method["name"], method["method"])
 
     def monitor_run_thread(self):
         """Runs method to get sensor information every prespecified interval"""
