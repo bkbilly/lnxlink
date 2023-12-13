@@ -1,7 +1,6 @@
 """Shows notifications"""
 import logging
 import requests
-from dbus.mainloop.glib import DBusGMainLoop
 from .scripts.helpers import import_install_package
 
 logger = logging.getLogger("lnxlink")
@@ -13,12 +12,13 @@ class Addon:
     def __init__(self, lnxlink):
         """Setup addon"""
         self.name = "Notify OSD"
-        DBusGMainLoop(set_as_default=True)
         self._requirements()
+        self.lib["dbus"].dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
 
     def _requirements(self):
         self.lib = {
             "notify2": import_install_package("notify2", ">=0.3.1"),
+            "dbus": import_install_package("dbus-python", ">=1.3.2"),
         }
 
     def start_control(self, topic, data):
