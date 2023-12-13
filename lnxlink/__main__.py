@@ -42,7 +42,6 @@ class LNXlink:
     path = path
 
     def __init__(self, config_path):
-
         logger.info("LNXlink %s, Python %s", self.version, platform.python_version())
         self.kill = None
         self.display = None
