@@ -16,16 +16,16 @@ class MonitorSuspend:
     def __init__(self, callback):
         try:
             bus = SystemBus()
-            proxy = bus.get('org.freedesktop.login1', '/org/freedesktop/login1')
+            proxy = bus.get("org.freedesktop.login1", "/org/freedesktop/login1")
             proxy.PrepareForShutdown.connect(callback)
             proxy.PrepareForSleep.connect(callback)
-        except:
-            logger.error("Can't connect D-Bus")
+        except Exception as err:
+            logger.error("Can't connect D-Bus: %s", err)
+        self.loop = GLib.MainLoop()
+        self.timer1 = threading.Thread(target=self.loop.run)
 
     def start(self):
         """Start the timer of the thread"""
-        self.loop = GLib.MainLoop()
-        self.timer1 = threading.Thread(target=self.loop.run)
         self.timer1.start()
 
     def stop(self):
