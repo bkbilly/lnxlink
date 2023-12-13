@@ -6,16 +6,34 @@ description: Get started with LNXlink
 
 ## Installation
 
+Install system packages:
+
+{% tabs %}
+{% tab title="Debian Based" %}
+{% code overflow="wrap" lineNumbers="true" %}
+```bash
+sudo apt install patchelf meson python3-pip libcairo2-dev libgirepository1.0-dev libdbus-glib-1-dev libglib2.0-dev
+# Install modules dependencies
+sudo apt install libasound2-dev upower xdotool xdg-utils python3-pyaudio
+```
+{% endcode %}
+{% endtab %}
+
+{% tab title="Red Hat Based" %}
+{% code overflow="wrap" lineNumbers="true" %}
+```bash
+sudo dnf install python39-pip.noarch gcc cmake dbus-devel glib2-devel python39-devel alsa-lib-devel
+```
+{% endcode %}
+{% endtab %}
+{% endtabs %}
+
 Prepare your system:
 
 {% code overflow="wrap" lineNumbers="true" %}
 ```bash
-# For debian based distros:
-sudo apt install patchelf meson libdbus-glib-1-dev libglib2.0-dev libasound2-dev libgirepository1.0-dev python3-pip xdotool xdg-utils python3-pyaudio
-# For Red Hat based distros:
-sudo dnf install python39-pip.noarch gcc cmake dbus-devel glib2-devel python39-devel alsa-lib-devel
-# Upgrade PIP to the latest version
 sudo pip3 install -U pip
+pip install pycairo PyGObject
 ```
 {% endcode %}
 
