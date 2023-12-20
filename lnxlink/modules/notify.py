@@ -13,12 +13,14 @@ class Addon:
         """Setup addon"""
         self.name = "Notify OSD"
         self._requirements()
-        self.lib["dbus"].dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
+        self.lib["dbus"].mainloop.glib.DBusGMainLoop(set_as_default=True)
 
     def _requirements(self):
         self.lib = {
             "notify2": import_install_package("notify2", ">=0.3.1"),
-            "dbus": import_install_package("dbus-python", ">=1.3.2"),
+            "dbus": import_install_package(
+                "dbus-python", ">=1.3.2", "dbus.mainloop.glib"
+            ),
         }
 
     def start_control(self, topic, data):

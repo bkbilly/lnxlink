@@ -22,7 +22,9 @@ class Addon:
         self.lib = {
             "alsaaudio": import_install_package("pyalsaaudio", ">=0.9.2", "alsaaudio"),
             "mpris2": import_install_package("mpris2", ">=1.0.2"),
-            "dbus": import_install_package("dbus-python", ">=1.3.2"),
+            "dbus": import_install_package(
+                "dbus-python", ">=1.3.2", "dbus.mainloop.glib"
+            ),
         }
 
     def exposed_controls(self):
@@ -137,7 +139,7 @@ class Addon:
 
     def _get_players(self):
         """Get all the currently playing players"""
-        self.lib["dbus"].dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
+        self.lib["dbus"].mainloop.glib.DBusGMainLoop(set_as_default=True)
         self.players = []
         for uri in self.lib["mpris2"].get_players_uri():
             player = self.lib["mpris2"].Player(dbus_interface_info={"dbus_uri": uri})
