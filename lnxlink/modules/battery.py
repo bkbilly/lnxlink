@@ -56,6 +56,8 @@ class Addon:
                             device.get("serial", "").replace(":", ""),
                         ]
                     ).strip()
+                    if name == "":
+                        name = device.get("native_path", "").strip("/")[-1]
                     if name != "":
                         devices[name] = {
                             "percent": device["detail"]["percentage"],
