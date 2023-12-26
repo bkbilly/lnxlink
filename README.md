@@ -27,17 +27,17 @@ Home Assistant companion app for linux that uses the MQTT integration to get inf
 | Network Speed    | Notify                             |
 | Media info       | Media Controls                     |
 | Microphone used  | Send Keys                          |
-| Camera used      | Screen On/Off                      |
-| Idle time        | Open URL/File                      |
-| Battery          | Bash commands                      |
-| Disk usage       | Keep Alive                         |
-| Restart required | Brightness                         |
-| Update required  | Boot select                        |
-| Webcam           | Power Profile                      |
-| Screenshot       | Speech Recognition                 |
-| Full Screen      | Audio Select (microphone, speaker) |
-| Inference Time   | SystemD                            |
-| Display Variable |                                    |
+| Camera used      | Mouse control                      |
+| Idle time        | Screen On/Off                      |
+| Battery          | Open URL/File                      |
+| Disk usage       | Bash commands                      |
+| Restart required | Keep Alive                         |
+| Update required  | Brightness                         |
+| Webcam           | Boot select                        |
+| Screenshot       | Power Profile                      |
+| Full Screen      | Speech Recognition                 |
+| Inference Time   | Audio Select (microphone, speaker) |
+| Display Variable | SystemD                            |
 
 ## Supported OS
 
