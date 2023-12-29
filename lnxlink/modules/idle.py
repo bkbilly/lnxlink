@@ -15,19 +15,20 @@ class Addon:
 
     def _requirements(self):
         self.lib = {
-            "dbus_idle": import_install_package("dbus-idle", ">=2023.3.2", "dbus_idle"),
+            "dbus_idle": import_install_package(
+                "dbus-idle", ">=2023.12.0", "dbus_idle"
+            ),
         }
 
     def get_info(self):
         """Gather information from the system"""
-        monitor = self.lib["dbus_idle"].IdleMonitor.get_monitor()
-        idle_ms = monitor.get_dbus_idle()
         try:
+            idle_ms = self.lib["dbus_idle"].IdleMonitor().get_dbus_idle()
             idle_sec = round(idle_ms / 1000, 0)
+            return idle_sec
         except Exception as err:
-            logging.debug(err)
+            logger.error(err)
             return 0
-        return idle_sec
 
     def exposed_controls(self):
         """Exposes to home assistant"""
