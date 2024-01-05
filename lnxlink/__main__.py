@@ -295,6 +295,8 @@ class LNXlink:
         lookup_options = {
             "value_template": {
                 "value_template": options.get("value_template", ""),
+            },
+            "attributes_template": {
                 "json_attributes_topic": state_topic,
                 "json_attributes_template": options.get(
                     "attributes_template", "{{ value_json | tojson }}"
