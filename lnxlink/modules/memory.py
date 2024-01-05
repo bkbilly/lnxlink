@@ -18,7 +18,6 @@ class Addon:
                 "unit": "%",
                 "state_class": "measurement",
                 "value_template": "{{ value_json.percent }}",
-                "attributes_template": "{{ value_json.percent }}",
             },
             "Memory Used": {
                 "type": "sensor",
@@ -27,7 +26,6 @@ class Addon:
                 "state_class": "measurement",
                 "device_class": "data_size",
                 "value_template": "{{ value_json.used }}",
-                "attributes_template": "{{ value_json.used }}",
                 "enabled": False,
             },
             "Memory Available": {
@@ -37,7 +35,6 @@ class Addon:
                 "state_class": "measurement",
                 "device_class": "data_size",
                 "value_template": "{{ value_json.available }}",
-                "attributes_template": "{{ value_json.available }}",
                 "enabled": False,
             },
         }

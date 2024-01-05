@@ -23,7 +23,6 @@ class Addon:
                 "state_class": "measurement",
                 "device_class": "data_rate",
                 "value_template": "{{ value_json.upload }}",
-                "attributes_template": "{{ value_json.upload }}",
             },
             "Network Download": {
                 "type": "sensor",
@@ -32,7 +31,6 @@ class Addon:
                 "state_class": "measurement",
                 "device_class": "data_rate",
                 "value_template": "{{ value_json.download }}",
-                "attributes_template": "{{ value_json.download }}",
             },
         }
 
