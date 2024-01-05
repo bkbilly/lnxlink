@@ -18,12 +18,12 @@ class Addon:
         """Gather information from the system"""
         displays = self._get_displays()
         avg_brightness = sum(displays.values()) / max(1, len(displays.values()))
-        avg_brightness = min(0.1, avg_brightness)
+        avg_brightness = max(0.1, avg_brightness)
 
         info = {"status": avg_brightness}
         for display, brightness in displays.items():
             display = display.replace("-", "_")
-            info[display] = min(0.1, brightness)
+            info[display] = max(0.1, brightness)
         return info
 
     def exposed_controls(self):
