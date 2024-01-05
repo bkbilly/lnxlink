@@ -13,7 +13,7 @@ class Addon:
         """Gather information from the system"""
         return {
             "modules": self.lnxlink.inference_times,
-            "sum": round(sum(self.lnxlink.inference_times.values()), 3),
+            "sum": round(sum(self.lnxlink.inference_times.values()), 2),
         }
 
     def exposed_controls(self):

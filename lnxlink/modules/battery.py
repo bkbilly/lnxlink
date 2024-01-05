@@ -16,13 +16,14 @@ class Addon:
         """Exposes to home assistant"""
         discovery_info = {}
         for device in self.devices:
+            att_temp = f"{{{{ value_json.get('{device}', {{}}).get('attributes', {{}}) | tojson }}}}"
             discovery_info[f"Battery {device}"] = {
                 "type": "sensor",
                 "icon": "mdi:battery",
                 "unit": "%",
                 "device_class": "battery",
                 "value_template": f"{{{{ value_json.get('{device}', {{}}).get('percent') }}}}",
-                "attributes_template": f"{{{{ value_json.get('{device}', {{}}) | tojson }}}}",
+                "attributes_template": att_temp,
                 "enabled": True,
             }
         return discovery_info
@@ -49,6 +50,7 @@ class Addon:
         for device in upower_json:
             if "detail" in device:
                 if "percentage" in device["detail"]:
+                    native_path = device.get("native_path", "").split("/")[-1]
                     name = " ".join(
                         [
                             device.get("vendor", ""),
@@ -57,13 +59,18 @@ class Addon:
                         ]
                     ).strip()
                     if name == "":
-                        name = device.get("native_path", "").split("/")[-1]
+                        name = native_path
                     if name != "":
                         devices[name] = {
                             "percent": device["detail"]["percentage"],
-                            "vendor": device.get("vendor", ""),
-                            "model": device.get("model", ""),
-                            "serial": device.get("serial", ""),
-                            "rechargeable": device["detail"].get("rechargeable", ""),
+                            "attributes": {
+                                "vendor": device.get("vendor", ""),
+                                "model": device.get("model", ""),
+                                "serial": device.get("serial", ""),
+                                "native_path": native_path,
+                                "rechargeable": device["detail"].get(
+                                    "rechargeable", ""
+                                ),
+                            },
                         }
         return devices

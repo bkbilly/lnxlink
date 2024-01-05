@@ -19,13 +19,14 @@ class Addon:
         """Exposes to home assistant"""
         discovery_info = {}
         for device in self.disks:
+            att_temp = f"{{{{ value_json.get('{device}', {{}}).get('attributes', {{}}) | tojson }}}}"
             discovery_info[f"Disk {device}"] = {
                 "type": "sensor",
                 "icon": "mdi:harddisk",
                 "unit": "%",
                 "state_class": "measurement",
                 "value_template": f"{{{{ value_json.get('{device}', {{}}).get('percent') }}}}",
-                "attributes_template": f"{{{{ value_json.get('{device}', {{}}) | tojson }}}}",
+                "attributes_template": att_temp,
                 "enabled": True,
             }
         return discovery_info
@@ -37,7 +38,7 @@ class Addon:
         unmounted = set(self.disks) - set(disks)
         for disk_name in unmounted:
             disks[disk_name] = self.disks[disk_name]
-            self.disks[disk_name]["connected"] = False
+            self.disks[disk_name]["attributes"]["connected"] = False
             self.disks[disk_name]["percent"] = None
         self.disks = disks
         if len(mounted) > 0:
@@ -45,7 +46,7 @@ class Addon:
         return self.disks
 
     def _bytetomb(self, byte):
-        return round(byte / 1024 / 1024, 1)
+        return round(byte / 1024 / 1024, 0)
 
     def _get_disks(self):
         """Get a list of all disks"""
@@ -65,12 +66,13 @@ class Addon:
                 disk_stats = psutil.disk_usage(disk.mountpoint)
                 device = disk.device.replace("/", "_").strip("_")
                 disks[device] = {}
-                disks[device]["total"] = self._bytetomb(disk_stats.total)
-                disks[device]["used"] = self._bytetomb(disk_stats.used)
-                disks[device]["free"] = self._bytetomb(disk_stats.free)
                 disks[device]["percent"] = disk_stats.percent
-                disks[device]["connected"] = True
-                disks[device]["mountpoint"] = disk.mountpoint
+                disks[device]["attributes"] = {}
+                disks[device]["attributes"]["total"] = self._bytetomb(disk_stats.total)
+                disks[device]["attributes"]["used"] = self._bytetomb(disk_stats.used)
+                disks[device]["attributes"]["free"] = self._bytetomb(disk_stats.free)
+                disks[device]["attributes"]["connected"] = True
+                disks[device]["attributes"]["mountpoint"] = disk.mountpoint
             except Exception as err:
                 logger.error(
                     "Error with disk usage [fstype: %s, device: %s, mountpoint: %s]: %s",

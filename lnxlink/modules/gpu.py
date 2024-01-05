@@ -38,23 +38,27 @@ class Addon:
         for gpu_id in range(self.gpu_ids["amd"]):
             amd_gpu = self.lib["amd"].get_gpu(gpu_id)
             gpus[f"amd_{gpu_id}"] = {
-                "Name": amd_gpu.name,
-                "VRAM usage": amd_gpu.query_vram_usage(),
-                "GTT usage": amd_gpu.query_gtt_usage(),
-                "Temperature": amd_gpu.query_temperature(),
                 "load": min(100, amd_gpu.query_load() * 100),
-                "Power": amd_gpu.query_power(),
-                "Voltage": amd_gpu.query_graphics_voltage(),
+                "attributes": {
+                    "Name": amd_gpu.name,
+                    "VRAM usage": amd_gpu.query_vram_usage(),
+                    "GTT usage": amd_gpu.query_gtt_usage(),
+                    "Temperature": amd_gpu.query_temperature(),
+                    "Power": amd_gpu.query_power(),
+                    "Voltage": amd_gpu.query_graphics_voltage(),
+                },
             }
         for gpu_id in range(self.gpu_ids["nvidia"]):
             nvidia_gpu = list(self.lib["nvidia"].get_gpus())[gpu_id]
             gpu_util = nvidia_gpu.gpu_util
             gpu_util = self._older_gpu_load(gpu_id, gpu_util)
             gpus[f"nvidia_{gpu_id}"] = {
-                "Name": nvidia_gpu.name,
-                "Memory usage": round(nvidia_gpu.mem_util, 1),
                 "load": gpu_util,
-                "Temperature": nvidia_gpu.temperature,
+                "attributes": {
+                    "Name": nvidia_gpu.name,
+                    "Memory usage": round(nvidia_gpu.mem_util, 0),
+                    "Temperature": nvidia_gpu.temperature,
+                },
             }
         return gpus
 
@@ -87,7 +91,7 @@ class Addon:
                 "unit": "%",
                 "state_class": "measurement",
                 "value_template": f"{{{{ value_json.amd_{gpu_id}.load }}}}",
-                "attributes_template": f"{{{{ value_json.amd_{gpu_id} | tojson }}}}",
+                "attributes_template": f"{{{{ value_json.amd_{gpu_id}.attributes | tojson }}}}",
                 "enabled": True,
             }
         for gpu_id in range(self.gpu_ids["nvidia"]):
@@ -97,7 +101,7 @@ class Addon:
                 "unit": "%",
                 "state_class": "measurement",
                 "value_template": f"{{{{ value_json.nvidia_{gpu_id}.load }}}}",
-                "attributes_template": f"{{{{ value_json.nvidia_{gpu_id} | tojson }}}}",
+                "attributes_template": f"{{{{ value_json.nvidia_{gpu_id}.attributes | tojson }}}}",
                 "enabled": True,
             }
         return discovery_info
