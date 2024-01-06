@@ -13,10 +13,14 @@ class Addon:
         """Setup addon"""
         self.name = "Brightness"
         self.lnxlink = lnxlink
+        self.displays = self._get_displays()
 
     def get_info(self):
         """Gather information from the system"""
         displays = self._get_displays()
+        if displays != self.displays:
+            self.displays = displays
+            self.lnxlink.setup_discovery()
         avg_brightness = sum(displays.values()) / max(1, len(displays.values()))
         avg_brightness = max(0.1, avg_brightness)
 
@@ -28,18 +32,20 @@ class Addon:
 
     def exposed_controls(self):
         """Exposes to home assistant"""
-        controls = {
-            "Brightness": {
-                "type": "number",
-                "icon": "mdi:brightness-7",
-                "min": 0.1,
-                "max": 1,
-                "step": 0.1,
-                "value_template": "{{ value_json.status }}",
+        controls = {}
+        if len(self.displays) > 0:
+            controls = {
+                "Brightness": {
+                    "type": "number",
+                    "icon": "mdi:brightness-7",
+                    "min": 0.1,
+                    "max": 1,
+                    "step": 0.1,
+                    "value_template": "{{ value_json.status }}",
+                }
             }
-        }
         try:
-            for display in self._get_displays():
+            for display in self.displays:
                 json_display = display.replace("-", "_")
                 controls[f"Brightness {display}"] = {
                     "type": "number",
@@ -56,13 +62,13 @@ class Addon:
 
     def start_control(self, topic, data):
         """Control system"""
-        if topic[1] == "Brightness":
-            for display in self._get_displays():
+        if topic[1] == "brightness":
+            for display in self.displays:
                 syscommand(
                     f"xrandr --output {display} --brightness {data} --display {self.lnxlink.display}"
                 )
         else:
-            display = topic[1].replace("Brightness_", "")
+            display = topic[1].replace("brightness_", "")
             syscommand(
                 f"xrandr --output {display} --brightness {data} --display {self.lnxlink.display}"
             )
