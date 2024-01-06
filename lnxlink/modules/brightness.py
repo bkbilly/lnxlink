@@ -62,29 +62,34 @@ class Addon:
 
     def start_control(self, topic, data):
         """Control system"""
+        disp_env_cmd = ""
+        if self.lnxlink.display is not None:
+            disp_env_cmd = f" --display {self.lnxlink.display}"
+
         if topic[1] == "brightness":
             for display in self.displays:
                 syscommand(
-                    f"xrandr --output {display} --brightness {data} --display {self.lnxlink.display}"
+                    f"xrandr --output {display} --brightness {data} {disp_env_cmd}"
                 )
         else:
-            display = topic[1].replace("brightness_", "")
-            syscommand(
-                f"xrandr --output {display} --brightness {data} --display {self.lnxlink.display}"
-            )
+            display = topic[1].replace("brightness_", "").upper()
+            syscommand(f"xrandr --output {display} --brightness {data} {disp_env_cmd}")
 
     def _get_displays(self):
         """Get all the displays"""
         displays = {}
+        disp_env_cmd = ""
         if self.lnxlink.display is not None:
-            stdout, _, _ = syscommand(
-                f"xrandr --verbose --current --display {self.lnxlink.display}",
-            )
-            pattern = re.compile(
-                r"(\S+) \bconnected\b.*[\s\S]*?(?=Brightness)Brightness: ([\d\.\d]+)"
-            )
+            disp_env_cmd = f" --display {self.lnxlink.display}"
 
-            for match in pattern.findall(stdout):
-                displays[match[0]] = float(match[1])
+        stdout, _, _ = syscommand(
+            f"xrandr --verbose --current {disp_env_cmd}",
+        )
+        pattern = re.compile(
+            r"(\S+) \bconnected\b.*[\s\S]*?(?=Brightness)Brightness: ([\d\.\d]+)"
+        )
+
+        for match in pattern.findall(stdout):
+            displays[match[0]] = float(match[1])
 
         return displays
