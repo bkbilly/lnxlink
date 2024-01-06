@@ -21,13 +21,13 @@ class Addon:
         if displays != self.displays:
             self.displays = displays
             self.lnxlink.setup_discovery()
-        avg_brightness = sum(displays.values()) / max(1, len(displays.values()))
+        values = [disp["brightness"] for disp in displays.values()]
+        avg_brightness = sum(values) / max(1, len(values))
         avg_brightness = max(0.1, avg_brightness)
 
         info = {"status": avg_brightness}
-        for display, brightness in displays.items():
-            display = display.replace("-", "_")
-            info[display] = max(0.1, brightness)
+        for display, values in displays.items():
+            info[display] = max(0.1, values["brightness"])
         return info
 
     def exposed_controls(self):
@@ -44,20 +44,16 @@ class Addon:
                     "value_template": "{{ value_json.status }}",
                 }
             }
-        try:
-            for display in self.displays:
-                json_display = display.replace("-", "_")
-                controls[f"Brightness {display}"] = {
-                    "type": "number",
-                    "icon": "mdi:brightness-7",
-                    "min": 0.1,
-                    "max": 1,
-                    "step": 0.1,
-                    "value_template": f"{{{{ value_json.{json_display} }}}}",
-                    "enabled": False,
-                }
-        except Exception as err:
-            logger.error(err)
+        for display, values in self.displays.items():
+            controls[f"Brightness {values['name']}"] = {
+                "type": "number",
+                "icon": "mdi:brightness-7",
+                "min": 0.1,
+                "max": 1,
+                "step": 0.1,
+                "value_template": f"{{{{ value_json.{display} }}}}",
+                "enabled": False,
+            }
         return controls
 
     def start_control(self, topic, data):
@@ -67,12 +63,12 @@ class Addon:
             disp_env_cmd = f" --display {self.lnxlink.display}"
 
         if topic[1] == "brightness":
-            for display in self.displays:
+            for values in self.displays.values():
                 syscommand(
-                    f"xrandr --output {display} --brightness {data} {disp_env_cmd}"
+                    f"xrandr --output {values['name']} --brightness {data} {disp_env_cmd}"
                 )
         else:
-            display = topic[1].replace("brightness_", "").upper()
+            display = self.displays[topic[1].replace("brightness_", "")]["name"]
             syscommand(f"xrandr --output {display} --brightness {data} {disp_env_cmd}")
 
     def _get_displays(self):
@@ -90,6 +86,9 @@ class Addon:
         )
 
         for match in pattern.findall(stdout):
-            displays[match[0]] = float(match[1])
+            displays[match[0].lower()] = {
+                "name": match[0],
+                "brightness": float(match[1]),
+            }
 
         return displays
