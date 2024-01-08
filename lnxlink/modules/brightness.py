@@ -68,7 +68,9 @@ class Addon:
                     f"xrandr --output {values['name']} --brightness {data} {disp_env_cmd}"
                 )
         else:
-            display = self.displays[topic[1].replace("brightness_", "")]["name"]
+            display = self.displays[
+                topic[1].replace("brightness_", "").replace("-", "_")
+            ]["name"]
             syscommand(f"xrandr --output {display} --brightness {data} {disp_env_cmd}")
 
     def _get_displays(self):
@@ -86,7 +88,7 @@ class Addon:
         )
 
         for match in pattern.findall(stdout):
-            displays[match[0].lower()] = {
+            displays[match[0].replace("-", "_").lower()] = {
                 "name": match[0],
                 "brightness": float(match[1]),
             }
