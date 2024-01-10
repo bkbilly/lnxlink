@@ -40,7 +40,6 @@ def check_missing(sys_conf, user_conf, missing, dirpath):
                 check_missing(value, user_conf[key], missing, check_path)
             else:
                 missing.append([check_path, value])
-        return missing
     return missing
 
 
