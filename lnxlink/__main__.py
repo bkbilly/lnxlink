@@ -191,7 +191,7 @@ class LNXlink:
         if self.config["mqtt"]["lwt"]["enabled"]:
             self.client.publish(
                 f"{self.pref_topic}/lwt",
-                payload=self.config["mqtt"]["lwt"]["connectMsg"],
+                payload="ON",
                 qos=self.config["mqtt"]["lwt"]["qos"],
                 retain=True,
             )
@@ -207,7 +207,7 @@ class LNXlink:
         if self.config["mqtt"]["lwt"]["enabled"]:
             self.client.publish(
                 f"{self.pref_topic}/lwt",
-                payload=self.config["mqtt"]["lwt"]["disconnectMsg"],
+                payload="OFF",
                 qos=self.config["mqtt"]["lwt"]["qos"],
                 retain=True,
             )
@@ -222,7 +222,7 @@ class LNXlink:
                 logger.info("Power Down detected.")
                 self.client.publish(
                     f"{self.pref_topic}/lwt",
-                    payload=self.config["mqtt"]["lwt"]["disconnectMsg"],
+                    payload="OFF",
                     qos=self.config["mqtt"]["lwt"]["qos"],
                     retain=True,
                 )
@@ -233,7 +233,7 @@ class LNXlink:
                     self.monitor_run_thread()
                 self.client.publish(
                     f"{self.pref_topic}/lwt",
-                    payload=self.config["mqtt"]["lwt"]["connectMsg"],
+                    payload="ON",
                     qos=self.config["mqtt"]["lwt"]["qos"],
                     retain=True,
                 )

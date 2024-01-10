@@ -27,7 +27,33 @@ def setup_config(config_path):
             logger.info("Permision denied")
             return False
         userprompt_config(config_path)
+    validate_config(config_path)
     return True
+
+
+def check_missing(sys_conf, user_conf, missing, dirpath):
+    """Recursive method that returns a list of missing dictionary keys"""
+    if isinstance(sys_conf, dict):
+        for key, value in sys_conf.items():
+            check_path = dirpath + [key]
+            if isinstance(user_conf, dict) and key in user_conf:
+                check_missing(value, user_conf[key], missing, check_path)
+            else:
+                missing.append([check_path, value])
+        return missing
+    return missing
+
+
+def validate_config(config_path):
+    """Inform user of missing configuration values"""
+    with open(config_path, "r", encoding="utf8") as file:
+        user_conf = yaml.load(file, Loader=yaml.FullLoader)
+    sys_conf = yaml.safe_load(CONFIGTEMP)
+
+    missing_keys = check_missing(sys_conf, user_conf, [], [])
+    for keys, _ in missing_keys:
+        key_path = ".".join(keys)
+        logger.error("Configuration is missing: %s", key_path)
 
 
 def query_true_false(question, default="false"):
