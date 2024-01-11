@@ -40,8 +40,9 @@ mqtt:
     user: 'user'
     pass: 'pass'
     tls: false
-    keyfile: null
-    certfile: null
+    keyfile: ""
+    certfile: ""
+    ca_certs: ""
   discovery:
     enabled: true
   lwt:
