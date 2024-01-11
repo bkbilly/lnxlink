@@ -163,19 +163,24 @@ class LNXlink:
         if self.config["mqtt"]["auth"].get("tls", False):
             keyfile = self.config["mqtt"]["auth"]["tls"].get("keyfile")
             certfile = self.config["mqtt"]["auth"]["tls"].get("certfile")
+            ca_certs = self.config["mqtt"]["auth"]["tls"].get("ca_certs")
             if keyfile == "":
                 keyfile = None
             if certfile == "":
                 certfile = None
-            if keyfile is None and certfile is None:
-                self.client.tls_set(
-                    certfile=None, keyfile=None, cert_reqs=ssl.CERT_NONE
-                )
+            if ca_certs == "":
+                ca_certs = None
+            cert_reqs = ssl.CERT_NONE
+            if not all(option is None for option in [keyfile, certfile, ca_certs]):
+                cert_reqs = ssl.CERT_REQUIRED
+            if ca_certs is not None:
                 self.client.tls_insecure_set(True)
-            else:
-                self.client.tls_set(
-                    certfile=certfile, keyfile=keyfile, cert_reqs=ssl.CERT_REQUIRED
-                )
+            self.client.tls_set(
+                ca_certs=ca_certs,
+                certfile=certfile,
+                keyfile=keyfile,
+                cert_reqs=cert_reqs,
+            )
         self.client.connect(
             self.config["mqtt"]["server"], self.config["mqtt"]["port"], 60
         )
