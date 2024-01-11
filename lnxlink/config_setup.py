@@ -43,6 +43,31 @@ def check_missing(sys_conf, user_conf, missing, dirpath):
     return missing
 
 
+def add_nested(dct, keys, value):
+    """
+    Adds a nested dictionary item based on a list of keys to an existing dictionary.
+
+    Args:
+    dct (dict): The original dictionary to be modified.
+    keys (list): A list of keys representing the nested structure.
+    value (any): The value to be set at the innermost level.
+
+    Returns:
+    dict: The modified dictionary with the new nested item added.
+    """
+    current_level = dct
+    for key in keys[:-1]:
+        # Create a new dictionary at the current key if it does not exist
+        if key not in current_level:
+            current_level[key] = {}
+        current_level = current_level[key]
+
+    # Set the value at the innermost level
+    if keys[-1] not in current_level:
+        current_level[keys[-1]] = value
+    return dct
+
+
 def validate_config(config_path):
     """Inform user of missing configuration values"""
     with open(config_path, "r", encoding="utf8") as file:
@@ -50,9 +75,14 @@ def validate_config(config_path):
     sys_conf = yaml.safe_load(CONFIGTEMP)
 
     missing_keys = check_missing(sys_conf, user_conf, [], [])
-    for keys, _ in missing_keys:
+    for keys, value in missing_keys:
         key_path = ".".join(keys)
-        logger.error("Configuration is missing: %s", key_path)
+        user_conf = add_nested(user_conf, keys, value)
+        logger.info("Added missing configuration option: %s", key_path)
+
+    if len(missing_keys) > 0:
+        with open(config_path, "w", encoding="UTF-8") as file:
+            file.write(yaml.dump(user_conf, default_flow_style=False, sort_keys=False))
 
 
 def query_true_false(question, default="false"):
