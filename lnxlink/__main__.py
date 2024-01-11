@@ -161,9 +161,9 @@ class LNXlink:
             self.config["mqtt"]["auth"]["user"], self.config["mqtt"]["auth"]["pass"]
         )
         if self.config["mqtt"]["auth"].get("tls", False):
-            keyfile = self.config["mqtt"]["auth"]["tls"].get("keyfile")
-            certfile = self.config["mqtt"]["auth"]["tls"].get("certfile")
-            ca_certs = self.config["mqtt"]["auth"]["tls"].get("ca_certs")
+            keyfile = self.config["mqtt"]["auth"].get("keyfile")
+            certfile = self.config["mqtt"]["auth"].get("certfile")
+            ca_certs = self.config["mqtt"]["auth"].get("ca_certs")
             if keyfile == "":
                 keyfile = None
             if certfile == "":
