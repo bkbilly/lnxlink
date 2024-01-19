@@ -175,15 +175,24 @@ class LNXlink:
                 cert_reqs = ssl.CERT_REQUIRED
             if ca_certs is not None:
                 self.client.tls_insecure_set(True)
+            logger.debug("MQTT ca_certs: %s", ca_certs)
+            logger.debug("MQTT certfile: %s", certfile)
+            logger.debug("MQTT keyfile: %s", keyfile)
             self.client.tls_set(
                 ca_certs=ca_certs,
                 certfile=certfile,
                 keyfile=keyfile,
                 cert_reqs=cert_reqs,
             )
-        self.client.connect(
-            self.config["mqtt"]["server"], self.config["mqtt"]["port"], 60
-        )
+        try:
+            self.client.connect(
+                self.config["mqtt"]["server"], self.config["mqtt"]["port"], 60
+            )
+        except ssl.SSLCertVerificationError:
+            self.client.tls_insecure_set(True)
+            self.client.connect(
+                self.config["mqtt"]["server"], self.config["mqtt"]["port"], 60
+            )
         self.client.loop_start()
 
     def read_config(self, config_path):
@@ -204,7 +213,7 @@ class LNXlink:
     def on_connect(self, client, userdata, flags, rcode):
         """Callback for MQTT connect which reports the connection status
         back to MQTT server"""
-        logger.info("Connected to MQTT with code %s", rcode)
+        logger.info("MQTT connection: %s", mqtt.connack_string(rcode))
         client.subscribe(f"{self.pref_topic}/commands/#")
         if self.config["mqtt"]["lwt"]["enabled"]:
             self.client.publish(
