@@ -157,42 +157,51 @@ class LNXlink:
         self.client.on_connect = self.on_connect
         self.client.on_message = self.on_message
 
-        self.client.username_pw_set(
-            self.config["mqtt"]["auth"]["user"], self.config["mqtt"]["auth"]["pass"]
-        )
-        if self.config["mqtt"]["auth"].get("tls", False):
-            keyfile = self.config["mqtt"]["auth"].get("keyfile")
-            certfile = self.config["mqtt"]["auth"].get("certfile")
-            ca_certs = self.config["mqtt"]["auth"].get("ca_certs")
-            if keyfile == "":
-                keyfile = None
-            if certfile == "":
-                certfile = None
-            if ca_certs == "":
-                ca_certs = None
+        keyfile = self.config["mqtt"]["auth"]["keyfile"]
+        keyfile = None if keyfile == "" else keyfile
+        certfile = self.config["mqtt"]["auth"]["certfile"]
+        certfile = None if certfile == "" else certfile
+        ca_certs = self.config["mqtt"]["auth"]["ca_certs"]
+        ca_certs = None if ca_certs == "" else ca_certs
+        use_cert = all(option is not None for option in [keyfile, certfile, ca_certs])
+        use_tls = self.config["mqtt"]["auth"]["tls"]
+
+        if not use_tls or not use_cert:
+            self.client.username_pw_set(
+                self.config["mqtt"]["auth"]["user"], self.config["mqtt"]["auth"]["pass"]
+            )
+        if use_tls:
             cert_reqs = ssl.CERT_NONE
-            if not all(option is None for option in [keyfile, certfile, ca_certs]):
+            if use_cert:
                 cert_reqs = ssl.CERT_REQUIRED
-            if ca_certs is not None:
-                self.client.tls_insecure_set(True)
-            logger.debug("MQTT ca_certs: %s", ca_certs)
-            logger.debug("MQTT certfile: %s", certfile)
-            logger.debug("MQTT keyfile: %s", keyfile)
+            logger.info("Using MQTT ca_certs: %s", ca_certs)
+            logger.info("Using MQTT certfile: %s", certfile)
+            logger.info("Using MQTT keyfile: %s", keyfile)
             self.client.tls_set(
                 ca_certs=ca_certs,
                 certfile=certfile,
                 keyfile=keyfile,
                 cert_reqs=cert_reqs,
             )
+            if ca_certs is None:
+                self.client.tls_insecure_set(True)
         try:
             self.client.connect(
                 self.config["mqtt"]["server"], self.config["mqtt"]["port"], 60
             )
         except ssl.SSLCertVerificationError:
+            logger.info("TLS not verified, using insecure connection instead")
             self.client.tls_insecure_set(True)
             self.client.connect(
                 self.config["mqtt"]["server"], self.config["mqtt"]["port"], 60
             )
+        except Exception as err:
+            logger.error(
+                "Error establishing connection to MQTT broker: %s, %s",
+                err,
+                traceback.format_exc(),
+            )
+            sys.exit()
         self.client.loop_start()
 
     def read_config(self, config_path):
