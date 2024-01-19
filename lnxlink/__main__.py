@@ -53,12 +53,10 @@ class LNXlink:
 
         # Run each addon included in the modules folder
         self.addons = {}
-        conf_modules = self.config.get("modules", None)
-        custom_modules = self.config.get("custom_modules", None)
-        conf_exclude = self.config.get("exclude", [])
+        conf_exclude = self.config["exclude"]
         conf_exclude = [] if conf_exclude is None else conf_exclude
         loaded_modules = modules.parse_modules(
-            conf_modules, custom_modules, conf_exclude
+            self.config["modules"], self.config["custom_modules"], conf_exclude
         )
         for _, addon in loaded_modules.items():
             try:
@@ -146,7 +144,7 @@ class LNXlink:
         """Runs method to get sensor information every prespecified interval"""
         self.monitor_run()
 
-        interval = self.config.get("update_interval", 1)
+        interval = self.config["update_interval"]
         if not self.kill:
             monitor = threading.Timer(interval, self.monitor_run_thread)
             monitor.start()
@@ -209,12 +207,9 @@ class LNXlink:
         with open(config_path, "r", encoding="utf8") as file:
             conf = yaml.load(file, Loader=yaml.FullLoader)
 
-        if "prefix" in conf["mqtt"] and "clientId" in conf["mqtt"]:
-            self.pref_topic = f"{conf['mqtt']['prefix']}/{conf['mqtt']['clientId']}"
+        self.pref_topic = f"{conf['mqtt']['prefix']}/{conf['mqtt']['clientId']}"
         self.pref_topic = self.pref_topic.lower()
 
-        conf["modules"] = conf.get("modules")
-        conf["custom_modules"] = conf.get("custom_modules")
         if conf["modules"] is not None:
             conf["modules"] = [x.lower().replace("-", "_") for x in conf["modules"]]
         return conf
