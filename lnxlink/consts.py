@@ -53,6 +53,30 @@ update_interval: 5
 modules:
 custom_modules:
 exclude:
+  - audio_select
+  - battery
+  - boot_select
+  - brightness
+  - fullscreen
+  - gpio
+  - gpu
+  - idle
+  - inference_time
+  - keep_alive
+  - media
+  - mouse
+  - network
+  - notify
+  - power_profile
+  - screen_onoff
+  - screenshot
+  - send_keys
+  - speech_recognition
+  - systemd
+  - webcam
+  - xdg_open
 settings:
   systemd:
+  gpio:
+    inputs:
 """

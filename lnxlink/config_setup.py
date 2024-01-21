@@ -120,20 +120,6 @@ def userprompt_config(config_path):
         config = yaml.safe_load(file)
 
         # logger.info config
-        logger.info(
-            "This will update the MQTT credentials and topics, these are the default topics:"
-        )
-        logger.info(
-            " MQTT Topic prefix for for monitoring: %s/%s/...",
-            config["mqtt"]["prefix"],
-            config["mqtt"]["clientId"],
-        )
-        logger.info(
-            " MQTT Topic prefix for for commands: %s/%s/commands/...",
-            config["mqtt"]["prefix"],
-            config["mqtt"]["clientId"],
-        )
-
         logger.info("\nLeave empty for default")
 
         # Change default values
@@ -158,11 +144,6 @@ def userprompt_config(config_path):
         config["mqtt"]["auth"]["pass"] = (
             input(f" MQTT password [{config['mqtt']['auth']['pass']}]: ")
             or config["mqtt"]["auth"]["pass"]
-        )
-
-        config["mqtt"]["prefix"] = (
-            input(f" Change prefix [{config['mqtt']['prefix']}]: ")
-            or config["mqtt"]["prefix"]
         )
         config["mqtt"]["clientId"] = (
             input(f" Change clientId [{config['mqtt']['clientId']}]: ")

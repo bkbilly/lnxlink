@@ -105,7 +105,10 @@ class LNXlink:
 
         try:
             start_time = time.time()
-            pub_data = method()
+            if isinstance(method, (dict, list, bool)):
+                pub_data = method
+            else:
+                pub_data = method()
             diff_time = round(time.time() - start_time, 5)
             self.inference_times[name] = diff_time
             self.publish_monitor_data(topic, pub_data)

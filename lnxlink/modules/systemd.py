@@ -12,10 +12,8 @@ class Addon:
         """Setup addon"""
         self.name = "SystemD"
         self.lnxlink = lnxlink
-        serv = self.lnxlink.config.get("settings", {})
-        if serv is None:
-            serv = {}
-        self.services = serv.get("systemd", [])
+        self.services = self.lnxlink.config["settings"].get("systemd", [])
+        self.services = [] if self.services is None else self.services
         if len(self.services) == 0:
             logger.info("No systemd settings found on configuration.")
 
