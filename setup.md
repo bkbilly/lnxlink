@@ -112,8 +112,8 @@ Install or Update LNXlink:
 # Install VirtualEnv package on the system
 sudo pip3 install virtualenv --break-system-packages
 # Install LNXlink on a virtual environment folder.
-python3 -m venv lnxlink_venv
-source lnxlink_venv/bin/activate
+python3 -m venv venv_lnxlink
+source venv_lnxlink/bin/activate
 pip install lnxlink
 lnxlink -c config.yaml
 ```

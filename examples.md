@@ -1,10 +1,34 @@
 ---
 description: >-
-  These modules are not created using the autodiscovery or they need to be
-  combined with others to work.
+  These modules are not created using the autodiscovery, need manual setup or
+  they need to be combined with others to work.
 ---
 
 # 🔱 Modules Usage
+
+## SystemD
+
+Not all services on a machine are needed to be controlled or monitored through a switch, so they need to be configured manually by adding this on your _config.yaml_ file:
+
+```yaml
+settings:
+  systemd:
+    - docker.service
+    - anydesk.service
+```
+
+## GPIO
+
+This is only supported by Raspberry Pi and needs to be configured manually on your _config.yaml_ file:
+
+```yaml
+settings:
+  gpio:
+    inputs:
+      - name: Front Door
+        pin: 13
+        device_class: door
+```
 
 ## Voice Assistant
 
@@ -961,16 +985,5 @@ action:
       retain: true
       topic: lnxlink/desktop-linux/lwt
       payload: "OFF"
-```
-
-## SystemD
-
-Not all services on a machine are needed to be controlled or monitored through a switch, so they need to be configured manually by adding this on your configuration.yaml file:
-
-```yaml
-settings:
-  systemd:
-    - docker.service
-    - anydesk.service
 ```
 
