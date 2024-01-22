@@ -19,26 +19,27 @@ Home Assistant companion app for linux that uses the MQTT integration to get inf
 
 ## Supported Modules
 
-| Controls                           | Sensors          |
-| ---------------------------------- | ---------------- |
-| Shutdown                           | CPU              |
-| Restart                            | RAM              |
-| Suspend                            | GPU              |
-| Notify                             | Network Speed    |
-| Media Controls                     | Media info       |
-| Send Keys                          | Microphone used  |
-| Mouse control                      | Camera used      |
-| Screen On/Off                      | Idle time        |
-| Open URL/File                      | Battery          |
-| Bash commands                      | Disk usage       |
-| Keep Alive                         | Restart required |
-| Brightness                         | Update required  |
-| Boot select                        | Webcam           |
-| Power Profile                      | Screenshot       |
-| Speech Recognition                 | Full Screen      |
-| Audio Select (microphone, speaker) | Inference Time   |
-| SystemD                            | Display Variable |
-| GPIO (inputs, outputs)             |                  |
+| Controls                                          | Sensors          |
+| ------------------------------------------------- | ---------------- |
+| Shutdown                                          | CPU              |
+| Restart                                           | RAM              |
+| Suspend                                           | GPU              |
+| [Notify](examples.md#notification)                | Network Speed    |
+| [Media Controls](media-player.md)                 | Display Variable |
+| [Send Keys](examples.md#keys-send)                | Microphone used  |
+| Mouse control                                     | Camera used      |
+| Screen On/Off                                     | Idle time        |
+| [Open URL/File](examples.md#open-a-url-or-file)   | Battery          |
+| Bash commands                                     | Disk usage       |
+| Keep Alive                                        | Restart required |
+| Brightness                                        | Update required  |
+| Boot select                                       | Webcam           |
+| Power Profile                                     | Screenshot       |
+| [Speech Recognition](examples.md#voice-assistant) | Full Screen      |
+| Audio Select (microphone, speaker)                | Inference Time   |
+| [SystemD](examples.md#systemd)                    |                  |
+| [GPIO ](examples.md#gpio)(inputs, outputs)        |                  |
+| [LNXlink Update](examples.md#install-update)      |                  |
 
 ## Supported OS
 

@@ -29,9 +29,6 @@ condition:
   - condition: or
     conditions:
       - condition: state
-        entity_id: media_player.desktop_windows
-        state: playing
-      - condition: state
         entity_id: media_player.desktop_linux
         state: playing
 action:
@@ -39,7 +36,6 @@ action:
     data: {}
     target:
       entity_id:
-        - media_player.desktop_windows
         - media_player.desktop_linux        
 ```
 
@@ -57,11 +53,6 @@ trigger:
     device_id: c5538068d8ae2f59ea0a46d9953b03ae
     entity_id: binary_sensor.desktop_linux_camera_used
     domain: binary_sensor
-  - type: turned_on
-    platform: device
-    device_id: ac5aa697b615f40563be49834acc3a88
-    entity_id: binary_sensor.desktop_windows_webcamactive
-    domain: binary_sensor
 condition: []
 action:
   - service: scene.turn_on
@@ -73,11 +64,6 @@ action:
         platform: device
         device_id: c5538068d8ae2f59ea0a46d9953b03ae
         entity_id: binary_sensor.desktop_linux_camera_used
-        domain: binary_sensor
-      - type: turned_off
-        platform: device
-        device_id: ac5aa697b615f40563be49834acc3a88
-        entity_id: binary_sensor.desktop_windows_webcamactive
         domain: binary_sensor
   - type: turn_off
     device_id: f94669e2f90611ea9467bb51f6786486
@@ -142,13 +128,6 @@ action:
         { "title": "Camera Hikvision", 
           "message": "Line crossing", 
           "iconUrl": "https://homeassistant.local/local/hikvision.jpg" }
-  - service: notify.desktop_windows
-    data:
-      title: Camera Hikvision
-      message: Line crossing
-      data:
-        image: >-
-          https://homeassistant.local/local/hikvision.jpg
 ```
 
 ## Share Video from phone
