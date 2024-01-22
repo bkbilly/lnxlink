@@ -166,11 +166,12 @@ class LNXlink:
         ca_certs = None if ca_certs == "" else ca_certs
         use_cert = all(option is not None for option in [keyfile, certfile, ca_certs])
         use_tls = self.config["mqtt"]["auth"]["tls"]
+        username = self.config["mqtt"]["auth"]["user"]
+        password = self.config["mqtt"]["auth"]["pass"]
+        use_userpass = all(option != "" for option in [username, password])
 
-        if not use_tls or not use_cert:
-            self.client.username_pw_set(
-                self.config["mqtt"]["auth"]["user"], self.config["mqtt"]["auth"]["pass"]
-            )
+        if use_userpass:
+            self.client.username_pw_set(username, password)
         if use_tls:
             cert_reqs = ssl.CERT_NONE
             if use_cert:
