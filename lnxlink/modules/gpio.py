@@ -1,4 +1,5 @@
 """Checks GPIO pins from a raspberry"""
+import os
 import time
 from collections import deque
 from threading import Thread
@@ -86,8 +87,10 @@ class Addon:
         self.lnxlink.run_module(self.name, self.gpio_results)
 
     def _is_raspberry(self):
-        with open("/proc/device-tree/model", "r", encoding="UTF-8") as f:
-            model = f.read()
+        model = ""
+        if os.path.exists("/proc/device-tree/model"):
+            with open("/proc/device-tree/model", "r", encoding="UTF-8") as f:
+                model = f.read()
         if "raspberry" in model.lower():
             return True
         return False
