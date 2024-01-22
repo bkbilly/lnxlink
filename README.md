@@ -30,7 +30,7 @@ Home Assistant companion app for linux that uses the MQTT integration to get inf
 | Mouse control                                     | Camera used      |
 | Screen On/Off                                     | Idle time        |
 | [Open URL/File](examples.md#open-a-url-or-file)   | Battery          |
-| Bash commands                                     | Disk usage       |
+| [Bash commands](examples.md#bash)                 | Disk usage       |
 | Keep Alive                                        | Restart required |
 | Brightness                                        | Update required  |
 | Boot select                                       | Webcam           |
