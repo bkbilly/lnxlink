@@ -79,4 +79,5 @@ settings:
   systemd:
   gpio:
     inputs:
+    outputs:
 """
