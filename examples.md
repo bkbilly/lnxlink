@@ -28,6 +28,10 @@ settings:
       - name: Front Door
         pin: 13
         device_class: door
+    outputs:
+      - name: Siren
+        pin: 25
+        icon: mdi:bullhorn
 ```
 
 ## Voice Assistant

@@ -19,26 +19,26 @@ Home Assistant companion app for linux that uses the MQTT integration to get inf
 
 ## Supported Modules
 
-| Sensors          | Controls                           |
-| ---------------- | ---------------------------------- |
-| CPU              | Shutdown                           |
-| RAM              | Restart                            |
-| GPU              | Suspend                            |
-| Network Speed    | Notify                             |
-| Media info       | Media Controls                     |
-| Microphone used  | Send Keys                          |
-| Camera used      | Mouse control                      |
-| Idle time        | Screen On/Off                      |
-| Battery          | Open URL/File                      |
-| Disk usage       | Bash commands                      |
-| Restart required | Keep Alive                         |
-| Update required  | Brightness                         |
-| Webcam           | Boot select                        |
-| Screenshot       | Power Profile                      |
-| Full Screen      | Speech Recognition                 |
-| Inference Time   | Audio Select (microphone, speaker) |
-| Display Variable | SystemD                            |
-| GPIO             |                                    |
+| Controls                           | Sensors          |
+| ---------------------------------- | ---------------- |
+| Shutdown                           | CPU              |
+| Restart                            | RAM              |
+| Suspend                            | GPU              |
+| Notify                             | Network Speed    |
+| Media Controls                     | Media info       |
+| Send Keys                          | Microphone used  |
+| Mouse control                      | Camera used      |
+| Screen On/Off                      | Idle time        |
+| Open URL/File                      | Battery          |
+| Bash commands                      | Disk usage       |
+| Keep Alive                         | Restart required |
+| Brightness                         | Update required  |
+| Boot select                        | Webcam           |
+| Power Profile                      | Screenshot       |
+| Speech Recognition                 | Full Screen      |
+| Audio Select (microphone, speaker) | Inference Time   |
+| SystemD                            | Display Variable |
+| GPIO (inputs, outputs)             |                  |
 
 ## Supported OS
 
