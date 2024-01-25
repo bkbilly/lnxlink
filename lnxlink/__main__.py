@@ -460,8 +460,6 @@ def main():
         "-c",
         "--config",
         help="Configuration file",
-        default="/etc/config.yaml",
-        required=True,
     )
     parser.add_argument(
         "-i",
@@ -475,8 +473,20 @@ def main():
         help="Runs only the setup configuration workflow",
         action="store_true",
     )
+    parser.add_argument(
+        "-v",
+        "--version",
+        help="Shows current version of LNXlink",
+        action="store_true",
+    )
     args = parser.parse_args()
 
+    if args.version:
+        print(version)
+        sys.exit()
+    if args.config is None:
+        parser.print_help()
+        parser.exit("\nSomething went wrong, --config condition was not set")
     config_file = os.path.abspath(args.config)
     setup_logger(config_file)
     config_setup.setup_config(config_file)

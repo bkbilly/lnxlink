@@ -54,6 +54,7 @@ modules:
 custom_modules:
 exclude:
   - audio_select
+  - bash
   - battery
   - boot_select
   - brightness
