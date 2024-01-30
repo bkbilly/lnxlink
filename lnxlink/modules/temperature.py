@@ -1,7 +1,10 @@
 """Gets temperatures"""
+import re
 import logging
 
 import psutil
+
+from .scripts.helpers import syscommand
 
 logger = logging.getLogger("lnxlink")
 
@@ -45,5 +48,13 @@ class Addon:
                 temperatures[key] = {
                     "name": name,
                     "value": value.current,
+                }
+        if psutil.which("vcgencmd") is not None:
+            temp_out, _, _ = syscommand("vcgencmd measure_temp")
+            match = re.findall(r"(\d+\.?\d*)", temp_out)
+            if match:
+                temperatures["raspberrypi_gpu"] = {
+                    "name": "RaspberryPI GPU",
+                    "value": int(match[0]),
                 }
         return temperatures
