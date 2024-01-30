@@ -139,7 +139,11 @@ class Addon:
 
     def _get_players(self):
         """Get all the currently playing players"""
-        self.lib["dbus"].mainloop.glib.DBusGMainLoop(set_as_default=True)
+        try:
+            self.lib["dbus"].mainloop.glib.DBusGMainLoop(set_as_default=True)
+        except Exception:
+            logger.error("Can't use DBus for media")
+            return []
         self.players = []
         for uri in self.lib["mpris2"].get_players_uri():
             player = self.lib["mpris2"].Player(dbus_interface_info={"dbus_uri": uri})

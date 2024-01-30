@@ -1,4 +1,5 @@
 """Selects the OS to boot from on GRUB at the next restart"""
+import os
 import re
 from .scripts.helpers import syscommand
 
@@ -21,7 +22,9 @@ class Addon:
         if nextentry_match:
             entry_ind = int(nextentry_match.group(1))
 
-        return self.options[entry_ind]
+        if len(self.options) > 0:
+            return self.options[entry_ind]
+        return ""
 
     def exposed_controls(self):
         """Exposes to home assistant"""
@@ -45,16 +48,17 @@ class Addon:
 
         grub_entries = []
 
-        with open("/boot/grub/grub.cfg", encoding="UTF-8") as file:
-            for line in file.readlines():
-                menu_entry_match = re.match(menu_pattern, line)
-                if menu_entry_match:
-                    grub_entry = menu_entry_match.group(1)
-                    grub_entries.append(grub_entry)
+        if os.path.exists("/boot/grub/grub.cfg"):
+            with open("/boot/grub/grub.cfg", encoding="UTF-8") as file:
+                for line in file.readlines():
+                    menu_entry_match = re.match(menu_pattern, line)
+                    if menu_entry_match:
+                        grub_entry = menu_entry_match.group(1)
+                        grub_entries.append(grub_entry)
 
-                submenu_entry_match = re.match(submenu_pattern, line)
-                if submenu_entry_match:
-                    grub_entry = submenu_entry_match.group(1)
-                    grub_entries.append(grub_entry)
+                    submenu_entry_match = re.match(submenu_pattern, line)
+                    if submenu_entry_match:
+                        grub_entry = submenu_entry_match.group(1)
+                        grub_entries.append(grub_entry)
 
         return grub_entries
