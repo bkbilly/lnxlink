@@ -2,9 +2,9 @@
 import re
 import logging
 import traceback
+from shutil import which
 
 import psutil
-from shutil import which
 from .scripts.helpers import syscommand
 
 logger = logging.getLogger("lnxlink")
