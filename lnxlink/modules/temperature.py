@@ -3,6 +3,7 @@ import re
 import logging
 
 import psutil
+from shutil import which
 
 from .scripts.helpers import syscommand
 
@@ -49,7 +50,7 @@ class Addon:
                     "name": name,
                     "value": value.current,
                 }
-        if psutil.which("vcgencmd") is not None:
+        if which("vcgencmd") is not None:
             temp_out, _, _ = syscommand("vcgencmd measure_temp")
             match = re.findall(r"(\d+\.?\d*)", temp_out)
             if match:
