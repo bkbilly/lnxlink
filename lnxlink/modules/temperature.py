@@ -1,11 +1,7 @@
 """Gets temperatures"""
-import re
 import logging
-import traceback
-from shutil import which
 
 import psutil
-from .scripts.helpers import syscommand
 
 logger = logging.getLogger("lnxlink")
 
@@ -50,19 +46,4 @@ class Addon:
                     "name": name,
                     "value": value.current,
                 }
-        if which("vcgencmd") is not None:
-            temp_out, _, _ = syscommand("vcgencmd measure_temp")
-            match = re.findall(r"(\d+\.?\d*)", temp_out)
-            if match:
-                try:
-                    temperatures["raspberrypi_gpu"] = {
-                        "name": "RaspberryPI GPU",
-                        "value": float(match[0]),
-                    }
-                except Exception as err:
-                    logger.error(
-                        "Can't read the correct temperature: %s, %s",
-                        err,
-                        traceback.format_exc(),
-                    )
         return temperatures
