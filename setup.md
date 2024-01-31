@@ -12,7 +12,9 @@ Install system packages:
 {% tab title="Debian Based" %}
 {% code overflow="wrap" lineNumbers="true" %}
 ```bash
-sudo apt install patchelf meson python3-pip libcairo2-dev libgirepository1.0-dev libdbus-glib-1-dev libglib2.0-dev
+sudo apt install python3-pip patchelf meson
+# Install required libraries
+sudo apt install libdbus-glib-1-dev libcairo2-dev libgirepository1.0-dev libglib2.0-dev libdbus-glib-1-dev
 # Install modules dependencies
 sudo apt install libasound2-dev upower xdotool xdg-utils python3-pyaudio
 ```
@@ -33,7 +35,6 @@ Prepare your system:
 {% code overflow="wrap" lineNumbers="true" %}
 ```bash
 sudo pip3 install -U pip
-pip install pycairo PyGObject
 ```
 {% endcode %}
 
@@ -103,7 +104,7 @@ lnxlink -c config.yaml
 {% endtab %}
 
 {% tab title="VENV" %}
-Newer versions of LNXlink don't allow installation of packages on the system, so a virtual environment can be used.
+Newer versions of distributions don't allow installation of packages on the system, so a virtual environment can be used.
 
 Install or Update LNXlink:
 

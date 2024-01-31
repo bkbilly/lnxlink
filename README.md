@@ -37,7 +37,7 @@ Home Assistant companion app for linux that uses the MQTT integration to get inf
 | Power Profile                                     | Screenshot       |
 | [Speech Recognition](examples.md#voice-assistant) | Full Screen      |
 | Audio Select (microphone, speaker)                | Inference Time   |
-| [SystemD](examples.md#systemd)                    |                  |
+| [SystemD](examples.md#systemd)                    | Temperature      |
 | [GPIO ](examples.md#gpio)(inputs, outputs)        |                  |
 | [LNXlink Update](examples.md#install-update)      |                  |
 
