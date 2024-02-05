@@ -31,7 +31,7 @@ class Addon:
         interface = ""
         ssid = ""
         mac = ""
-        signal = 0
+        signal = None
         if match:
             interface = match[0][0]
             rssi = float(match[0][1])
@@ -42,8 +42,8 @@ class Addon:
         return {
             "signal": signal,
             "attributes": {
-                "interface": interface,
-                "ssid": ssid,
-                "mac": mac,
+                "Interface": interface,
+                "SSID": ssid,
+                "MAC": mac,
             },
         }
