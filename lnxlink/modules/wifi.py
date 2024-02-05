@@ -1,4 +1,5 @@
 """Gets WiFi information"""
+import os
 import re
 from .scripts.helpers import syscommand
 
@@ -26,18 +27,19 @@ class Addon:
 
     def get_info(self):
         """Gather information from the system"""
-        wireless_info, _, _ = syscommand("cat /proc/net/wireless")
-        match = re.findall(r"\s+(\S+):\s\S+\s+\S+\s+(\S+)", wireless_info)
         interface = ""
         ssid = ""
         mac = ""
         signal = None
-        if match:
-            interface = match[0][0]
-            rssi = float(match[0][1])
-            signal = min(2 * (100 + rssi), 100)
-            ssid, _, _ = syscommand("iwgetid -r")
-            mac, _, _ = syscommand("iwgetid -ra")
+        if os.path.exists("/proc/net/wireless"):
+            wireless_info, _, _ = syscommand("cat /proc/net/wireless")
+            match = re.findall(r"\s+(\S+):\s\S+\s+\S+\s+(\S+)", wireless_info)
+            if match:
+                interface = match[0][0]
+                rssi = float(match[0][1])
+                signal = min(2 * (100 + rssi), 100)
+                ssid, _, _ = syscommand("iwgetid -r")
+                mac, _, _ = syscommand("iwgetid -ra")
 
         return {
             "signal": signal,
