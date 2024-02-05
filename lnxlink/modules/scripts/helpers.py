@@ -6,10 +6,18 @@ import subprocess
 logger = logging.getLogger("lnxlink")
 
 
-def syscommand(command, ignore_errors=False, timeout=3):
+def syscommand(command, ignore_errors=False, timeout=3, background=False):
     """Global subprocess command"""
     if isinstance(command, list):
         command = " ".join(command)
+    if background:
+        subprocess.Popen(
+            command,
+            shell=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+        return "", "", 0
     result = subprocess.run(
         command,
         shell=True,

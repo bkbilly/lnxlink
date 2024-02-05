@@ -86,7 +86,7 @@ class Addon:
                 self.players[0]["player"].Next()
         elif topic[1] == "play_media":
             url = data["media_id"]
-            syscommand(f"cvlc --play-and-exit {url}")
+            syscommand(f"cvlc --play-and-exit {url}", background=True)
 
     def get_info(self) -> dict:
         """Gather information from the system"""
