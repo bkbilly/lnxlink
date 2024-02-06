@@ -1,4 +1,5 @@
 """Gets the battery information of connected devices"""
+from shutil import which
 import jc
 from .scripts.helpers import syscommand
 
@@ -10,6 +11,8 @@ class Addon:
         """Setup addon"""
         self.name = "Battery"
         self.lnxlink = lnxlink
+        if which("upower") is None:
+            raise SystemError("System command 'upower' not found")
         self.devices = self._get_devices()
 
     def exposed_controls(self):

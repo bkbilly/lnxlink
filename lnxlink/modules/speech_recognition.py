@@ -1,4 +1,5 @@
 """Checks if the microphone is used"""
+from importlib import import_module
 from threading import Thread
 import logging
 from .scripts.helpers import import_install_package
@@ -14,6 +15,10 @@ class Addon:
         self.name = "Speech Recognition"
         self.run = False
         self.speech = ""
+        try:
+            import_module("pyaudio")
+        except Exception as err:
+            raise SystemError("System package 'python3-pyaudio' not installed") from err
         self._requirements()
 
     def _requirements(self):

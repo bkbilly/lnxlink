@@ -1,6 +1,7 @@
 """Uses xdotool to press keyboard keys"""
 import os
 import logging
+from shutil import which
 from .scripts.helpers import syscommand
 
 logger = logging.getLogger("lnxlink")
@@ -13,6 +14,8 @@ class Addon:
         """Setup addon"""
         self.name = "Send Keys"
         self.lnxlink = lnxlink
+        if which("xdotool") is None:
+            raise SystemError("System command 'xdotool' not found")
 
     def exposed_controls(self):
         """Exposes to home assistant"""

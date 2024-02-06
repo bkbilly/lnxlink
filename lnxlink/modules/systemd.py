@@ -1,5 +1,6 @@
 """Controls systemd services"""
 import logging
+from shutil import which
 from .scripts.helpers import syscommand
 
 logger = logging.getLogger("lnxlink")
@@ -12,6 +13,8 @@ class Addon:
         """Setup addon"""
         self.name = "SystemD"
         self.lnxlink = lnxlink
+        if which("systemctl") is None:
+            raise SystemError("System command 'systemctl' not found")
         self.services = self.lnxlink.config["settings"].get("systemd", [])
         self.services = [] if self.services is None else self.services
         if len(self.services) == 0:

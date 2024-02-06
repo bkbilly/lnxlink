@@ -1,6 +1,7 @@
 """Controls the brightness of the displays"""
 import re
 import logging
+from shutil import which
 from .scripts.helpers import syscommand
 
 logger = logging.getLogger("lnxlink")
@@ -13,6 +14,8 @@ class Addon:
         """Setup addon"""
         self.name = "Brightness"
         self.lnxlink = lnxlink
+        if which("xrandr") is None:
+            raise SystemError("System command 'xrandr' not found")
         self.displays = self._get_displays()
 
     def get_info(self):

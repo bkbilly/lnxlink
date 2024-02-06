@@ -3,6 +3,7 @@ import os
 import time
 import logging
 import threading
+from shutil import which
 from .scripts.helpers import syscommand
 
 logger = logging.getLogger("lnxlink")
@@ -16,6 +17,8 @@ class Addon:
         self.name = "Mouse"
         self.lnxlink = lnxlink
         self.movement = [0, 0]
+        if which("xdotool") is None:
+            raise SystemError("System command 'xdotool' not found")
 
     def exposed_controls(self):
         """Exposes to home assistant"""

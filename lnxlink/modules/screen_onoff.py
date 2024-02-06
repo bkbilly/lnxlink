@@ -1,5 +1,6 @@
 """Turns on or off the screen"""
 import re
+from shutil import which
 from .scripts.helpers import syscommand
 
 
@@ -10,6 +11,8 @@ class Addon:
         """Setup addon"""
         self.name = "Screen OnOff"
         self.lnxlink = lnxlink
+        if which("xset") is None:
+            raise SystemError("System command 'xset' not found")
 
     def exposed_controls(self):
         """Exposes to home assistant"""

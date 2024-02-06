@@ -1,6 +1,7 @@
 """Selects the OS to boot from on GRUB at the next restart"""
 import os
 import re
+from shutil import which
 from .scripts.helpers import syscommand
 
 
@@ -11,6 +12,8 @@ class Addon:
         """Setup addon"""
         self.name = "Boot Select"
         self.lnxlink = lnxlink
+        if which("grub-editenv") is None:
+            raise SystemError("System command 'grub-editenv' not found")
         self.options = self._get_grub_entries()
 
     def get_info(self):

@@ -1,5 +1,6 @@
 """Keeps display on"""
 import re
+from shutil import which
 from .scripts.helpers import syscommand
 
 
@@ -11,6 +12,8 @@ class Addon:
         self.lnxlink = lnxlink
         self.name = "Keep Alive"
         self.keepalive = "OFF"
+        if which("gsettings") is None or which("xset") is None:
+            raise SystemError("System commands 'gsettings' or 'xset' not found")
 
     def exposed_controls(self):
         """Exposes to home assistant"""

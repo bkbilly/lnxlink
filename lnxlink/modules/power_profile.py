@@ -1,5 +1,6 @@
 """Selects the Power Profile"""
 import re
+from shutil import which
 from .scripts.helpers import syscommand
 
 
@@ -10,6 +11,8 @@ class Addon:
         """Setup addon"""
         self.name = "Power Profile"
         self.lnxlink = lnxlink
+        if which("powerprofilesctl") is None:
+            raise SystemError("System command 'powerprofilesctl' not found")
         self.options = self._get_power_profiles()
 
     def get_info(self):
