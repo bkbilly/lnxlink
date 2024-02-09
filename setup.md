@@ -128,6 +128,38 @@ systemctl --user restart lnxlink.service
 ```
 {% endcode %}
 {% endtab %}
+
+{% tab title="Docker" %}
+Docker is not recommended for desktop environments because it limits many modules which can't run properly. You can download LNXlink image and setup the config directory:
+
+{% code overflow="wrap" %}
+```bash
+docker run --network host -v ~/config_lnxlink/:/opt/lnxlink/config/ -it bkbillybk/lnxlink:latest
+```
+{% endcode %}
+
+You can also run as a docker compose image by creating a `docker-compose.yaml` file:
+
+```yaml
+version: "3"
+services:
+  lnxlink:
+    image: bkbillybk/lnxlink:latest
+    container_name: lnxlink
+    network_mode: host
+    restart: unless-stopped
+    stdin_open: true
+    tty: true
+    volumes:
+      - ~/config_lnxlink/:/opt/lnxlink/config/
+```
+
+Run docker compose image:
+
+```bash
+docker compose -f docker-compose.yaml up
+```
+{% endtab %}
 {% endtabs %}
 
 ### Run sudo commands
