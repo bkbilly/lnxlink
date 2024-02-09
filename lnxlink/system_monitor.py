@@ -5,9 +5,6 @@ import signal
 import logging
 import traceback
 
-# import dbus
-# from dbus.mainloop.glib import DBusGMainLoop
-# from gi.repository import GLib
 from .modules.scripts.helpers import import_install_package
 
 logger = logging.getLogger("lnxlink")
@@ -19,6 +16,9 @@ class MonitorSuspend:
     def __init__(self, callback):
         self.use = False
         self._requirements()
+        if self.lib["dbus"] is None:
+            logger.error("Can't use DBus for system monitor")
+            return
         try:
             dbus_loop = self.lib["dbus-loop"].mainloop.glib.DBusGMainLoop(
                 set_as_default=True
@@ -49,11 +49,15 @@ class MonitorSuspend:
             )
 
     def _requirements(self):
+        dbus = import_install_package("dbus-python", ">=1.3.2", "dbus")
+        if dbus is None:
+            self.lib = {"dbus": dbus}
+            return
         self.lib = {
+            "dbus": dbus,
             "dbus-loop": import_install_package(
                 "dbus-python", ">=1.3.2", "dbus.mainloop.glib"
             ),
-            "dbus": import_install_package("dbus-python", ">=1.3.2", "dbus"),
             "cairo": import_install_package("pycairo", ">=1.24.0", "cairo"),
             "glib": import_install_package(
                 "PyGObject", ">=3.44.0", "gi.repository.GLib"

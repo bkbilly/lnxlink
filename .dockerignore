@@ -1,0 +1,32 @@
+# LNXlink files
+*.yaml
+*.log
+*.log.*
+
+# Git
+.git
+.gitignore
+.github/
+
+# Docker
+docker-compose.yml
+Dockerfile
+.dockerignore
+
+# Byte-compiled / optimized / DLL files
+**/__pycache__/
+**/*.py[cod]
+
+# Distribution / packaging
+.Python
+env/
+build/
+dist/
+*.egg-info/
+tests/
+
+
+# Virtual environment
+.env
+.venv/
+venv/

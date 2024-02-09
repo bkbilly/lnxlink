@@ -14,6 +14,8 @@ class Addon:
         """Setup addon"""
         self.name = "Idle"
         self._requirements()
+        if self.lib["dbus_idle"] is None:
+            raise SystemError("Python package 'dbus_idle' can't be installed")
 
     def _requirements(self):
         self.lib = {

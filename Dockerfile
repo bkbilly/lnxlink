@@ -1,16 +1,9 @@
-FROM ubuntu:20.04 as build
+FROM python:3
+
 WORKDIR /opt/lnxlink
 
-ENV DEBIAN_FRONTEND=noninteractive
-
-RUN apt update
-RUN apt install -y libdbus-glib-1-dev libcairo2-dev libgirepository1.0-dev libglib2.0-dev
-RUN apt install -y libasound2-dev upower xdotool xdg-utils python3-pyaudio
-
-RUN apt install -y python3-pip
-RUN pip install -U pip
-
 COPY . /opt/lnxlink
-RUN pip3 install -e /opt/lnxlink
+RUN pip install -e /opt/lnxlink
 
-ENTRYPOINT ["/usr/local/bin/lnxlink", "-ic", "/opt/lnxlink/config.yaml"]
+ENTRYPOINT ["/usr/local/bin/lnxlink", "-ie", "media,boot_select,display_env,fullscreen,brightness,mouse,send_keys,screenshot,keep_alive,battery,systemd,speech_recognition,notify,screen_onoff,webcam,idle,power_profile,gpu,audio_select,xdg_open,restart,shutdown,suspend"]
+CMD ["-c", "/opt/lnxlink/config.yaml"]

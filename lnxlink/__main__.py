@@ -41,7 +41,7 @@ class LNXlink:
     version = version
     path = path
 
-    def __init__(self, config_path):
+    def __init__(self, config_path, exclude_modules_arg):
         logger.info("LNXlink %s, Python %s", self.version, platform.python_version())
         self.kill = None
         self.display = None
@@ -55,6 +55,7 @@ class LNXlink:
         self.addons = {}
         conf_exclude = self.config["exclude"]
         conf_exclude = [] if conf_exclude is None else conf_exclude
+        conf_exclude.extend(exclude_modules_arg)
         loaded_modules = modules.parse_modules(
             self.config["modules"], self.config["custom_modules"], conf_exclude
         )
@@ -64,8 +65,10 @@ class LNXlink:
                 self.addons[addon.service] = tmp_addon
             except Exception as err:
                 logger.error(
-                    "Error with addon %s, please remove it from your config: %s, %s",
+                    "Error with addon %s, please remove it from your config",
                     addon.service,
+                )
+                logger.debug(
                     err,
                     traceback.format_exc(),
                 )
@@ -468,6 +471,13 @@ def main():
         action="store_true",
     )
     parser.add_argument(
+        "-e",
+        "--exclude",
+        help="Exclude modules from running",
+        default=[],
+        type=lambda t: [s.strip() for s in t.split(",")],
+    )
+    parser.add_argument(
         "-s",
         "--setup",
         help="Runs only the setup configuration workflow",
@@ -500,7 +510,7 @@ def main():
             "By not setting up the SystemD, LNXlink won't be able to start on boot..."
         )
 
-    lnxlink = LNXlink(config_file)
+    lnxlink = LNXlink(config_file, args.exclude)
 
     # Monitor for system changes (Shutdown/Suspend/Sleep)
     monitor_suspend = MonitorSuspend(lnxlink.temp_connection_callback)

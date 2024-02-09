@@ -42,10 +42,10 @@ def import_install_package(package, version="", syspackage=None):
         return __import__(syspackage)
     except ImportError:
         package_version = f"'{package}{version}'"
-        logger.error("Package %s is not installed, installing now...", package_version)
+        logger.info("Package %s is not installed, installing now...", package_version)
         args = [sys.executable, "-m", "pip", "install", "--quiet", package_version]
-        _, stderr, returncode = syscommand(args, timeout=None)
+        _, _, returncode = syscommand(args, ignore_errors=True, timeout=None)
         if returncode != 0:
-            logger.error("Can't install package %s: %s", package, stderr)
+            logger.error("Can't install package %s", package)
             return None
     return __import__(syspackage)
