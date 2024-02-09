@@ -24,6 +24,7 @@ class Addon:
                 "type": "sensor",
                 "icon": "mdi:harddisk",
                 "unit": "%",
+                "entity_category": "diagnostic",
                 "state_class": "measurement",
                 "value_template": f"{{{{ value_json.get('{device}', {{}}).get('percent') }}}}",
                 "attributes_template": att_temp,

@@ -21,6 +21,7 @@ class Addon:
         for key, value in self.temperatures.items():
             discovery_info[f"Temperature {value['name']}"] = {
                 "type": "sensor",
+                "entity_category": "diagnostic",
                 "state_class": "measurement",
                 "device_class": "temperature",
                 "unit": "°C",
