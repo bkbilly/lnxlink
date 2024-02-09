@@ -146,12 +146,14 @@ services:
   lnxlink:
     image: bkbillybk/lnxlink:latest
     container_name: lnxlink
-    network_mode: host
     restart: unless-stopped
+    network_mode: host
+    privileged: true
     stdin_open: true
     tty: true
     volumes:
       - ~/config_lnxlink/:/opt/lnxlink/config/
+      - /var/run/reboot-required:/var/run/reboot-required:ro
 ```
 
 Run docker compose image:
