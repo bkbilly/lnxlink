@@ -433,7 +433,7 @@ class LNXlink:
         os.execv(sys.executable, ["python"] + sys.argv)
 
 
-def setup_logger(config_path):
+def setup_logger(config_path, log_level):
     """Save logs on the same directory as the config file"""
     config_dir = os.path.dirname(os.path.realpath(config_path))
     start_sec = str(int(time.time()))[-4:]
@@ -448,7 +448,7 @@ def setup_logger(config_path):
         maxBytes=5 * 1024 * 1024,
         backupCount=1,
     )
-    logging.basicConfig(level=logging.INFO)
+    logging.basicConfig(level=log_level)
     file_handler.setFormatter(log_formatter)
     logger.addHandler(file_handler)
 
@@ -478,6 +478,13 @@ def main():
         type=lambda t: [s.strip() for s in t.split(",")],
     )
     parser.add_argument(
+        "-l",
+        "--logging",
+        help="Set the logging level",
+        default="INFO",
+        choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
+    )
+    parser.add_argument(
         "-s",
         "--setup",
         help="Runs only the setup configuration workflow",
@@ -498,7 +505,7 @@ def main():
         parser.print_help()
         parser.exit("\nSomething went wrong, --config condition was not set")
     config_file = os.path.abspath(args.config)
-    setup_logger(config_file)
+    setup_logger(config_file, args.logging)
     config_setup.setup_config(config_file)
     if args.setup:
         logger.info("The configuration exists under the file: %s", config_file)
