@@ -15,7 +15,16 @@ class Addon:
         if which("xdg-open") is None:
             raise SystemError("System command 'xdg-open' not found")
 
+    def exposed_controls(self):
+        """Exposes to home assistant"""
+        return {
+            "XDG_Open": {
+                "type": "text",
+                "icon": "mdi:file-find-outline",
+            }
+        }
+
     def start_control(self, topic, data):
         """Control system"""
-        logger.info("/usr/bin/xdg-open %s", data)
-        syscommand(f"/usr/bin/xdg-open {data}")
+        logger.info("xdg-open %s", data)
+        syscommand(f"xdg-open {data}", background=True)
