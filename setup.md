@@ -87,22 +87,6 @@ sudo systemctl restart lnxlink.service
 {% endcode %}
 {% endtab %}
 
-{% tab title="Development" %}
-This installs LNXlink as a development platform which is helpful if you want to create your own changes or create a new module. Read on the Development section for more information.
-
-{% code overflow="wrap" lineNumbers="true" %}
-```bash
-# Fork my repository and then download it
-git clone https://github.com/bkbilly/lnxlink.git
-# Install lnxlink as editable package
-cd lnxlink
-pip3 install -e .
-# Run it manually
-lnxlink -c config.yaml
-```
-{% endcode %}
-{% endtab %}
-
 {% tab title="VENV" %}
 Newer versions of distributions don't allow installation of packages on the system, so a virtual environment can be used.
 
@@ -120,11 +104,35 @@ lnxlink -c config.yaml
 ```
 {% endcode %}
 
+You can alternatively use the `pipx` command to install LNXlink that creates the virtual environment automatically:
+
+{% code lineNumbers="true" %}
+```bash
+pipx install lnxlink
+```
+{% endcode %}
+
 You can manually update the configuration file `config.yaml` and restart the service with the use of systemctl:
 
 {% code overflow="wrap" lineNumbers="true" %}
 ```bash
 systemctl --user restart lnxlink.service
+```
+{% endcode %}
+{% endtab %}
+
+{% tab title="Dev" %}
+This installs LNXlink as a development platform which is helpful if you want to create your own changes or create a new module. Read on the Development section for more information.
+
+{% code overflow="wrap" lineNumbers="true" %}
+```bash
+# Fork my repository and then download it
+git clone https://github.com/bkbilly/lnxlink.git
+# Install lnxlink as editable package
+cd lnxlink
+pip3 install -e .
+# Run it manually
+lnxlink -c config.yaml
 ```
 {% endcode %}
 {% endtab %}
