@@ -74,7 +74,6 @@ class LNXlink:
                 )
 
         # Setup MQTT
-        self.client = mqtt.Client()
         self.setup_mqtt()
 
     def publish_monitor_data(self, topic, pub_data):
@@ -157,7 +156,10 @@ class LNXlink:
 
     def setup_mqtt(self):
         """Creates the mqtt object"""
-        self.client = mqtt.Client()
+        if hasattr(mqtt, "CallbackAPIVersion"):
+            self.client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
+        else:
+            self.client = mqtt.Client()
         self.client.on_connect = self.on_connect
         self.client.on_message = self.on_message
 
@@ -221,7 +223,7 @@ class LNXlink:
             conf["modules"] = [x.lower().replace("-", "_") for x in conf["modules"]]
         return conf
 
-    def on_connect(self, client, userdata, flags, rcode):
+    def on_connect(self, client, userdata, flags, rcode, *args):
         """Callback for MQTT connect which reports the connection status
         back to MQTT server"""
         logger.info("MQTT connection: %s", mqtt.connack_string(rcode))
