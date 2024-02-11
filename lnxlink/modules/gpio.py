@@ -49,8 +49,9 @@ class Addon:
         self.lnxlink = lnxlink
         self.gpio_results = {}
         self.started = False
-        if self._is_raspberry():
-            self._requirements()
+        if not self._is_raspberry():
+            raise SystemError("Not supported non Raspberry PI devices")
+        self._requirements()
 
     def get_info(self):
         """Starts only once the GPIO class for each pin"""
