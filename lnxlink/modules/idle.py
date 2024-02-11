@@ -1,8 +1,7 @@
 """Gets the idle time of the system"""
-import sys
 import logging
 import importlib
-from .scripts.helpers import import_install_package, syscommand
+from .scripts.helpers import import_install_package
 
 logger = logging.getLogger("lnxlink")
 
@@ -32,16 +31,9 @@ class Addon:
             return idle_sec
         except NotImplementedError:
             logger.error("Unsupported version of dbus-idle found. Try to update...")
-            args = [
-                sys.executable,
-                "-m",
-                "pip",
-                "install",
-                "-U",
-                "--quiet",
-                "dbus-idle",
-            ]
-            syscommand(args, timeout=None)
+            import_install_package(
+                "dbus-idle", ">=2023.12.0", "dbus_idle", forceupgrade=True
+            )
             importlib.reload(self.lib["dbus_idle"])
             return 0
         except Exception as err:

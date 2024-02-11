@@ -34,16 +34,27 @@ def syscommand(command, ignore_errors=False, timeout=3, background=False):
     return stdout, stderr, returncode
 
 
-def import_install_package(package, version="", syspackage=None):
+def import_install_package(package, version="", syspackage=None, forceupgrade=False):
     """Imports a system package and if it doesn't exist, it gets installed"""
     if syspackage is None:
         syspackage = package
     try:
+        if forceupgrade:
+            raise ImportError
         return __import__(syspackage)
     except ImportError:
         package_version = f"'{package}{version}'"
-        logger.info("Package %s is not installed, installing now...", package_version)
-        args = [sys.executable, "-m", "pip", "install", "--break-system-packages", "--quiet", package_version]
+        logger.info("Installing %s...", package_version)
+        args = [
+            sys.executable,
+            "-m",
+            "pip",
+            "install",
+            "--break-system-packages",
+            "-U",
+            "--quiet",
+            package_version,
+        ]
         _, _, returncode = syscommand(args, ignore_errors=True, timeout=None)
         if returncode != 0:
             logger.error("Can't install package %s", package)
