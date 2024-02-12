@@ -6,63 +6,15 @@ description: Get started with LNXlink
 
 ## Installation
 
-Install system packages:
-
-{% tabs %}
-{% tab title="Debian Based" %}
-{% code overflow="wrap" lineNumbers="true" %}
-```bash
-sudo apt install python3-pip
-# Install libraries for Desktop environments
-sudo apt install patchelf meson libdbus-glib-1-dev libcairo2-dev libgirepository1.0-dev libglib2.0-dev libdbus-glib-1-dev
-# Install modules dependencies
-sudo apt install libasound2-dev upower xdotool xdg-utils python3-pyaudio
-```
-{% endcode %}
-{% endtab %}
-
-{% tab title="Red Hat Based" %}
-{% code overflow="wrap" lineNumbers="true" %}
-```bash
-sudo dnf install python39-pip.noarch gcc cmake dbus-devel glib2-devel python39-devel alsa-lib-devel
-```
-{% endcode %}
-{% endtab %}
-{% endtabs %}
-
-Prepare your system:
-
-{% code overflow="wrap" lineNumbers="true" %}
-```bash
-sudo pip3 install -U pip
-```
-{% endcode %}
-
 Select the installation type you want:
 
 {% tabs %}
-{% tab title="VENV" %}
-Newer versions of distributions don't allow installation of packages on the system, so a virtual environment can be used.
-
-Install or Update LNXlink:
+{% tab title="Normal" %}
+Install LNXlink and it's dependencies. It will create a `config.yaml` file and it will guide you through the basic configuration setup:
 
 {% code overflow="wrap" lineNumbers="true" %}
 ```bash
-# Install VirtualEnv package on the system
-sudo pip3 install virtualenv --break-system-packages
-# Install LNXlink on a virtual environment folder.
-python3 -m venv venv_lnxlink
-source venv_lnxlink/bin/activate
-pip install lnxlink
-lnxlink -c config.yaml
-```
-{% endcode %}
-
-You can alternatively use the `pipx` command to install LNXlink that creates the virtual environment automatically:
-
-{% code lineNumbers="true" %}
-```bash
-pipx install lnxlink
+curl -L https://raw.githubusercontent.com/bkbilly/lnxlink/master/install.sh | bash
 ```
 {% endcode %}
 
@@ -70,69 +22,8 @@ You can manually update the configuration file `config.yaml` and restart the ser
 
 {% code overflow="wrap" lineNumbers="true" %}
 ```bash
-systemctl --user restart lnxlink.service
-```
-{% endcode %}
-{% endtab %}
-
-{% tab title="Desktop" %}
-Recommended installation if you have a graphical interface.
-
-Install or Update LNXlink:
-
-{% code overflow="wrap" lineNumbers="true" %}
-```bash
-# Install lnxlink package on the system
-pip3 install -U lnxlink
-# When asked, it's recommended to install as a user service.
-lnxlink -c config.yaml
-```
-{% endcode %}
-
-You can manually update the configuration file `config.yaml` and restart the service with the use of systemctl:
-
-{% code overflow="wrap" lineNumbers="true" %}
-```bash
-systemctl --user restart lnxlink.service
-```
-{% endcode %}
-{% endtab %}
-
-{% tab title="Server" %}
-The headless installation is used for linux environments that don't use a Graphical Interface like servers.
-
-Install or Update LNXlink:
-
-{% code overflow="wrap" lineNumbers="true" %}
-```bash
-# Install lnxlink package on the system
-sudo pip3 install -U lnxlink
-# When asked, it's recommended to answer false on install as a user service.
-sudo lnxlink -c config.yaml
-```
-{% endcode %}
-
-You can manually update the configuration file `config.yaml` and restart the service with the use of systemctl:
-
-{% code overflow="wrap" lineNumbers="true" %}
-```bash
-sudo systemctl restart lnxlink.service
-```
-{% endcode %}
-{% endtab %}
-
-{% tab title="Dev" %}
-This installs LNXlink as a development platform which is helpful if you want to create your own changes or create a new module. Read on the Development section for more information.
-
-{% code overflow="wrap" lineNumbers="true" %}
-```bash
-# Fork my repository and then download it
-git clone https://github.com/bkbilly/lnxlink.git
-# Install lnxlink as editable package
-cd lnxlink
-pip3 install -e .
-# Run it manually
-lnxlink -c config.yaml
+systemctl --user restart lnxlink.service  # For user installations
+sudo systemctl restart lnxlink.service  # For root installations
 ```
 {% endcode %}
 {% endtab %}
@@ -170,6 +61,22 @@ Run docker compose image:
 docker compose -f docker-compose.yaml up
 ```
 {% endtab %}
+
+{% tab title="Development" %}
+This installs LNXlink as a development platform which is helpful if you want to create your own changes or create a new module. Read on the Development section for more information.
+
+{% code overflow="wrap" lineNumbers="true" %}
+```bash
+# Fork my repository and then download it
+git clone https://github.com/bkbilly/lnxlink.git
+# Install lnxlink as editable package
+cd lnxlink
+pip3 install -e .
+# Run it manually
+lnxlink -c config.yaml
+```
+{% endcode %}
+{% endtab %}
 {% endtabs %}
 
 ### Run sudo commands
@@ -189,7 +96,7 @@ USER ALL=(ALL) NOPASSWD: /bin/systemctl
 Remove LNXlink from your system.
 
 {% tabs %}
-{% tab title="Desktop" %}
+{% tab title="User" %}
 ```bash
 # Disables systemd service
 systemctl --user disable lnxlink.service
@@ -202,7 +109,7 @@ pip3 uninstall -U lnxlink
 ```
 {% endtab %}
 
-{% tab title="Server" %}
+{% tab title="Root" %}
 ```bash
 # Disables systemd service
 sudo systemctl disable lnxlink.service
