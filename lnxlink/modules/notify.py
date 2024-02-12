@@ -17,10 +17,10 @@ class Addon:
 
     def _requirements(self):
         self.lib = {
-            "notify2": import_install_package("notify2", ">=0.3.1"),
             "dbus": import_install_package(
                 "dbus-python", ">=1.3.2", "dbus.mainloop.glib"
             ),
+            "notify2": import_install_package("notify2", ">=0.3.1"),
         }
 
     def start_control(self, topic, data):

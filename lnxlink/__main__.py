@@ -65,11 +65,11 @@ class LNXlink:
                 self.addons[addon.service] = tmp_addon
             except Exception as err:
                 logger.error(
-                    "Error with addon %s, please remove it from your config",
+                    "Error with addon %s, please remove it from your config: %s",
                     addon.service,
+                    err,
                 )
                 logger.debug(
-                    err,
                     traceback.format_exc(),
                 )
 

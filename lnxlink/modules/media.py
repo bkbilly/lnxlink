@@ -20,11 +20,11 @@ class Addon:
 
     def _requirements(self):
         self.lib = {
-            "alsaaudio": import_install_package("pyalsaaudio", ">=0.9.2", "alsaaudio"),
-            "mpris2": import_install_package("mpris2", ">=1.0.2"),
             "dbus": import_install_package(
                 "dbus-python", ">=1.3.2", "dbus.mainloop.glib"
             ),
+            "alsaaudio": import_install_package("pyalsaaudio", ">=0.9.2", "alsaaudio"),
+            "mpris2": import_install_package("mpris2", ">=1.0.2"),
         }
 
     def exposed_controls(self):

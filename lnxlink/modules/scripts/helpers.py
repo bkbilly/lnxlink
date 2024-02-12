@@ -42,7 +42,7 @@ def import_install_package(package, version="", syspackage=None, forceupgrade=Fa
         if forceupgrade:
             raise ImportError
         return __import__(syspackage)
-    except ImportError:
+    except (ImportError, ModuleNotFoundError):
         package_version = f"'{package}{version}'"
         logger.info("Installing %s...", package_version)
         args = [
