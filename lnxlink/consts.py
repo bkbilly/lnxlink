@@ -50,6 +50,8 @@ mqtt:
     qos: 1
     retain: false
 update_interval: 5
+hass_url:
+hass_api:
 modules:
 custom_modules:
 exclude:
@@ -64,6 +66,7 @@ exclude:
   - idle
   - inference_time
   - keep_alive
+  - keyboard_hotkeys
   - media
   - mouse
   - network
@@ -81,4 +84,5 @@ settings:
   gpio:
     inputs:
     outputs:
+  hotkeys:
 """
