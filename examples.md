@@ -36,22 +36,22 @@ settings:
 
 ## Keyboard Hotkeys
 
-This is used to run remote commands to your Home Assistant instance using keyboard shortcuts.
+This is used to run remote commands to your Home Assistant instance using keyboard shortcuts. Pynput is used for the keys syntax and the monitoring of presses.
 
 ```yaml
 settings:
   hotkeys:
   - key: <ctrl>+<alt>+s
-    type: state
+    type: state  # Shows a notification using zenity with the state of the entity
     entity_id: light.myroom
   - key: <ctrl>+<alt>+a
-    type: action
+    type: action  # Perform an action on Home Assistant
     service: light.toggle
     entity_id: light.myroom
   - key: <ctrl>+<alt>+z
-    type: conversation
+    type: conversation  # Sends a predefined text to Home Assistant and displays a notification with the result
     text: What is the water heater temperature?
-  - key: <ctrl>+<alt>+x
+  - key: <ctrl>+<alt>+x # Same as conversation, but a zenity popup with an entry is displayd for the user to write
     type: popup
 ```
 
