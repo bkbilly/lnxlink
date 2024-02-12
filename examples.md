@@ -34,6 +34,27 @@ settings:
         icon: mdi:bullhorn
 ```
 
+## Keyboard Hotkeys
+
+This is used to run remote commands to your Home Assistant instance using keyboard shortcuts.
+
+```yaml
+settings:
+  hotkeys:
+  - key: <ctrl>+<alt>+s
+    type: state
+    entity_id: light.myroom
+  - key: <ctrl>+<alt>+a
+    type: action
+    service: light.toggle
+    entity_id: light.myroom
+  - key: <ctrl>+<alt>+z
+    type: conversation
+    text: What is the water heater temperature?
+  - key: <ctrl>+<alt>+x
+    type: popup
+```
+
 ## Bash
 
 The bash module can run any command on a remote computer which makes it dangerous, but also very helpful to create sensors without creating modules on LNXlink.
