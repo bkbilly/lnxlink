@@ -41,18 +41,23 @@ class LNXlink:
     version = version
     path = path
 
-    def __init__(self, config_path, exclude_modules_arg):
+    def __init__(self, config_path):
         logger.info("LNXlink %s, Python %s", self.version, platform.python_version())
         self.kill = None
         self.display = None
         self.inference_times = {}
+        self.addons = {}
+        self.pref_topic = "lnxlink"
+        if hasattr(mqtt, "CallbackAPIVersion"):
+            self.client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
+        else:
+            self.client = mqtt.Client()
 
         # Read configuration from yaml file
-        self.pref_topic = "lnxlink"
         self.config = self.read_config(config_path)
 
-        # Run each addon included in the modules folder
-        self.addons = {}
+    def start(self, exclude_modules_arg):
+        """Run each addon included in the modules folder"""
         conf_exclude = self.config["exclude"]
         conf_exclude = [] if conf_exclude is None else conf_exclude
         conf_exclude.extend(exclude_modules_arg)
@@ -72,6 +77,7 @@ class LNXlink:
                 logger.debug(
                     traceback.format_exc(),
                 )
+        logger.info("Loaded addons: %s", ", ".join(self.addons.keys()))
 
         # Setup MQTT
         self.setup_mqtt()
@@ -156,10 +162,6 @@ class LNXlink:
 
     def setup_mqtt(self):
         """Creates the mqtt object"""
-        if hasattr(mqtt, "CallbackAPIVersion"):
-            self.client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
-        else:
-            self.client = mqtt.Client()
         self.client.on_connect = self.on_connect
         self.client.on_message = self.on_message
 
@@ -519,12 +521,15 @@ def main():
             "By not setting up the SystemD, LNXlink won't be able to start on boot..."
         )
 
-    lnxlink = LNXlink(config_file, args.exclude)
+    lnxlink = LNXlink(config_file)
 
     # Monitor for system changes (Shutdown/Suspend/Sleep)
     monitor_suspend = MonitorSuspend(lnxlink.temp_connection_callback)
     monitor_suspend.start()
     monitor_gracefulkiller = GracefulKiller(lnxlink.temp_connection_callback)
+
+    # Starts the main app
+    lnxlink.start(args.exclude)
     while not monitor_gracefulkiller.kill_now:
         time.sleep(0.2)
     monitor_suspend.stop()

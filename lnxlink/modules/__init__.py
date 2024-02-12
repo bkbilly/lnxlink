@@ -58,5 +58,5 @@ def parse_modules(list_modules=None, custom_modules=None, auto_exclude=None):
                 logger.error("Error with module %s: %s", module_name, err)
                 time.sleep(2)
                 retries -= 1
-    logger.info("Loaded addons: %s", ", ".join(modules))
+    logger.debug("Found addons: %s", ", ".join(modules))
     return modules
