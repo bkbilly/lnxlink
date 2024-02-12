@@ -44,7 +44,7 @@ if [[ $(pidof dbus-daemon) ]]; then
     echo -e "\e[35mFound dbus...\e[0m"
     sudo $installcommand patchelf meson libdbus-glib-1-dev libglib2.0-dev libcairo2-dev libgirepository1.0-dev
 fi
-sudo $installcommand libasound2-dev upower xdotool xdg-utils python3-pyaudio
+sudo $installcommand libasound2-dev upower xdotool xdg-utils python3-pyaudio portaudio19-dev
 
 
 # Install LNXlink

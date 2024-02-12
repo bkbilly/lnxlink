@@ -18,7 +18,9 @@ class Addon:
         try:
             import_module("pyaudio")
         except Exception as err:
-            raise SystemError("System package 'python3-pyaudio' not installed") from err
+            raise SystemError(
+                "System package 'python3-pyaudio' or 'portaudio19-dev' not installed"
+            ) from err
         self._requirements()
 
     def _requirements(self):
