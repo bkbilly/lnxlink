@@ -53,6 +53,6 @@ class Addon:
         sent_speed = round(sent_diff * 8 / time_diff / 1024 / 1024, 2)
 
         return {
-            "upload": recv_speed,
-            "download": sent_speed,
+            "upload": sent_speed,
+            "download": recv_speed,
         }
