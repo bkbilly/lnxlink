@@ -85,4 +85,5 @@ settings:
     inputs:
     outputs:
   hotkeys:
+  statistics: "https://analyzer.bkbilly.workers.dev/api/lnxlink"
 """

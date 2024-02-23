@@ -1,7 +1,10 @@
 """Turns on or off the screen"""
 import re
+import logging
 from shutil import which
 from .scripts.helpers import syscommand
+
+logger = logging.getLogger("lnxlink")
 
 
 class Addon:
@@ -27,10 +30,15 @@ class Addon:
         """Gather information from the system"""
         status = "ON"
         if self.lnxlink.display is not None:
-            stdout, _, _ = syscommand(f"xset -display {self.lnxlink.display} q")
+            command = f"xset -display {self.lnxlink.display} q"
+            stdout, _, _ = syscommand(command)
             match = re.findall(r"Monitor is (\w*)", stdout)
             if match:
                 status = match[0].upper()
+            else:
+                logger.debug("Screen_onoff error: %s\n%s", command, stdout)
+        else:
+            logger.debug("No display variable found")
 
         return status
 
