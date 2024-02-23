@@ -29,15 +29,14 @@ class Addon:
         """Gather information from the system"""
         cur_time = time.time()
         if cur_time - self.last_time > self.update_interval:
-            modules = ", ".join(self.lnxlink.addons.keys())
             version = self.lnxlink.version.split("+")[0]
             data = json.dumps(
                 {
                     "uuid": self.uuid,
                     "version": version,
-                    "modules": modules,
                 }
             )
+            logger.info("Sending statistics data: %s", data)
             requests.post(url=self.url, data=data)
             self.last_time = cur_time
 
