@@ -55,6 +55,16 @@ settings:
     type: popup
 ```
 
+## Statistics
+
+&#x20;It is used to send basic information of the app  to gather daily usage per version.&#x20;
+
+The data is sent after 15 minutes of startup and then every 24 hours. Only some basic information is sent which includes **UUID** (a unique identifier that is generated and stored when first used) and the **version** of the app.
+
+The server is a CloudFlare Worker that stores the data sent by the app including the **date** and the **country** the request originated from.
+
+The statistics server is configurable under the configuration file of LNXlink, so you can use your own analytics server. By setting the URL to null or excluding the statistics module, you can disable it from sending any data.
+
 ## Bash
 
 The bash module can run any command on a remote computer which makes it dangerous, but also very helpful to create sensors without creating modules on LNXlink.

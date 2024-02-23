@@ -51,8 +51,8 @@ custom_modules:
 
 3rd party custom modules:
 
-* [https://github.com/PW999/lnxlink\_gpu\_nvidia\_settings](https://github.com/PW999/lnxlink\_gpu\_nvidia\_settings)
-* [https://github.com/bkbilly/lnxlink/discussions/81](https://github.com/bkbilly/lnxlink/discussions/81)
+* [GPU nvidia-settings](https://github.com/PW999/lnxlink\_gpu\_nvidia\_settings)
+* [AM2302 Temperature and Humidity](https://github.com/bkbilly/lnxlink/discussions/81)
 
 ## Exclude Modules
 

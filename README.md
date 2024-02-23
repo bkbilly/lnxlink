@@ -2,7 +2,7 @@
 description: Effortlessly manage your Linux machine
 ---
 
-# 🌩 LNXlink
+# 🌩️ LNXlink
 
 <figure><img src=".gitbook/assets/logo.png" alt=""><figcaption></figcaption></figure>
 
@@ -19,28 +19,28 @@ Home Assistant companion app for linux that uses the MQTT integration to get inf
 
 ## Supported Modules
 
-| Controls                                          | Sensors          |
-| ------------------------------------------------- | ---------------- |
-| Shutdown                                          | CPU              |
-| Restart                                           | RAM              |
-| Suspend                                           | GPU              |
-| [Notify](examples.md#notification)                | Network Speed    |
-| [Media Controls](media-player.md)                 | Display Variable |
-| [Send Keys](examples.md#keys-send)                | Microphone used  |
-| Mouse control                                     | Camera used      |
-| Screen On/Off                                     | Idle time        |
-| [Open URL/File](examples.md#open-a-url-or-file)   | Battery          |
-| [Bash commands](examples.md#bash)                 | Disk usage       |
-| Keep Alive                                        | Restart required |
-| Brightness                                        | Update required  |
-| Boot select                                       | Webcam           |
-| Power Profile                                     | Screenshot       |
-| [Speech Recognition](examples.md#voice-assistant) | Full Screen      |
-| Audio Select (microphone, speaker)                | Inference Time   |
-| [SystemD](examples.md#systemd)                    | Temperature      |
-| [GPIO ](examples.md#gpio)(inputs, outputs)        | WiFi             |
-| [LNXlink Update](examples.md#install-update)      |                  |
-| [Keyboard Hotkeys](examples.md#keyboard-hotkeys)  |                  |
+| Controls                                          | Sensors                              |
+| ------------------------------------------------- | ------------------------------------ |
+| Shutdown                                          | CPU                                  |
+| Restart                                           | RAM                                  |
+| Suspend                                           | GPU                                  |
+| [Notify](examples.md#notification)                | Network Speed                        |
+| [Media Controls](media-player.md)                 | Display Variable                     |
+| [Send Keys](examples.md#keys-send)                | Microphone used                      |
+| Mouse control                                     | Camera used                          |
+| Screen On/Off                                     | Idle time                            |
+| [Open URL/File](examples.md#open-a-url-or-file)   | Battery                              |
+| [Bash commands](examples.md#bash)                 | Disk usage                           |
+| Keep Alive                                        | Restart required                     |
+| Brightness                                        | Update required                      |
+| Boot select                                       | Webcam                               |
+| Power Profile                                     | Screenshot                           |
+| [Speech Recognition](examples.md#voice-assistant) | Full Screen                          |
+| Audio Select (microphone, speaker)                | Inference Time                       |
+| [SystemD](examples.md#systemd)                    | Temperature                          |
+| [GPIO ](examples.md#gpio)(inputs, outputs)        | WiFi                                 |
+| [LNXlink Update](examples.md#install-update)      | [Statistics](examples.md#statistics) |
+| [Keyboard Hotkeys](examples.md#keyboard-hotkeys)  |                                      |
 
 ## Supported OS
 
