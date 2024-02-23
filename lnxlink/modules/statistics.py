@@ -21,6 +21,8 @@ class Addon:
         # 15 minutes after lnxlink starts
         self.last_time = time.time() - self.update_interval + 900
         self.url = self.lnxlink.config["settings"]["statistics"]
+        if self.url is None or self.url == "":
+            raise SystemError("Statistics is not setup correctly")
         self.uuid = self._get_uuid()
 
     def get_info(self):
@@ -28,10 +30,11 @@ class Addon:
         cur_time = time.time()
         if cur_time - self.last_time > self.update_interval:
             modules = ", ".join(self.lnxlink.addons.keys())
+            version = self.lnxlink.version.split("+")[0]
             data = json.dumps(
                 {
                     "uuid": self.uuid,
-                    "version": self.lnxlink.version,
+                    "version": version,
                     "modules": modules,
                 }
             )
