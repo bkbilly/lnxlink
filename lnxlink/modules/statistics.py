@@ -37,7 +37,9 @@ class Addon:
                 }
             )
             logger.info("Sending statistics data: %s", data)
-            requests.post(url=self.url, data=data)
+            url = self.url.rstrip("/")
+            url = f"{url}/api/lnxlink"
+            requests.post(url=url, data=data)
             self.last_time = cur_time
 
     def _get_uuid(self):
