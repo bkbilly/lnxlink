@@ -149,6 +149,9 @@ def userprompt_config(config_path):
             input(f" Change clientId [{config['mqtt']['clientId']}]: ")
             or config["mqtt"]["clientId"]
         )
+        statistics = query_true_false("Send statistics", True)
+        if not statistics:
+            config["exclude"].append("statistics")
 
     with open(config_path, "w", encoding="UTF-8") as file:
         file.write(yaml.dump(config, default_flow_style=False, sort_keys=False))
