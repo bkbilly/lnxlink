@@ -81,7 +81,7 @@ class LNXlink:
         logger.info("Loaded addons: %s", ", ".join(self.addons.keys()))
 
         # Setup MQTT
-        self.setup_mqtt()
+        return self.setup_mqtt()
 
     def publish_monitor_data(self, topic, pub_data):
         """Publish info data to mqtt in the correct format"""
@@ -211,8 +211,9 @@ class LNXlink:
                 err,
                 traceback.format_exc(),
             )
-            sys.exit()
+            return False
         self.client.loop_start()
+        return True
 
     def read_config(self, config_path):
         """Reads the config file and prepares module names for import"""
@@ -530,11 +531,14 @@ def main():
     monitor_gracefulkiller = GracefulKiller(lnxlink.temp_connection_callback)
 
     # Starts the main app
-    lnxlink.start(args.exclude)
-    while not monitor_gracefulkiller.kill_now:
-        time.sleep(0.2)
-    monitor_suspend.stop()
-    lnxlink.disconnect()
+    start_status = lnxlink.start(args.exclude)
+    if start_status:
+        while not monitor_gracefulkiller.kill_now:
+            time.sleep(1.0)
+        monitor_suspend.stop()
+        lnxlink.disconnect()
+    else:
+        monitor_suspend.stop()
 
 
 if __name__ == "__main__":
