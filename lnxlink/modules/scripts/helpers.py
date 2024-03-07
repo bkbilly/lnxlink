@@ -1,5 +1,6 @@
 """A collection of helper functions"""
 import sys
+import importlib.metadata
 import logging
 import subprocess
 
@@ -34,16 +35,18 @@ def syscommand(command, ignore_errors=False, timeout=3, background=False):
     return stdout, stderr, returncode
 
 
-def import_install_package(package, version="", syspackage=None, forceupgrade=False):
+def import_install_package(package, req_version="", syspackage=None):
     """Imports a system package and if it doesn't exist, it gets installed"""
     if syspackage is None:
         syspackage = package
+
     try:
-        if forceupgrade:
-            raise ImportError
-        return __import__(syspackage)
-    except (ImportError, ModuleNotFoundError):
-        package_version = f"'{package}{version}'"
+        current_version = importlib.metadata.version(package)
+    except importlib.metadata.PackageNotFoundError:
+        current_version = None
+
+    if current_version is None or needs_update(current_version, req_version):
+        package_version = f"'{package}{req_version}'"
         logger.info("Installing %s...", package_version)
         args = [
             sys.executable,
@@ -59,4 +62,30 @@ def import_install_package(package, version="", syspackage=None, forceupgrade=Fa
         if returncode != 0:
             logger.error("Can't install package %s", package)
             return None
-    return __import__(syspackage)
+
+    try:
+        return __import__(syspackage)
+    except Exception as err:
+        logger.error("Can't import package %s", err)
+        return None
+
+
+def needs_update(current_version, request_version):
+    """Compares two version strings"""
+    current_version = str(current_version).strip("><=~")
+    request_version = str(request_version).strip("><=~")
+    try:
+        current_versions = [int(version) for version in current_version.split(".")]
+    except (TypeError, ValueError):
+        current_versions = [0]
+    if request_version is None or request_version == "":
+        return False
+    request_versions = [int(version) for version in request_version.split(".")]
+    for num in range(max(len(current_versions), len(request_versions))):
+        cur_version = current_versions[num] if num < len(current_versions) else 0
+        req_version = request_versions[num] if num < len(request_versions) else 0
+        if req_version > cur_version:
+            return True
+        if req_version < cur_version:
+            return False
+    return False

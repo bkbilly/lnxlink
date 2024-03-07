@@ -1,6 +1,5 @@
 """Gets the idle time of the system"""
 import logging
-import importlib
 from .scripts.helpers import import_install_package
 
 logger = logging.getLogger("lnxlink")
@@ -25,20 +24,9 @@ class Addon:
 
     def get_info(self):
         """Gather information from the system"""
-        try:
-            idle_ms = self.lib["dbus_idle"].IdleMonitor().get_dbus_idle()
-            idle_sec = round(idle_ms / 1000, 0)
-            return idle_sec
-        except NotImplementedError:
-            logger.error("Unsupported version of dbus-idle found. Try to update...")
-            import_install_package(
-                "dbus-idle", ">=2023.12.0", "dbus_idle", forceupgrade=True
-            )
-            importlib.reload(self.lib["dbus_idle"])
-            return 0
-        except Exception as err:
-            logger.error(err)
-            return 0
+        idle_ms = self.lib["dbus_idle"].IdleMonitor().get_dbus_idle()
+        idle_sec = round(idle_ms / 1000, 0)
+        return idle_sec
 
     def exposed_controls(self):
         """Exposes to home assistant"""

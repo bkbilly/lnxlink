@@ -14,7 +14,7 @@ class Addon:
     def _requirements(self):
         self.lib = {
             "ewmh": import_install_package("ewmh", ">=0.1.6"),
-            "xlib": import_install_package("xlib", ">=0.33", "Xlib.display"),
+            "xlib": import_install_package("python-xlib", ">=0.33", "Xlib.display"),
         }
 
     def exposed_controls(self):

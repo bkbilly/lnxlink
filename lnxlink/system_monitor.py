@@ -39,7 +39,7 @@ class MonitorSuspend:
                 "org.freedesktop.login1",  # bus name
             )
             self.loop = self.lib["glib"].repository.GLib.MainLoop()
-            self.timer1 = threading.Thread(target=self.loop.run)
+            self.timer1 = threading.Thread(target=self.loop.run, daemon=True)
             self.use = True
         except Exception as err:
             logger.error(
