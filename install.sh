@@ -50,6 +50,7 @@ sudo $installcommand libasound2-dev upower xdotool xdg-utils python3-pyaudio por
 # Install LNXlink
 if [ -z $(which lnxlink) ]; then
     echo -e "\e[35mInstalling LNXlink...\e[0m"
+    pip install -U pipx
     pipx install lnxlink
     lnxlink -sc config.yaml
 else
