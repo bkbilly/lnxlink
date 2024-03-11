@@ -85,5 +85,8 @@ settings:
     inputs:
     outputs:
   hotkeys:
+  disk_usage:
+    include_disks: []
+    exclude_disks: []
   statistics: "https://analyzer.bkbilly.workers.dev"
 """
