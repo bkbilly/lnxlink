@@ -52,6 +52,16 @@ class Addon:
     def _get_disks(self):
         """Get a list of all disks"""
         disks = {}
+        disk_includes = (
+            self.lnxlink.config["settings"]
+            .get("disk_usage", [])
+            .get("include_disks", [])
+        )
+        disk_excludes = (
+            self.lnxlink.config["settings"]
+            .get("disk_usage", [])
+            .get("exclude_disks", [])
+        )
         for disk in psutil.disk_partitions():
             matches = [
                 "/snap/",
@@ -62,6 +72,12 @@ class Addon:
                 continue
             if disk.fstype == "squashfs":
                 continue
+            if len(disk_includes) != 0:
+                if not any(disk.device.startswith(x) for x in disk_includes):
+                    continue
+            if len(disk_excludes) != 0:
+                if any(disk.device.startswith(x) for x in disk_excludes):
+                    continue
 
             try:
                 disk_stats = psutil.disk_usage(disk.mountpoint)
