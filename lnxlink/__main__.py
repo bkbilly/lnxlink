@@ -376,7 +376,10 @@ class LNXlink:
                 "image_encoding": options.get("encoding"),
             },
             "update": {"state_topic": state_topic},
-            "button": {"command_topic": command_topic},
+            "button": {
+                "command_topic": command_topic,
+                "payload_press": options.get("payload_press", "PRESS"),
+            },
             "switch": {
                 "state_topic": state_topic,
                 "command_topic": command_topic,

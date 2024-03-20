@@ -89,4 +89,6 @@ settings:
     include_disks: []
     exclude_disks: []
   statistics: "https://analyzer.bkbilly.workers.dev"
+  bash:
+    expose:
 """

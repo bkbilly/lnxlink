@@ -12,12 +12,21 @@ class Addon:
 
     def exposed_controls(self):
         """Exposes to home assistant"""
-        return {
+        discovery_info = {
             "Bash_Command": {
                 "type": "text",
                 "icon": "mdi:bash",
             }
         }
+        exposed = self.lnxlink.config["settings"]["bash"]["expose"]
+        exposed = [] if exposed is None else exposed
+        for expose in exposed:
+            discovery_info[f"Bash {expose['name']}"] = {
+                "type": "button",
+                "icon": expose.get("icon", "mdi:script-text"),
+                "payload_press": expose["command"],
+            }
+        return discovery_info
 
     def start_control(self, topic, data):
         """Control system"""
