@@ -17,14 +17,14 @@ class Addon:
 
     def _requirements(self):
         self.lib = {
-            "dbus_idle": import_install_package(
-                "dbus-idle", ">=2023.12.0", "dbus_idle"
-            ),
+            "dbus_idle": import_install_package("dbus-idle", ">=2024.3.0", "dbus_idle"),
         }
 
     def get_info(self):
         """Gather information from the system"""
         idle_ms = self.lib["dbus_idle"].IdleMonitor().get_dbus_idle()
+        if idle_ms is None:
+            return None
         idle_sec = round(idle_ms / 1000, 0)
         return idle_sec
 

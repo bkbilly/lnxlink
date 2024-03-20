@@ -1,6 +1,7 @@
 """Gets WiFi information"""
 import os
 import re
+from shutil import which
 from .scripts.helpers import syscommand
 
 
@@ -10,6 +11,8 @@ class Addon:
     def __init__(self, lnxlink):
         """Setup addon"""
         self.name = "WiFi"
+        if which("iwgetid") is None:
+            raise SystemError("System command 'iwgetid' not found")
 
     def exposed_controls(self):
         """Exposes to home assistant"""
