@@ -17,7 +17,7 @@ class Addon:
 
     def _requirements(self):
         self.lib = {
-            "dbus_idle": import_install_package("dbus-idle", ">=2024.3.0", "dbus_idle"),
+            "dbus_idle": import_install_package("dbus-idle", ">=2024.3.1", "dbus_idle"),
         }
 
     def get_info(self):

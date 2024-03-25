@@ -66,7 +66,7 @@ def import_install_package(package, req_version="", syspackage=None):
     try:
         return __import__(syspackage)
     except Exception as err:
-        logger.error("Can't import package %s", err)
+        logger.error("Can't import package %s: %s", package, err)
         return None
 
 
