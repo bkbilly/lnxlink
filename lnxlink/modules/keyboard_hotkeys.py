@@ -29,24 +29,25 @@ class Addon:
             )
         if not self._test_connection():
             raise SystemError("Can't connect to Home Assistant")
+        self._requirements()
 
     def _requirements(self):
-        self.lib["pynput"] = import_install_package("pynput", ">=1.7.6", "pynput")
-        if self.lib["pynput"] is not None:
-            self.started = True
-            hotkeys = {}
-            actions = self.lnxlink.config["settings"]["hotkeys"]
-            for action in actions:
-                action_key = action.pop("key")
-                hotkeys[action_key] = lambda action=action: self._activate(action)
-            if len(hotkeys) > 0:
-                listener = self.lib["pynput"].keyboard.GlobalHotKeys(hotkeys)
-                listener.start()
+        self.lib = {
+            "xlib_hotkeys": import_install_package(
+                "xlib-hotkeys", ">=2024.3.0", "xlib_hotkeys"
+            ),
+        }
 
     def get_info(self):
         """Gather information from the system"""
         if not self.started and self.lnxlink.display is not None:
-            self._requirements()
+            hm = self.lib["xlib_hotkeys"].HotKeysManager(self.lnxlink.display)
+            actions = self.lnxlink.config["settings"]["hotkeys"]
+            for action in actions:
+                action_key = action.pop("key")
+                hm.hotkeys[action_key] = lambda action=action: self._activate(action)
+            hm.start()
+            self.started = True
 
     def _activate(self, act):
         response = ""
