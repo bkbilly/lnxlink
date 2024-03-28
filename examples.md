@@ -6,55 +6,6 @@ description: >-
 
 # 🔱 Modules Usage
 
-## SystemD
-
-Not all services on a machine are needed to be controlled or monitored through a switch, so they need to be configured manually by adding this on your _config.yaml_ file:
-
-```yaml
-settings:
-  systemd:
-    - docker.service
-    - anydesk.service
-```
-
-## GPIO
-
-This is only supported by Raspberry Pi and needs to be configured manually on your _config.yaml_ file:
-
-```yaml
-settings:
-  gpio:
-    inputs:
-      - name: Front Door
-        pin: 13
-        device_class: door
-    outputs:
-      - name: Siren
-        pin: 25
-        icon: mdi:bullhorn
-```
-
-## Keyboard Hotkeys
-
-This is used to run remote commands to your Home Assistant instance using keyboard shortcuts. Pynput is used for the keys syntax and the monitoring of presses.
-
-```yaml
-settings:
-  hotkeys:
-  - key: <ctrl>+<alt>+s
-    type: state  # Shows a notification using zenity with the state of the entity
-    entity_id: light.myroom
-  - key: <ctrl>+<alt>+a
-    type: action  # Perform an action on Home Assistant
-    service: light.toggle
-    entity_id: light.myroom
-  - key: <ctrl>+<alt>+z
-    type: conversation  # Sends a predefined text to Home Assistant and displays a notification with the result
-    text: What is the water heater temperature?
-  - key: <ctrl>+<alt>+x # Same as conversation, but a zenity popup with an entry is displayd for the user to write
-    type: popup
-```
-
 ## Statistics
 
 &#x20;It is used to send basic information of the app  to gather daily usage per version.&#x20;
