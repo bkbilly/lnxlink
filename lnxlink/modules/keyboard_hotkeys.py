@@ -66,7 +66,8 @@ class Addon:
                 response = post(url, headers=self.hass_headers, data=json.dumps(action))
             elif action_type == "popup":
                 stdout, _, _ = syscommand(
-                    "timeout 15s zenity --entry --title='Home Assistant' --text='Sentence:'",
+                    f"timeout 15s zenity --display='{self.lnxlink.display}' "
+                    + "--entry --title='Home Assistant' --text='Sentence:'",
                     timeout=15,
                 )
                 if stdout == "":
@@ -80,7 +81,9 @@ class Addon:
                 response = speech["ssml"]["speech"]
         if response != "":
             logger.info("Home Assistant response: %s", response)
-            syscommand(f'zenity --notification --text="{response}"')
+            syscommand(
+                f'zenity --display="{self.lnxlink.display}" --notification --text="{response}"'
+            )
 
     def _test_connection(self):
         try:
