@@ -1,9 +1,6 @@
-FROM python:3.9-slim
+FROM python:3.9-slim-buster
 
-RUN apt update && apt install -y gcc libssl-dev libffi-dev
-RUN curl https://sh.rustup.rs -sSf | sh
-RUN pip3 install -U pip
-RUN pip3 install --no-cache-dir cryptography
+RUN apt update && apt install -y gcc
 
 WORKDIR /opt/lnxlink
 
