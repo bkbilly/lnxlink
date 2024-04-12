@@ -1,4 +1,11 @@
 repos:
+  - repo: local
+    hooks:
+      - id: find-requirements
+        name: find-requirements
+        entry: python find_libraries.py
+        language: python
+        pass_filenames: false
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.5.0
     hooks:
