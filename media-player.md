@@ -93,3 +93,13 @@ data:
 target:
   entity_id: camera.demo_camera
 ```
+
+### Volume change by a predefined step
+
+```yaml
+service: media_player.volume_set
+data:
+  volume_level: '{{ state_attr("media_player.desktop_linux", "volume_level") - 0.01 }}'
+target:
+  entity_id: media_player.desktop_linux
+```
