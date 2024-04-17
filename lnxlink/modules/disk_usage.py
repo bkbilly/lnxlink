@@ -46,8 +46,8 @@ class Addon:
             self.lnxlink.setup_discovery()
         return self.disks
 
-    def _bytetomb(self, byte):
-        return round(byte / 1024 / 1024, 0)
+    def _bytetogb(self, byte):
+        return round(byte / 1024 / 1024 / 1024, 0)
 
     def _get_disks(self):
         """Get a list of all disks"""
@@ -85,9 +85,9 @@ class Addon:
                 disks[device] = {}
                 disks[device]["percent"] = disk_stats.percent
                 disks[device]["attributes"] = {}
-                disks[device]["attributes"]["total"] = self._bytetomb(disk_stats.total)
-                disks[device]["attributes"]["used"] = self._bytetomb(disk_stats.used)
-                disks[device]["attributes"]["free"] = self._bytetomb(disk_stats.free)
+                disks[device]["attributes"]["total"] = self._bytetogb(disk_stats.total)
+                disks[device]["attributes"]["used"] = self._bytetogb(disk_stats.used)
+                disks[device]["attributes"]["free"] = self._bytetogb(disk_stats.free)
                 disks[device]["attributes"]["connected"] = True
                 disks[device]["attributes"]["mountpoint"] = disk.mountpoint
             except Exception as err:
