@@ -54,10 +54,10 @@ class Addon:
             gpu_util = self._older_gpu_load(gpu_id, gpu_util)
             gpus[f"nvidia_{gpu_id}"] = {
                 "load": gpu_util,
+                "memory": round(nvidia_gpu.mem_util, 0),
+                "temperature": nvidia_gpu.temperature,
                 "attributes": {
                     "Name": nvidia_gpu.name,
-                    "Memory usage": round(nvidia_gpu.mem_util, 0),
-                    "Temperature": nvidia_gpu.temperature,
                 },
             }
         return gpus
@@ -95,13 +95,14 @@ class Addon:
                 "enabled": True,
             }
         for gpu_id in range(self.gpu_ids["nvidia"]):
-            discovery_info[f"GPU NVIDIA {gpu_id}"] = {
-                "type": "sensor",
-                "icon": "mdi:expansion-card-variant",
-                "unit": "%",
-                "state_class": "measurement",
-                "value_template": f"{{{{ value_json.nvidia_{gpu_id}.load }}}}",
-                "attributes_template": f"{{{{ value_json.nvidia_{gpu_id}.attributes | tojson }}}}",
-                "enabled": True,
-            }
+            for expose, unit in (("load", "%"), ("memory", "%"), ("temperature", "°C")):
+                discovery_info[f"GPU NVIDIA {gpu_id} {expose}"] = {
+                    "type": "sensor",
+                    "icon": "mdi:expansion-card-variant",
+                    "unit": unit,
+                    "state_class": "measurement",
+                    "value_template": f"{{{{ value_json.nvidia_{gpu_id}.{expose} }}}}",
+                    "attributes_template": f"{{{{ value_json.nvidia_{gpu_id}.attributes | tojson }}}}",
+                    "enabled": True,
+                }
         return discovery_info
