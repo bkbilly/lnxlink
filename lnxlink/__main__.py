@@ -195,6 +195,13 @@ class LNXlink:
             )
             if ca_certs is None:
                 self.client.tls_insecure_set(True)
+        if self.config["mqtt"]["lwt"]["enabled"]:
+            self.client.will_set(
+                f"{self.pref_topic}/lwt",
+                payload="OFF",
+                qos=self.config["mqtt"]["lwt"]["qos"],
+                retain=True,
+            )
         try:
             self.client.connect(
                 self.config["mqtt"]["server"], self.config["mqtt"]["port"], 60

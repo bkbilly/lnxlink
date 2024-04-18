@@ -7,6 +7,8 @@ After=network-online.target
 [Service]
 Type=simple
 Restart=always
+StartLimitIntervalSec=300
+StartLimitBurst=1
 User=root
 
 ExecStart={exec_cmd}
@@ -23,6 +25,8 @@ PartOf=graphical-session.target
 [Service]
 Type=simple
 Restart=always
+StartLimitIntervalSec=300
+StartLimitBurst=1
 
 ExecStart={exec_cmd}
 
