@@ -1,4 +1,4 @@
-name: pre-commit
+name: Python Checks
 
 on: [push, pull_request]
 
