@@ -86,8 +86,6 @@ class Addon:
                 disks[device]["percent"] = disk_stats.percent
                 disks[device]["attributes"] = {}
                 disks[device]["attributes"]["total"] = self._bytetogb(disk_stats.total)
-                disks[device]["attributes"]["used"] = self._bytetogb(disk_stats.used)
-                disks[device]["attributes"]["free"] = self._bytetogb(disk_stats.free)
                 disks[device]["attributes"]["connected"] = True
                 disks[device]["attributes"]["mountpoint"] = disk.mountpoint
             except Exception as err:
