@@ -23,6 +23,10 @@ class Addon:
     def exposed_controls(self):
         """Exposes to home assistant"""
         return {
+            "Mouse Coordinates": {
+                "type": "text",
+                "icon": "mdi:mouse-variant",
+            },
             "Mouse Left": {
                 "type": "button",
                 "icon": "mdi:gamepad-circle-left",
@@ -41,11 +45,11 @@ class Addon:
             },
             "Mouse Click": {
                 "type": "button",
-                "icon": "mdi:cursor-default-click",
+                "icon": "mdi:mouse-left-click",
             },
             "Mouse Click Right": {
                 "type": "button",
-                "icon": "mdi:cursor-default",
+                "icon": "mdi:mouse-right-click",
             },
         }
 
@@ -56,8 +60,11 @@ class Addon:
                 os.environ["DISPLAY"] = self.lnxlink.display
                 logger.info("Initializing empty DISPLAY environment variable")
 
-        if topic[1] == "mouse_move":
-            coords = data.replace(" ", "").split(",")
+        if topic[1] == "mouse_coordinates":
+            if "," in data:
+                coords = data.replace(" ", "").split(",")
+            elif " " in data:
+                coords = data.split(" ")
             syscommand(f"xdotool mousemove {coords[0]} {coords[1]}")
         elif topic[1] == "mouse_left":
             self._move([-1, 0])
