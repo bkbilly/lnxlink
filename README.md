@@ -40,7 +40,7 @@ Home Assistant companion app for linux that uses the MQTT integration to get inf
 | [SystemD](settings.md#systemd)                    | Temperature                          |
 | [GPIO](settings.md#gpio) (inputs, outputs)        | WiFi                                 |
 | [LNXlink Update](examples.md#install-update)      | [Statistics](examples.md#statistics) |
-| [Keyboard Hotkeys](settings.md#keyboard-hotkeys)  |                                      |
+| [Keyboard Hotkeys](settings.md#keyboard-hotkeys)  | Gamepad Used                         |
 
 ## Supported OS
 
