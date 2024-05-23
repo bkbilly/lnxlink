@@ -12,8 +12,14 @@ class Addon:
     def __init__(self, lnxlink):
         """Setup addon"""
         self.name = "Notify OSD"
+        self.lnxlink = lnxlink
         self._requirements()
         self.lib["dbus"].mainloop.glib.DBusGMainLoop(set_as_default=True)
+        self.urgencies = {
+            "low": self.lib["notify2"].URGENCY_LOW,
+            "normal": self.lib["notify2"].URGENCY_NORMAL,
+            "critical": self.lib["notify2"].URGENCY_CRITICAL,
+        }
 
     def _requirements(self):
         self.lib = {
@@ -25,20 +31,46 @@ class Addon:
 
     def start_control(self, topic, data):
         """Control system"""
-        icon_url = data.get("iconUrl", "")
-        icon = "notification-message-im"
-        try:
-            if "http" in icon_url:
-                icon_ext = icon_url.split(".")[-1]
-                img_data = requests.get(icon_url, timeout=3).content
-                icon = f"/tmp/lnxlink_notification.{icon_ext}"
-                with open(icon, "wb") as handler:
-                    handler.write(img_data)
-            elif icon_url != "":
-                icon = icon_url
-        except Exception as err:
-            logger.error("Error downloading notification image: %s", err)
+        icon_url = data.get("iconUrl")
+        sound_url = data.get("sound")
+        timeout = data.get("timeout")
+        urgency = data.get("urgency")
+        icon_path = icon_url
+        sound_path = sound_url
+        if icon_url is not None:
+            try:
+                if icon_url.startswith("http"):
+                    img_data = requests.get(icon_url, timeout=3).content
+                    icon_path = "/tmp/lnxlink_icon"
+                    with open(icon_path, "wb") as handler:
+                        handler.write(img_data)
+            except Exception as err:
+                logger.error("Error downloading notification image: %s", err)
+        if sound_url is not None:
+            try:
+                if sound_url.startswith("http"):
+                    sound_data = requests.get(sound_url, timeout=3).content
+                    sound_path = "/tmp/lnxlink_sound"
+                    with open(sound_path, "wb") as handler:
+                        handler.write(sound_data)
+            except Exception as err:
+                logger.error("Error downloading notification sound: %s", err)
 
         # notify2
         self.lib["notify2"].init("lnxlink")
-        self.lib["notify2"].Notification(data["title"], data["message"], icon).show()
+        notify = self.lib["notify2"].Notification(
+            data["title"], data["message"], f"{self.lnxlink.path}/logo.png"
+        )
+        if icon_path is not None:
+            notify.set_hint("image-path", icon_path)
+            logger.info("Setting notification icon to %s", sound_path)
+        if sound_path is not None:
+            notify.set_hint("sound-file", sound_path)
+            logger.info("Setting notification sound to %s", sound_path)
+        if isinstance(timeout, int):
+            notify.set_timeout(timeout)
+            logger.info("Setting notification timeout to %s", timeout)
+        if urgency in self.urgencies:
+            notify.set_urgency(self.urgencies[urgency])
+            logger.info("Setting notification urgency to %s", urgency)
+        notify.show()
