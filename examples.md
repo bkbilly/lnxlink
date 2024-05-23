@@ -16,6 +16,28 @@ The server is a CloudFlare Worker that stores the data sent by the app including
 
 The statistics server is configurable under the configuration file of LNXlink, so you can use your own analytics server. By setting the URL to null or excluding the statistics module, you can disable it from sending any data.
 
+## Notification
+
+Sends a notification with a title and message. The other options are optional:
+
+* `iconUrl`: It can be a URL or a local icon.
+* `sound`: It can be a WAV file from a URL, a local WAV file or a [named sound](https://0pointer.de/public/sound-naming-spec.html).
+* `urgency`: Available values are `low`, `normal`, `critical`.
+* `timeout`: Duration in milliseconds the notification disappears. This is ignored by GNOME Shell and Notify OSD.
+
+```yaml
+service: mqtt.publish
+data:
+  topic: lnxlink/desktop-linux/commands/notify
+  payload: >-
+    { "title": "Notification Title",
+      "message": "Testing notification",
+      "iconUrl": "http://hass.local:8123/local/myimage.jpg",
+      "sound": "http://hass.local:8123/local/mysound.wav",
+      "urgency": "normal",
+      "timeout": 1000 }
+```
+
 ## Bash
 
 The bash module can run any command on a remote computer which makes it dangerous, but also very helpful to create sensors without creating modules on LNXlink.
@@ -116,20 +138,6 @@ action:
 
 </details>
 
-## Notification
-
-Sends a notification with an image as a preview
-
-```yaml
-service: mqtt.publish
-data:
-  topic: {prefix}/{clientId}/commands/notify
-  payload: >-
-    { "title": "Notification Title",
-      "message": "Testing notification",
-      "iconUrl": "http://hass.local:8123/local/myimage.jpg" }
-```
-
 ## Turn PC On or Off
 
 Combine with Wake on Lan to control your PC with one switch:
@@ -168,7 +176,7 @@ Send a series of keys:
 ```yaml
 service: mqtt.publish
 data:
-  topic: {prefix}/{clientId}/commands/send_keys
+  topic: lnxlink/desktop-linux/commands/send_keys
   payload: "ctrl+f H e l l o space W o r l d"  
 ```
 
