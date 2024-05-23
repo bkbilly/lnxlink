@@ -1,4 +1,5 @@
 """Shows notifications"""
+import time
 import logging
 import requests
 from .scripts.helpers import import_install_package
@@ -41,7 +42,7 @@ class Addon:
             try:
                 if icon_url.startswith("http"):
                     img_data = requests.get(icon_url, timeout=3).content
-                    icon_path = "/tmp/lnxlink_icon"
+                    icon_path = f"/tmp/lnxlink_icon.{int(time.time())}"
                     with open(icon_path, "wb") as handler:
                         handler.write(img_data)
             except Exception as err:
@@ -50,7 +51,7 @@ class Addon:
             try:
                 if sound_url.startswith("http"):
                     sound_data = requests.get(sound_url, timeout=3).content
-                    sound_path = "/tmp/lnxlink_sound"
+                    sound_path = f"/tmp/lnxlink_sound.{int(time.time())}"
                     with open(sound_path, "wb") as handler:
                         handler.write(sound_data)
             except Exception as err:
