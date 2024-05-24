@@ -19,28 +19,30 @@ Home Assistant companion app for linux that uses the MQTT integration to get inf
 
 ## Supported Modules
 
-| Controls                                          | Sensors                              |
-| ------------------------------------------------- | ------------------------------------ |
-| Shutdown                                          | CPU                                  |
-| Restart                                           | RAM                                  |
-| Suspend                                           | GPU                                  |
-| [Notify](examples.md#notification)                | Network Speed                        |
-| [Media Controls](media-player.md)                 | Display Variable                     |
-| [Send Keys](examples.md#keys-send)                | Microphone used                      |
-| Mouse control                                     | Camera used                          |
-| Screen On/Off                                     | Idle time                            |
-| [Open URL/File](examples.md#open-a-url-or-file)   | Battery                              |
-| [Bash commands](settings.md#bash)                 | [Disk usage](settings.md#disk-usage) |
-| Keep Alive                                        | Restart required                     |
-| Brightness                                        | Update required                      |
-| Boot select                                       | Webcam                               |
-| Power Profile                                     | Screenshot                           |
-| [Speech Recognition](examples.md#voice-assistant) | Full Screen                          |
-| Audio Select (microphone, speaker)                | Inference Time                       |
-| [SystemD](settings.md#systemd)                    | Temperature                          |
-| [GPIO](settings.md#gpio) (inputs, outputs)        | WiFi                                 |
-| [LNXlink Update](examples.md#install-update)      | [Statistics](examples.md#statistics) |
-| [Keyboard Hotkeys](settings.md#keyboard-hotkeys)  | Gamepad Used                         |
+The <mark style="color:orange;">Orange</mark> indicate that they need a graphical interface for them to work and the ones in <mark style="color:green;">Green</mark> need or support manual configuration.
+
+| Controls                                                                                                                          | Sensors                                                                |
+| --------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| Shutdown                                                                                                                          | CPU                                                                    |
+| Restart                                                                                                                           | RAM                                                                    |
+| Suspend                                                                                                                           | GPU                                                                    |
+| Boot select                                                                                                                       | Battery                                                                |
+| Power Profile                                                                                                                     | Restart required                                                       |
+| [Speech Recognition](examples.md#voice-assistant)                                                                                 | Network Speed                                                          |
+| [LNXlink Update](examples.md#install-update)                                                                                      | Update required                                                        |
+| [<mark style="color:green;">Bash commands</mark>](settings.md#bash)                                                               | Microphone used                                                        |
+| [<mark style="color:green;">GPIO</mark>](settings.md#gpio) <mark style="color:green;">(inputs, outputs)</mark>                    | Camera used                                                            |
+| [<mark style="color:green;">SystemD</mark>](settings.md#systemd)                                                                  | Gamepad Used                                                           |
+| [<mark style="color:orange;">Keyboard Hotkeys</mark>](settings.md#keyboard-hotkeys)                                               | Temperature                                                            |
+| [<mark style="color:orange;">Notify</mark>](examples.md#notification)                                                             | WiFi                                                                   |
+| [<mark style="color:orange;">Open URL/File</mark>](examples.md#open-a-url-or-file) <mark style="color:orange;">(xdg\_open)</mark> | Webcam show                                                            |
+| [<mark style="color:orange;">Send Keys</mark>](examples.md#keys-send)                                                             | Inference Time                                                         |
+| <mark style="color:orange;">Mouse control</mark>                                                                                  | [Statistics](examples.md#statistics)                                   |
+| [<mark style="color:orange;">Media Controls</mark>](media-player.md)                                                              | [<mark style="color:green;">Disk usage</mark>](settings.md#disk-usage) |
+| <mark style="color:orange;">Screen On/Off</mark>                                                                                  | <mark style="color:orange;">Fullscreen</mark>                          |
+| <mark style="color:orange;">Audio Select (microphone, speaker)</mark>                                                             | <mark style="color:orange;">Screenshot Show</mark>                     |
+| <mark style="color:orange;">Brightness</mark>                                                                                     | <mark style="color:orange;">Display Variable</mark>                    |
+| <mark style="color:orange;">Keep Alive</mark>                                                                                     | <mark style="color:orange;">Idle time</mark>                           |
 
 ## Supported OS
 
