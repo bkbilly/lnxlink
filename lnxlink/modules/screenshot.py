@@ -27,6 +27,8 @@ class Addon:
         if self.run:
             with self.lib["mss"].mss() as sct:
                 while True:
+                    if not self.run:
+                        break
                     sct_img = sct.grab(sct.monitors[1])
                     frame = self.lib["np"].array(sct_img)
                     _, buffer = self.lib["cv2"].imencode(".jpg", frame)
