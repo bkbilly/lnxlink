@@ -93,4 +93,7 @@ settings:
   statistics: "https://analyzer.bkbilly.workers.dev"
   bash:
     expose:
+  mounts:
+    autocheck: false
+    directories: []
 """

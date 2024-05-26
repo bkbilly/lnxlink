@@ -7,6 +7,7 @@ psutil>=5.8.0
 requests>=2.28.1
 
 # Modules dependencies
+PyGObject>=3.44.0
 SpeechRecognition>=3.10.0
 dbus-idle>=2024.3.1
 dbus-python>=1.3.2
