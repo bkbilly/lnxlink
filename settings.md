@@ -87,3 +87,15 @@ settings:
       - /dev/sda
       - /dev/sdb
 ```
+
+## Mounts usage
+
+Checks the usage of mounted volumes on the system. If autocheck is `true`, it will use the Gnome GVFS to find volumes mounted by the file browser.
+
+```yaml
+settings:
+  mounts:
+    autocheck: false
+    directories:
+      - /mnt/mymount
+```
