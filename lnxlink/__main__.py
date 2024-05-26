@@ -114,7 +114,7 @@ class LNXlink:
 
         try:
             start_time = time.time()
-            if isinstance(method, (dict, list, bool)):
+            if isinstance(method, (dict, list, bool, bytes)):
                 pub_data = method
             else:
                 pub_data = method()
@@ -337,7 +337,7 @@ class LNXlink:
         }
         control_name_topic = exp_name.lower().replace(" ", "_")
         subtopic = addon.name.lower().replace(" ", "_")
-        if "method" in options:
+        if "method" in options or options.get("subtopic", False):
             subcontrol = exp_name.lower().replace(" ", "_")
             subtopic = f"{subtopic}/{subcontrol}"
         state_topic = f"{self.pref_topic}/monitor_controls/{subtopic}"
