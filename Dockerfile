@@ -4,7 +4,7 @@ WORKDIR /opt/lnxlink
 
 COPY . /opt/lnxlink
 RUN apt update &&\
-    apt install -y gcc &&\
+    apt install -y gcc git &&\
     rm -rf /var/lib/apt/lists/* &&\
     pip --no-cache-dir install -e /opt/lnxlink
 
