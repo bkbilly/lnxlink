@@ -1,6 +1,6 @@
 """Information and control of pulseaudio devices"""
 import logging
-from .scripts.helpers import import_install_package
+from lnxlink.modules.scripts.helpers import import_install_package
 
 logger = logging.getLogger("lnxlink")
 

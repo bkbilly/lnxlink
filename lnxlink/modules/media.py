@@ -4,7 +4,7 @@ import hashlib
 import traceback
 import logging
 import base64
-from .scripts.helpers import import_install_package, syscommand
+from lnxlink.modules.scripts.helpers import import_install_package, syscommand
 
 logger = logging.getLogger("lnxlink")
 

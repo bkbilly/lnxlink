@@ -2,7 +2,7 @@
 import re
 import logging
 from shutil import which
-from .scripts.helpers import syscommand
+from lnxlink.modules.scripts.helpers import syscommand
 
 logger = logging.getLogger("lnxlink")
 

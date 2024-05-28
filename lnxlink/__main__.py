@@ -17,10 +17,10 @@ import traceback
 import yaml
 import distro
 import paho.mqtt.client as mqtt
-from . import modules
-from . import config_setup
-from .system_monitor import MonitorSuspend, GracefulKiller
-from .modules.scripts.helpers import syscommand
+from lnxlink import modules
+from lnxlink import config_setup
+from lnxlink.system_monitor import MonitorSuspend, GracefulKiller
+from lnxlink.modules.scripts.helpers import syscommand
 
 
 # Get the current version of the app

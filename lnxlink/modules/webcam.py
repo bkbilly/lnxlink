@@ -1,7 +1,7 @@
 """Shows an image from the webcamera"""
 import base64
 from threading import Thread
-from .scripts.helpers import import_install_package
+from lnxlink.modules.scripts.helpers import import_install_package
 
 
 class Addon:

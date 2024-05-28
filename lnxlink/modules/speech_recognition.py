@@ -2,7 +2,7 @@
 from importlib import import_module
 from threading import Thread
 import logging
-from .scripts.helpers import import_install_package
+from lnxlink.modules.scripts.helpers import import_install_package
 
 logger = logging.getLogger("lnxlink")
 

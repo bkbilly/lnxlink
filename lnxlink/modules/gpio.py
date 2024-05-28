@@ -3,7 +3,7 @@ import os
 import time
 from collections import deque
 from threading import Thread
-from .scripts.helpers import import_install_package
+from lnxlink.modules.scripts.helpers import import_install_package
 
 
 class GpioHandle:

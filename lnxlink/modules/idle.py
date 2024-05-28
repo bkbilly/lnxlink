@@ -1,6 +1,6 @@
 """Gets the idle time of the system"""
 import logging
-from .scripts.helpers import import_install_package
+from lnxlink.modules.scripts.helpers import import_install_package
 
 logger = logging.getLogger("lnxlink")
 

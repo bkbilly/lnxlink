@@ -1,5 +1,5 @@
 """Checks if a window is in fullscreen"""
-from .scripts.helpers import import_install_package
+from lnxlink.modules.scripts.helpers import import_install_package
 
 
 class Addon:

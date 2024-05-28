@@ -1,5 +1,5 @@
 """Suspend/sleep the system"""
-from .scripts.helpers import syscommand
+from lnxlink.modules.scripts.helpers import syscommand
 
 
 class Addon:

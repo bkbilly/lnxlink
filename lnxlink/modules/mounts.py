@@ -1,6 +1,6 @@
 """Gets mount usage from all mounted directories"""
 import logging
-from .scripts.helpers import syscommand, import_install_package
+from lnxlink.modules.scripts.helpers import syscommand, import_install_package
 
 logger = logging.getLogger("lnxlink")
 

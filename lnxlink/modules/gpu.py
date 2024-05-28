@@ -3,7 +3,7 @@ import re
 import math
 import logging
 from shutil import which
-from .scripts.helpers import import_install_package, syscommand
+from lnxlink.modules.scripts.helpers import import_install_package, syscommand
 
 logger = logging.getLogger("lnxlink")
 

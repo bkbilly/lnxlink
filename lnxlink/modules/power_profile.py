@@ -1,7 +1,7 @@
 """Selects the Power Profile"""
 import re
 from shutil import which
-from .scripts.helpers import syscommand
+from lnxlink.modules.scripts.helpers import syscommand
 
 
 class Addon:

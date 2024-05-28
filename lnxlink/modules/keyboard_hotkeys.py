@@ -2,7 +2,7 @@
 import json
 import logging
 from requests import post, get
-from .scripts.helpers import import_install_package, syscommand
+from lnxlink.modules.scripts.helpers import import_install_package, syscommand
 
 
 logger = logging.getLogger("lnxlink")

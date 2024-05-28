@@ -5,7 +5,7 @@ import signal
 import logging
 import traceback
 
-from .modules.scripts.helpers import import_install_package
+from lnxlink.modules.scripts.helpers import import_install_package
 
 logger = logging.getLogger("lnxlink")
 

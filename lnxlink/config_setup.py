@@ -8,7 +8,7 @@ import shutil
 from pathlib import Path
 
 import yaml
-from .consts import SERVICEHEADLESS, SERVICEUSER, CONFIGTEMP
+from lnxlink.consts import SERVICEHEADLESS, SERVICEUSER, CONFIGTEMP
 
 logger = logging.getLogger("lnxlink")
 

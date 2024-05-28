@@ -1,6 +1,6 @@
 """Restarts the system"""
 import logging
-from .scripts.helpers import syscommand
+from lnxlink.modules.scripts.helpers import syscommand
 
 logger = logging.getLogger("lnxlink")
 

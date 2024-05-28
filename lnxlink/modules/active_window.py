@@ -1,5 +1,5 @@
 """Gets the active window"""
-from .scripts.helpers import import_install_package
+from lnxlink.modules.scripts.helpers import import_install_package
 
 
 class Addon:

@@ -1,5 +1,5 @@
 """Checks if the webcam is used"""
-from .scripts.helpers import syscommand
+from lnxlink.modules.scripts.helpers import syscommand
 
 
 class Addon:

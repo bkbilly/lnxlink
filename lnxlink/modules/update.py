@@ -4,7 +4,7 @@ import sys
 import logging
 import time
 import requests
-from .scripts.helpers import syscommand
+from lnxlink.modules.scripts.helpers import syscommand
 
 logger = logging.getLogger("lnxlink")
 

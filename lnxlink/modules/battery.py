@@ -1,7 +1,7 @@
 """Gets the battery information of connected devices"""
 from shutil import which
 import jc
-from .scripts.helpers import syscommand
+from lnxlink.modules.scripts.helpers import syscommand
 
 
 class Addon:
