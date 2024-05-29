@@ -16,7 +16,7 @@ class Addon:
     def exposed_controls(self):
         """Exposes to home assistant"""
         return {
-            "suspend": {
+            "Suspend": {
                 "type": "button",
                 "icon": "mdi:progress-clock",
             }

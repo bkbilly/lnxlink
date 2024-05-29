@@ -18,7 +18,7 @@ class Addon:
     def exposed_controls(self):
         """Exposes to home assistant"""
         return {
-            "XDG_Open": {
+            "XDG Open": {
                 "type": "text",
                 "icon": "mdi:file-find-outline",
             }

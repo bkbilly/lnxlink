@@ -39,7 +39,7 @@ class Addon:
         discovery_info = {}
         for service in self.services:
             name = service.replace(".service", "")
-            discovery_info[f"systemd_{name}"] = {
+            discovery_info[f"Systemd {name}"] = {
                 "type": "switch",
                 "icon": "mdi:application-cog",
                 "value_template": f"{{{{ value_json.get('{name}') }}}}",

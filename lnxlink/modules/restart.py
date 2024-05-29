@@ -26,7 +26,7 @@ class Addon:
     def exposed_controls(self):
         """Exposes to home assistant"""
         return {
-            "restart": {
+            "Restart": {
                 "type": "button",
                 "icon": "mdi:restart",
             }

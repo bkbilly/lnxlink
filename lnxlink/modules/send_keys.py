@@ -20,7 +20,7 @@ class Addon:
     def exposed_controls(self):
         """Exposes to home assistant"""
         return {
-            "Send_Keys": {
+            "Send Keys": {
                 "type": "text",
                 "icon": "mdi:keyboard-outline",
             }

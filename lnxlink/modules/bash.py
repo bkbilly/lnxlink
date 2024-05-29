@@ -13,7 +13,7 @@ class Addon:
     def exposed_controls(self):
         """Exposes to home assistant"""
         discovery_info = {
-            "Bash_Command": {
+            "Bash Command": {
                 "type": "text",
                 "icon": "mdi:bash",
             }

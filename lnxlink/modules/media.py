@@ -36,22 +36,22 @@ class Addon:
                 "value_template": "{{ value_json.status }}",
                 "attributes_template": "{{ value_json | tojson }}",
             },
-            "playpause": {
+            "PlayPause": {
                 "type": "button",
                 "icon": "mdi:play-pause",
                 "enabled": False,
             },
-            "previous": {
+            "Previous": {
                 "type": "button",
                 "icon": "mdi:skip-previous",
                 "enabled": False,
             },
-            "next": {
+            "Next": {
                 "type": "button",
                 "icon": "mdi:skip-next",
                 "enabled": False,
             },
-            "volume_set": {
+            "Volume Set": {
                 "type": "number",
                 "icon": "mdi:volume-high",
                 "min": 0,
@@ -59,7 +59,7 @@ class Addon:
                 "enabled": False,
                 "value_template": "{{ value_json.volume }}",
             },
-            "thumbnail": {
+            "Thumbnail": {
                 "type": "image",
                 "method": self.get_thumbnail,
                 "encoding": "b64",
