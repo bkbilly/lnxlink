@@ -15,6 +15,7 @@ class Addon:
     def __init__(self, lnxlink):
         """Setup addon"""
         self.name = "Media Info"
+        self.lnxlink = lnxlink
         self.players = []
         self._requirements()
 
@@ -61,9 +62,9 @@ class Addon:
             },
             "Thumbnail": {
                 "type": "image",
-                "method": self.get_thumbnail,
                 "encoding": "b64",
                 "enabled": False,
+                "subtopic": True,
             },
         }
 
@@ -111,6 +112,7 @@ class Addon:
             info["position"] = player["position"]
             info["duration"] = player["duration"]
 
+        self.lnxlink.run_module(f"{self.name}/Thumbnail", self.get_thumbnail)
         return info
 
     def get_thumbnail(self):

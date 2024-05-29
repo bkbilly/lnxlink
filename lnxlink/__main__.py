@@ -140,15 +140,6 @@ class LNXlink:
                         "method": addon.get_info,
                     }
                 )
-            if hasattr(addon, "exposed_controls"):
-                for exp_name, options in addon.exposed_controls().items():
-                    if options.get("method") is not None:
-                        methods_to_run.append(
-                            {
-                                "name": f"{addon.name}/{exp_name}",
-                                "method": options["method"],
-                            }
-                        )
         for method in methods_to_run:
             self.run_module(method["name"], method["method"])
 
