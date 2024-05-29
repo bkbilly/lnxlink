@@ -1,10 +1,10 @@
 """Auto load addons/modules"""
 from importlib import import_module
+from importlib.util import spec_from_file_location, module_from_spec
 import time
 import logging
 import glob
 import os
-import sys
 import requests
 
 logger = logging.getLogger("lnxlink")
@@ -38,17 +38,22 @@ def parse_modules(list_modules=None, custom_modules=None, auto_exclude=None):
         while retries >= 0:
             try:
                 if module_name.endswith(".py"):
-                    module_basename = os.path.basename(module_name)
                     if module_name.startswith("http"):
                         logger.info("Downloading custom module: %s", module_name)
                         module_data = requests.get(module_name, timeout=3).content
+                        module_basename = os.path.basename(module_name)
                         module_name = f"/tmp/{module_basename}"
                         with open(module_name, "wb") as handler:
                             handler.write(module_data)
-                    module_path = os.path.dirname(module_name)
-                    module_name = os.path.splitext(module_basename)[0]
-                    sys.path.append(module_path)
-                    addon = getattr(import_module(f"{module_name}"), "Addon")
+                    if os.path.isfile(module_name):
+                        spec = spec_from_file_location("Addon", module_name)
+                        module_spec = module_from_spec(spec)
+                        spec.loader.exec_module(module_spec)
+                        addon = getattr(module_spec, "Addon")
+                    else:
+                        logger.error("Can't find custom module: %s", module_name)
+                        retries = -1
+                        continue
                 else:
                     addon = getattr(import_module(f"{__name__}.{module_name}"), "Addon")
                 addon.service = module_name
