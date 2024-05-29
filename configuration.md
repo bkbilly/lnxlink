@@ -40,13 +40,12 @@ modules:
 
 ## Custom module
 
-You can create custom modules and import them to your configuration with their full path. The name has to be unique so that it won't conflict with another python library.
-
-Code examples can be found [here](https://github.com/bkbilly/lnxlink/blob/master/lnxlink/modules) and this is how to add the `mytest` module to your configuration.
+You can create custom modules and import them to your configuration with their full path or a URL. Code examples can be found [here](https://github.com/bkbilly/lnxlink/blob/master/lnxlink/modules).
 
 ```yaml
 custom_modules:
 - /home/user/mytest.py
+- https://raw.githubusercontent.com/bkbilly/lnxlink/master/lnxlink/modules/cpu.py
 ```
 
 3rd party custom modules:
