@@ -114,7 +114,7 @@ class LNXlink:
 
         try:
             start_time = time.time()
-            if isinstance(method, (dict, list, bool, bytes)):
+            if isinstance(method, (dict, list, bool, bytes, int, str, float)):
                 pub_data = method
             else:
                 pub_data = method()
