@@ -7,6 +7,7 @@ import subprocess
 logger = logging.getLogger("lnxlink")
 
 
+# pylint: disable=consider-using-with
 def syscommand(command, ignore_errors=False, timeout=3, background=False):
     """Global subprocess command"""
     if isinstance(command, list):

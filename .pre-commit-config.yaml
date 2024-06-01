@@ -29,5 +29,5 @@ repos:
       - id: pylint
         args: [
           "--generated-members=cv2.*,player.*,alsaaudio.Mixer",
-          "--disable=R0801,too-many-instance-attributes,line-too-long,eval-used,too-few-public-methods,broad-exception-caught,unused-argument,import-error,consider-using-with",
+          "--disable=duplicate-code,line-too-long,too-few-public-methods,broad-exception-caught,unused-argument,import-error",
         ]

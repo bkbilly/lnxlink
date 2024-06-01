@@ -35,6 +35,7 @@ if os.path.exists(os.path.join(path, "lnxlink/edit.txt")):
 logger = logging.getLogger("lnxlink")
 
 
+# pylint: disable=too-many-instance-attributes
 class LNXlink:
     """Start LNXlink service that loads all modules and connects to MQTT"""
 
