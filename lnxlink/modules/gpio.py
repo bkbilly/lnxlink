@@ -117,7 +117,7 @@ class Addon:
             discovery_info[f"GPIO {device['name']}"] = {
                 "type": "switch",
                 "value_template": f"{{{{ value_json.get('output_{device['name']}') }}}}",
-                "icon": "mdi:bullhorn",
+                "icon": device.get("device_class", "mdi:bullhorn"),
             }
         return discovery_info
 
