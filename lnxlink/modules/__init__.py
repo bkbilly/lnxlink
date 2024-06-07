@@ -50,6 +50,7 @@ def parse_modules(list_modules=None, custom_modules=None, auto_exclude=None):
                         module_spec = module_from_spec(spec)
                         spec.loader.exec_module(module_spec)
                         addon = getattr(module_spec, "Addon")
+                        module_name = os.path.basename(module_name).split(".py")[0]
                     else:
                         logger.error("Can't find custom module: %s", module_name)
                         retries = -1
