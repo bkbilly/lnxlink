@@ -18,12 +18,13 @@ The statistics server is configurable under the configuration file of LNXlink, s
 
 ## Notification
 
-Sends a notification with a title and message. The other options are optional:
+Sends a notification with a `title` and `message`. The other options are optional:
 
 * `iconUrl`: It can be a URL or a local icon.
 * `sound`: It can be a WAV file from a URL, a local WAV file or a [named sound](https://0pointer.de/public/sound-naming-spec.html).
 * `urgency`: Available values are `low`, `normal`, `critical`.
 * `timeout`: Duration in milliseconds the notification disappears. This is ignored by GNOME Shell and Notify OSD.
+* `buttons`: A list of buttons that should appear on the notification.
 
 ```yaml
 service: mqtt.publish
@@ -35,7 +36,27 @@ data:
       "iconUrl": "http://hass.local:8123/local/myimage.jpg",
       "sound": "http://hass.local:8123/local/mysound.wav",
       "urgency": "normal",
-      "timeout": 1000 }
+      "timeout": 1000,
+      "buttons": ["Open Image"] }
+```
+
+You can create an automation that is triggered when the button is pressed. In this example, it will use the `xdg_open` module to open the image.
+
+```yaml
+alias: LNXlink notification button
+trigger:
+  - platform: mqtt
+    topic: lnxlink/desktop-linux/monitor_controls/notify/button_press
+    payload: Open Image
+    value_template: "{{ value_json.button }}"
+condition: []
+action:
+  - service: text.set_value
+    metadata: {}
+    data:
+      value: "{{ trigger.payload_json['hints'].get('image-path') }}"
+    target:
+      entity_id: text.desktop_linux_xdg_open
 ```
 
 ## Bash
