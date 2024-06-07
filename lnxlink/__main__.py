@@ -288,9 +288,10 @@ class LNXlink:
         logger.info("Message received %s: %s", topic, message)
         try:
             message = json.loads(message)
-        except Exception as err:
+        except json.decoder.JSONDecodeError:
             message = message.decode()
-            logger.debug("String could not be converted to JSON: %s", err)
+        except Exception as err:
+            logger.debug("Error reading message: %s", err)
 
         select_service = topic.split("/")
         addon = self.addons.get(select_service[0])
