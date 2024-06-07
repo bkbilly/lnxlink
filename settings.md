@@ -72,6 +72,43 @@ settings:
       unit: load
 ```
 
+<details>
+
+<summary>Create Bash sensors on Home Assistant side</summary>
+
+The bash module can run any command on a remote computer which makes it dangerous, but also very helpful to create sensors without creating modules on LNXlink.
+
+You will need to create a new sensor on your Home Assistant configuration file like so:
+
+```yaml
+mqtt:
+  sensor:
+    - name: "Test ls"
+      unique_id: "test_ls"
+      state_topic: "lnxlink/desktop-linux/command_result/bash/bash_command/test_ls"
+      availability:
+        - topic: "lnxlink/desktop-linux/lwt"
+          payload_available: "ON"
+          payload_not_available: "OFF"
+```
+
+Then you must create an automation to run on an interval to get the result of a command:
+
+```yaml
+alias: Get files count
+mode: single
+trigger:
+  - platform: time_pattern
+    seconds: "40"
+action:
+  - service: mqtt.publish
+    data:
+      topic: lnxlink/desktop-linux/commands/bash/bash_command/test_ls
+      payload: ls ~/Downloads | wc -l
+```
+
+</details>
+
 ## Disk usage
 
 By default this module finds all connected drives and exposes them to Home assistant, but this can be changed by setting them manually on settings with the include\_disks option:
