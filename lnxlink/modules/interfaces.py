@@ -49,6 +49,8 @@ class Addon:
         interfaces = {}
         addrs = psutil.net_if_addrs()
         for interf, addr in addrs.items():
+            if interf.startswith("veth"):
+                continue
             for addr_item in addr:
                 if addr_item.address not in ["127.0.0.1", "::1"]:
                     afinet = {
