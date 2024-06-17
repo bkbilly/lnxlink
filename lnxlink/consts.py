@@ -92,6 +92,7 @@ settings:
     exclude_disks: []
   statistics: "https://analyzer.bkbilly.workers.dev"
   bash:
+    allow_any_command: False
     expose:
   mounts:
     autocheck: false

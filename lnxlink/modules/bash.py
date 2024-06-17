@@ -1,5 +1,8 @@
 """Run a terminal command"""
+import logging
 from lnxlink.modules.scripts.helpers import syscommand
+
+logger = logging.getLogger("lnxlink")
 
 
 class Addon:
@@ -73,5 +76,18 @@ class Addon:
 
     def start_control(self, topic, data):
         """Control system"""
-        stdout, _, _ = syscommand(data, timeout=120)
-        return stdout
+        allow_any_command = self.lnxlink.config["settings"]["bash"]["allow_any_command"]
+        if allow_any_command:
+            stdout, _, _ = syscommand(data, timeout=120)
+            return stdout
+        exposed = self.lnxlink.config["settings"]["bash"]["expose"]
+        exposed = [] if exposed is None else exposed
+        for expose in exposed:
+            if data.strip() == expose.get("command", "").strip():
+                stdout, _, _ = syscommand(data, timeout=120)
+                return stdout
+        logger.error(
+            "Check bash configuration option allow_any_command to run this command: %s",
+            data,
+        )
+        return None
