@@ -55,7 +55,7 @@ settings:
 
 ## Bash
 
-Using this option you can create sensors or buttons that run custom commands:
+Using this option you can create `sensors` or `buttons` that run custom commands:
 
 ```yaml
 settings:
@@ -65,7 +65,6 @@ settings:
       type: button
       command: docker system prune -af
       icon: mdi:script-text
-    expose:
     - name: Load 1minute
       type: sensor
       command: cat /proc/loadavg | awk '{print $1}'

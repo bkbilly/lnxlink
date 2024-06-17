@@ -4,7 +4,7 @@ description: >-
   controlling or monitoring it.
 ---
 
-# 🛠 Development
+# 🛠️ Development
 
 ### How to start
 
@@ -21,7 +21,7 @@ class Addon():
 
 ### Get Sensor information
 
-The method `getControlInfo` should return the value of the sensor you want to create. This can be one of these categories:
+The method `get_info` should return the value of the sensor you want to create. This can be one of these categories:
 
 * String
 * Integer
@@ -80,10 +80,18 @@ This is required which is responsible for sending the appropriate type of comman
 
 #### value\_template
 
-This is required only if the `getControlInfo` method returns a dictionary and you want to get a value from that to display. You can change the status to the dictionary key you want:
+This is required only if the `get_info` method returns a dictionary and you want to get a value from that to display. You can change the status to the dictionary key you want:
 
 ```python
   "value_template": "{{ value_json.status }}"
+```
+
+#### attributes\_template
+
+This will add attributes under the sensor that is created. It is recommended that these attributes should not change because it will populate the Home Assistant database.
+
+```yaml
+  "attributes_template": "{{ value_json.get('attributes') | tojson }}"
 ```
 
 #### icon
@@ -154,14 +162,6 @@ This is used only for the `update` sensor.
 
 ```python
   "title": "LNXlink"
-```
-
-#### method
-
-This is used when we want to create a new entity with different attributes and options. This will replace the get\_info method with the one you write on this key.
-
-```python
-  "method": self.my_method
 ```
 
 #### expire\_after
