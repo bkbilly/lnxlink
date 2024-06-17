@@ -18,6 +18,14 @@ class Addon:
                 stdout, _, returncode = syscommand(discovery["local_command"])
                 if returncode == 0:
                     self.lnxlink.run_module(f"{self.name}/{expose_name}", stdout)
+            elif discovery.get("type") == "binary_sensor":
+                stdout, _, returncode = syscommand(discovery["local_command"])
+                status = stdout.lower() not in ["false", "no", "0", ""]
+                senddata = {
+                    "status": "ON" if status else "OFF",
+                    "attributes": {"raw": stdout.split("\n")},
+                }
+                self.lnxlink.run_module(f"{self.name}/{expose_name}", senddata)
 
     def exposed_controls(self):
         """Exposes to home assistant"""
@@ -44,6 +52,15 @@ class Addon:
                     "type": expose_type,
                     "icon": icon,
                     "unit": expose.get("unit"),
+                    "local_command": expose.get("command"),
+                    "subtopic": True,
+                }
+            elif expose_type == "binary_sensor":
+                self.discovery_info[expose_name] = {
+                    "type": expose_type,
+                    "icon": icon,
+                    "value_template": "{{ value_json.status }}",
+                    "attributes_template": "{{ value_json.attributes | tojson }}",
                     "local_command": expose.get("command"),
                     "subtopic": True,
                 }
