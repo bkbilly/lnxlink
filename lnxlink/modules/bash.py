@@ -32,12 +32,13 @@ class Addon:
 
     def exposed_controls(self):
         """Exposes to home assistant"""
-        self.discovery_info = {
-            "Bash Command": {
+        self.discovery_info = {}
+        if self.lnxlink.config["settings"]["bash"]["allow_any_command"]:
+            self.discovery_info["Bash Command"] = {
                 "type": "text",
                 "icon": "mdi:bash",
             }
-        }
+
         exposed = self.lnxlink.config["settings"]["bash"]["expose"]
         exposed = [] if exposed is None else exposed
         for expose in exposed:
