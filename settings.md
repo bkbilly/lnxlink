@@ -55,7 +55,7 @@ settings:
 
 ## Bash
 
-Using this option you can create `sensors` or `buttons` that run custom commands:
+Using this option you can create `sensors`, `binary_sensors` or `buttons` that run custom commands. These options are optional: unit, entity\_category.
 
 ```yaml
 settings:
@@ -65,10 +65,15 @@ settings:
       type: button
       command: docker system prune -af
       icon: mdi:script-text
+      entity_category: config
     - name: Load 1minute
       type: sensor
       command: cat /proc/loadavg | awk '{print $1}'
       unit: load
+      entity_category: diagnostic
+    - name: WiFi Exists
+      type: binary_sensor
+      command: ip a | grep wlan0
 ```
 
 <details>
