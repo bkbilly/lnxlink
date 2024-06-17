@@ -65,7 +65,9 @@ class Addon:
                     "subtopic": True,
                 }
             if expose.get("entity_category") in ["diagnostic", "config"]:
-                self.discovery_info[expose_name]["entity_category"] = expose["entity_category"]
+                self.discovery_info[expose_name]["entity_category"] = expose[
+                    "entity_category"
+                ]
 
         return self.discovery_info
 
