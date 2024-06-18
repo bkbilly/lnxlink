@@ -22,7 +22,6 @@ class Addon:
             att_temp = f"{{{{ value_json.get('{device}', {{}}).get('attributes', {{}}) | tojson }}}}"
             discovery_info[f"Battery {device}"] = {
                 "type": "sensor",
-                "icon": "mdi:battery",
                 "unit": "%",
                 "device_class": "battery",
                 "value_template": f"{{{{ value_json.get('{device}', {{}}).get('percent') }}}}",
