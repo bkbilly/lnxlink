@@ -179,6 +179,14 @@ class Addon:
                         "arturl": arturl,
                     }
                 )
+        custom_order = {
+            "playing": 1,
+            "paused": 2,
+            "idle": 3,
+        }
+        self.players = sorted(
+            self.players, key=lambda x: custom_order.get(x.get("status"), 100)
+        )
         return self.players
 
     def _filter_title(self, title):

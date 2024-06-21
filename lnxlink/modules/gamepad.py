@@ -17,7 +17,7 @@ class Addon:
         self.gamepads = []
         self.running_threads = []
         self.last_used = 0
-        self.timeout_used = 15
+        self.timeout_used = 40
 
     def exposed_controls(self):
         """Exposes to home assistant"""
