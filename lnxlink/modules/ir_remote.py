@@ -21,11 +21,12 @@ class Addon:
         self.started = False
         if not self._is_raspberry():
             raise SystemError("Not supported non Raspberry PI devices")
-        self.irremote = IRRemote()
+        self.irremote = None
 
     def get_info(self):
         """Starts only once the GPIO class for each pin"""
         if not self.started:
+            self.irremote = IRRemote()
             self.started = True
             receiver = self.lnxlink.config["settings"]["ir_remote"]["receiver"]
             if receiver:
