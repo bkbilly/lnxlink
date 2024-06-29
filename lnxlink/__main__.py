@@ -389,6 +389,8 @@ class LNXlink:
             "text": {
                 "state_topic": state_topic,
                 "command_topic": command_topic,
+                "min": options.get("min", 0),
+                "max": options.get("max", 255),
             },
             "number": {
                 "state_topic": state_topic,

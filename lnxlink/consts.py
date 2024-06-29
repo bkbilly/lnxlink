@@ -67,6 +67,7 @@ exclude:
   - gpu
   - idle
   - inference_time
+  - ir_remote
   - keep_alive
   - keyboard_hotkeys
   - media
@@ -97,4 +98,8 @@ settings:
   mounts:
     autocheck: false
     directories: []
+  ir_remote:
+    receiver: null
+    transmitter: null
+    buttons: []
 """
