@@ -32,6 +32,30 @@ settings:
         icon: mdi:bullhorn
 ```
 
+## IR Remote
+
+This is only supported by Raspberry Pi and needs to be configured manually on your _config.yaml_ file:
+
+```yaml
+settings:
+  ir_remote:
+    receiver: 18
+    transmitter: 23
+    buttons:
+      - name: PC Speaker
+        data: [9084, 4360, 652, 462, 652, 1587, 652, 462, 652, 462, 652, 462, 652, 462, 652, 462, 652, 462, 652, 462, 652, 400, 652, 462, 652, 462, 652, 462, 652, 1587, 652, 462, 652, 1587, 652, 462, 652, 462, 652, 462, 652, 462, 652, 462, 652, 462, 652, 462, 652, 1587, 652, 1587, 652, 1587, 652, 1587, 652, 1587, 652, 1587, 652, 1587, 652, 1587, 652, 462, 652]
+        icon: mdi:speaker-wireless
+```
+
+In this example, the IR Receiver (TSOP38238) is connected to GPIO input pin 18 and an IR LED is connected to the GPIO input pin 23.
+
+You also need to start the `pigpio` daemon and it should start when the OS boots. This can be done with these commands:
+
+```bash
+sudo systemctl enable pigpiod
+sudo systemctl start pigpiod
+```
+
 ## Keyboard Hotkeys
 
 This is used to run remote commands to your Home Assistant instance using keyboard shortcuts. Pynput is used for the keys syntax and the monitoring of presses.
