@@ -4,8 +4,7 @@ import json
 import time
 import logging
 from threading import Thread
-
-import pigpio
+from lnxlink.modules.scripts.helpers import import_install_package
 
 logger = logging.getLogger("lnxlink")
 
@@ -21,12 +20,13 @@ class Addon:
         self.started = False
         if not self._is_raspberry():
             raise SystemError("Not supported non Raspberry PI devices")
+        self._requirements()
         self.irremote = None
 
     def get_info(self):
         """Starts only once the GPIO class for each pin"""
         if not self.started:
-            self.irremote = IRRemote()
+            self.irremote = IRRemote(self.lib["pigpio"])
             self.started = True
             receiver = self.lnxlink.config["settings"]["ir_remote"]["receiver"]
             if receiver:
@@ -78,6 +78,11 @@ class Addon:
         self.lnxlink.run_module(f"{self.name}/IR Receiver", tosend)
         logger.debug("{%s}:{%s} = {%s}", protocol, decsignal, binsignal)
 
+    def _requirements(self):
+        self.lib = {
+            "pigpio": import_install_package("pigpio"),
+        }
+
     def _is_raspberry(self):
         model = ""
         if os.path.exists("/proc/device-tree/model"):
@@ -92,8 +97,9 @@ class IRRemote:
     """docstring for IRRemote"""
 
     # pylint: disable=too-many-instance-attributes
-    def __init__(self):
-        self.pi = pigpio.pi()  # Connect to Pi.
+    def __init__(self, pigpio):
+        self.pigpio = pigpio
+        self.pi = self.pigpio.pi()  # Connect to Pi.
         if not self.pi.connected:
             raise SystemError("Make sure the pigpiod daemon is running")
 
@@ -126,10 +132,10 @@ class IRRemote:
         if self.gpio_rx:
             glitch = 100
             self.pi.set_mode(
-                self.gpio_rx, pigpio.INPUT
+                self.gpio_rx, self.pigpio.INPUT
             )  # IR RX connected to this GPIO.
             self.pi.set_glitch_filter(self.gpio_rx, glitch)  # Ignore glitches.
-            self.pi.callback(self.gpio_rx, pigpio.EITHER_EDGE, self.cbf)
+            self.pi.callback(self.gpio_rx, self.pigpio.EITHER_EDGE, self.cbf)
             if self.read_thr is None:
                 self.read_thr = Thread(
                     target=self.start_receiving, args=(callback,), daemon=True
@@ -148,7 +154,7 @@ class IRRemote:
 
     def send_signal(self, gpio, ir_signal):
         """Sends an IR Signal to the IR LED"""
-        self.pi.set_mode(gpio, pigpio.OUTPUT)  # IR TX connected to this GPIO.
+        self.pi.set_mode(gpio, self.pigpio.OUTPUT)  # IR TX connected to this GPIO.
 
         # Create wave
         self.pi.wave_add_new()
@@ -158,7 +164,7 @@ class IRRemote:
             ci = int(ci)
             if num & 1:  # Space
                 if ci not in waves_dict:
-                    self.pi.wave_add_generic([pigpio.pulse(0, 0, ci)])
+                    self.pi.wave_add_generic([self.pigpio.pulse(0, 0, ci)])
                     waves_dict[ci] = self.pi.wave_create()
             else:  # Pulse
                 if ci not in waves_dict:
@@ -171,7 +177,7 @@ class IRRemote:
         while self.pi.wave_tx_busy():
             time.sleep(0.002)
         self.pi.wave_clear()
-        self.pi.set_mode(gpio, pigpio.INPUT)
+        self.pi.set_mode(gpio, self.pigpio.INPUT)
 
     def carrier(self, gpio, micros):
         """Generate carrier square wave"""
@@ -186,8 +192,8 @@ class IRRemote:
             sofar += on
             off = target - sofar
             sofar += off
-            wf.append(pigpio.pulse(1 << gpio, 0, on))
-            wf.append(pigpio.pulse(0, 1 << gpio, off))
+            wf.append(self.pigpio.pulse(1 << gpio, 0, on))
+            wf.append(self.pigpio.pulse(0, 1 << gpio, off))
         return wf
 
     def normalise(self, c):
@@ -241,8 +247,8 @@ class IRRemote:
         pre_us = pre_ms * 1000
         post_us = post_ms * 1000
 
-        if level != pigpio.TIMEOUT:
-            edge = pigpio.tickDiff(self.last_tick, tick)
+        if level != self.pigpio.TIMEOUT:
+            edge = self.pigpio.tickDiff(self.last_tick, tick)
             self.last_tick = tick
 
             if self.fetching_code:
