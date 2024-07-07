@@ -115,6 +115,11 @@ class Addon:
         self.lnxlink.run_module(f"{self.name}/Thumbnail", self.get_thumbnail)
         return info
 
+    def force_update(self, *args, **kwargs):
+        """Callback function to update media information"""
+        logging.debug("Media callback update: %s, %s", args, kwargs)
+        self.lnxlink.run_module(self.name, self.get_info)
+
     def get_thumbnail(self):
         """Returns the thumbnail if it exists as a base64 string"""
         if len(self.players) > 0:
@@ -149,6 +154,7 @@ class Addon:
         self.players = []
         for uri in self.lib["mpris2"].get_players_uri():
             player = self.lib["mpris2"].Player(dbus_interface_info={"dbus_uri": uri})
+            player.PropertiesChanged = self.force_update
             p_status = player.PlaybackStatus.lower()
             title = player.Metadata.get("xesam:title")
             title = self._filter_title(title)
