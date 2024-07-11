@@ -49,6 +49,7 @@ class LNXlink:
         self.display = None
         self.inference_times = {}
         self.addons = {}
+        self.prev_publish = {}
         self.pref_topic = "lnxlink"
         if hasattr(mqtt, "CallbackAPIVersion"):
             self.client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
@@ -100,10 +101,15 @@ class LNXlink:
         if isinstance(pub_data, list):
             if all(v is None for v in pub_data):
                 return
-        if pub_data is None:
-            return
         if isinstance(pub_data, (dict, list)):
             pub_data = json.dumps(pub_data)
+        if pub_data is None:
+            return
+
+        if self.config["update_on_change"] and self.prev_publish.get(topic) == pub_data:
+            return
+
+        self.prev_publish[topic] = pub_data
         self.client.publish(
             topic, payload=pub_data, retain=self.config["mqtt"]["lwt"]["retain"]
         )
