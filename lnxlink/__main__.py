@@ -50,6 +50,7 @@ class LNXlink:
         self.inference_times = {}
         self.addons = {}
         self.prev_publish = {}
+        self.update_change_interval = 900
         self.pref_topic = "lnxlink"
         if hasattr(mqtt, "CallbackAPIVersion"):
             self.client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
@@ -103,9 +104,11 @@ class LNXlink:
                 return
         if isinstance(pub_data, (dict, list)):
             pub_data = json.dumps(pub_data)
-        if pub_data is None:
-            return
 
+        # User option that checks and sends only the updated sensors
+        update_change_time = time.time() - self.prev_publish.get("last_update", 0)
+        if update_change_time > self.update_change_interval:
+            self.prev_publish = {"last_update": time.time()}
         if self.config["update_on_change"] and self.prev_publish.get(topic) == pub_data:
             return
 
