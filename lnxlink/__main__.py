@@ -392,8 +392,10 @@ class LNXlink:
             "switch": {
                 "state_topic": state_topic,
                 "command_topic": command_topic,
-                "payload_off": "OFF",
-                "payload_on": "ON",
+                "payload_off": options.get("command_off", "OFF"),
+                "payload_on": options.get("command_on", "ON"),
+                "state_off": "OFF",
+                "state_on": "ON",
             },
             "text": {
                 "state_topic": state_topic,
