@@ -62,3 +62,39 @@ exclude:
 - screenshot
 - webcam
 ```
+
+
+
+## Extra options
+
+This is the default settings:
+
+```yaml
+mqtt:
+  prefix: lnxlink
+  clientId: DESKTOP-Linux
+  server: server
+  port: 1883
+  auth:
+    user: user
+    pass: pass
+    tls: false
+    keyfile: ''
+    certfile: ''
+    ca_certs: ''
+  discovery:
+    enabled: true
+  lwt:
+    enabled: true
+    qos: 1
+    retain: false
+update_interval: 5
+update_on_change: false
+```
+
+* **MQTT Topic:** This consists of the prefix and the clientId: `/lnxlink/DESKTOP-Linux`**.**
+* **MQTT Encryption:** To use a secured MQTT broker, you will have to enable the `tls` option and optionally define the `keyfile`, `certfile`, `ca_certs` files.
+* **Discovery Enabled:** It sends the settings for configuring Home Assistant entities.
+* **Retain:** Keeps the values of entities on MQTT broker.
+* **Update Interval:** Sets the interval in seconds for when the sensors are updated.
+* **Update on change:** Sends an update to the MQTT broker when a change is detected or every 15 minutes.

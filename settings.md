@@ -79,7 +79,7 @@ settings:
 
 ## Bash
 
-Using this option you can create `sensors`, `binary_sensors` or `buttons` that run custom commands. These options are optional: unit, entity\_category.
+Using this option you can create `sensors`, `binary_sensors`, `buttons` or `switches` that run custom commands. These options are optional: unit, entity\_category.
 
 ```yaml
 settings:
@@ -98,6 +98,11 @@ settings:
     - name: WiFi Exists
       type: binary_sensor
       command: ip a | grep wlan0
+    - name: Microphone Mute
+      type: switch
+      command: amixer get Capture | grep "\[off\]"
+      command_on: amixer set Capture nocap
+      command_off: amixer set Capture cap
 ```
 
 <details>
