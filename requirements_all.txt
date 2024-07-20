@@ -1,6 +1,7 @@
 # System dependencies
 PyYAML>=5.3.1
 distro>=1.7.0
+inotify>=0.2.10
 jc>=1.23.0
 paho-mqtt>=1.5.1
 psutil>=5.8.0
