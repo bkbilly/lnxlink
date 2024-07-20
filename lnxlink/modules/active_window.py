@@ -33,4 +33,7 @@ class Addon:
         display = self.lib["xlib"].display.Display(self.lnxlink.display)
         ewmh = self.lib["ewmh"].EWMH(_display=display)
         win = ewmh.getActiveWindow()
-        return ewmh.getWmName(win).decode()
+        window_name = ewmh.getWmName(win)
+        if window_name is None:
+            return None
+        return window_name.decode()
