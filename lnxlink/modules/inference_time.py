@@ -14,6 +14,9 @@ class Addon:
         return {
             "modules": self.lnxlink.inference_times,
             "sum": round(sum(self.lnxlink.inference_times.values()), 2),
+            "max": max(
+                self.lnxlink.inference_times, key=self.lnxlink.inference_times.get
+            ),
         }
 
     def exposed_controls(self):
@@ -27,5 +30,12 @@ class Addon:
                 "state_class": "measurement",
                 "value_template": "{{ value_json.sum }}",
                 "attributes_template": "{{ value_json.modules | tojson }}",
+            },
+            "Inference Time Highest": {
+                "type": "sensor",
+                "icon": "mdi:timelapse",
+                "entity_category": "diagnostic",
+                "value_template": "{{ value_json.max }}",
+                "enabled": False,
             },
         }

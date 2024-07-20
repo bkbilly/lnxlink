@@ -14,7 +14,7 @@ class Addon:
 
     def __init__(self, lnxlink):
         """Setup addon"""
-        self.name = "LNXlink"
+        self.name = "LNXlink update"
         self.lnxlink = lnxlink
         self.last_time = 0
         self.update_interval = 86400  # Check for updates every 24 hours
