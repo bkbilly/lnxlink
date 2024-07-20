@@ -128,13 +128,13 @@ class Addon:
                 try:
                     arturl = player["arturl"].replace("file://", "")
                     with open(arturl, "rb") as image_file:
-                        image_thumbnail = base64.b64encode(image_file.read()).decode()
+                        image_thumbnail = base64.b64encode(image_file.read())
                         return image_thumbnail
                 except Exception as err:
                     logger.debug(
                         "Can't create thumbnail: %s, %s", err, traceback.format_exc()
                     )
-        return " "
+        return b" "
 
     def _get_volume(self):
         """Get system volume"""
