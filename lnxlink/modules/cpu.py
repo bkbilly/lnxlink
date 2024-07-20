@@ -30,7 +30,7 @@ class Addon:
                 "state_class": "measurement",
                 "expire_after": update_interval * 5,
                 "value_template": "{{ value_json.get('percent')}}",
-                "attributes_template": "{{ value_json.get('attributes') | tojson }}",
+                "attributes_template": "{{ value_json.get('attributes', {}) | tojson }}",
             },
         }
 

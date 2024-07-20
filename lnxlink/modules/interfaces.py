@@ -22,7 +22,7 @@ class Addon:
                 "type": "sensor",
                 "icon": "mdi:lan-connect",
                 "value_template": f"{{{{ value_json.get('{device}', {{}}).get('ipv4') }}}}",
-                "attributes_template": f"{{{{ value_json.get('{device}') | tojson }}}}",
+                "attributes_template": f"{{{{ value_json.get('{device}', {{}}) | tojson }}}}",
                 "enabled": True,
             }
         return discovery_info
