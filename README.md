@@ -4,7 +4,6 @@
 [![PyPI](https://img.shields.io/pypi/v/lnxlink?logo=pypi&logoColor=white)](https://pypi.python.org/pypi/lnxlink/)
 [![Last commit](https://img.shields.io/github/last-commit/bkbilly/lnxlink?color=blue&logo=github&logoColor=white)]()
 
-<img align="right" width="170" height="100" src="https://github.com/bkbilly/lnxlink/blob/master/logo.png?raw=true">
 
 # LNXlink
 LNXlink is a Linux companion app that seamlessly integrates your system with external applications like Home Assistant.
@@ -17,6 +16,8 @@ With LNXlink, you can monitor your Linux machine's performance, execute commands
  - **Home Assistant:** Utilizes MQTT Autodiscovery to create entities in Home Assistant dashboard.
  - **Easy Installation:** No sudo privileges required for installation and operation, except for server environments.
  - **Expandable Architecture:** Automatically imports new modules and allows for the addition of custom modules.
+
+![lnxlink_sensors](https://github.com/user-attachments/assets/089a529a-2397-48dd-a557-82d917005d07)
 
 # Get started
 To get started with LNXlink, follow these simple steps:
