@@ -17,7 +17,7 @@ With LNXlink, you can monitor your Linux machine's performance, execute commands
  - **Easy Installation:** No sudo privileges required for installation and operation, except for server environments.
  - **Expandable Architecture:** Automatically imports new modules and allows for the addition of custom modules.
 
-![lnxlink_sensors](https://github.com/user-attachments/assets/089a529a-2397-48dd-a557-82d917005d07)
+![lnxlink_sensors2](https://github.com/user-attachments/assets/1b7f3fc2-4387-4cd1-8fcf-25d77137c3fe)
 
 # Get started
 To get started with LNXlink, follow these simple steps:
