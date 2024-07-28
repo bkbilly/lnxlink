@@ -9,3 +9,7 @@ venv/
 *.log.*
 *test_*
 lnxlink_uuid.txt
+
+# Flatpak
+repo/
+.flatpak-builder

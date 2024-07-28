@@ -20,25 +20,17 @@ class MonitorSuspend:
             logger.error("Can't use DBus for system monitor")
             return
         try:
-            dbus_loop = self.lib["dbus-loop"].mainloop.glib.DBusGMainLoop(
-                set_as_default=True
-            )  # integrate into main loob
-            bus = self.lib["dbus"].SystemBus(
-                mainloop=dbus_loop
-            )  # connect to dbus system wide
-            bus.add_signal_receiver(  # defince the signal to listen to
-                callback,  # name of callback function
-                "PrepareForSleep",  # singal name
-                "org.freedesktop.login1.Manager",  # interface
-                "org.freedesktop.login1",  # bus name
+            bus = self.lib["dbus"].connection.SystemMessageBus()
+
+            proxy = bus.get_proxy(
+                service_name="org.freedesktop.login1",
+                object_path="/org/freedesktop/login1",
+                interface_name="org.freedesktop.login1.Manager",
             )
-            bus.add_signal_receiver(  # defince the signal to listen to
-                callback,  # name of callback function
-                "PrepareForShutdown",  # singal name
-                "org.freedesktop.login1.Manager",  # interface
-                "org.freedesktop.login1",  # bus name
-            )
-            self.loop = self.lib["glib"].repository.GLib.MainLoop()
+            proxy.PrepareForSleep.connect(callback)
+            proxy.PrepareForShutdown.connect(callback)
+
+            self.loop = self.lib["dbus-loop"].loop.EventLoop()
             self.timer1 = threading.Thread(target=self.loop.run, daemon=True)
             self.use = True
         except Exception as err:
@@ -49,19 +41,13 @@ class MonitorSuspend:
             )
 
     def _requirements(self):
-        dbus = import_install_package("dbus-python", ">=1.3.2", "dbus")
+        dbus = import_install_package("dasbus", ">=1.7", "dasbus.connection")
         if dbus is None:
             self.lib = {"dbus": dbus}
             return
         self.lib = {
             "dbus": dbus,
-            "dbus-loop": import_install_package(
-                "dbus-python", ">=1.3.2", "dbus.mainloop.glib"
-            ),
-            "cairo": import_install_package("pycairo", ">=1.24.0", "cairo"),
-            "glib": import_install_package(
-                "PyGObject", ">=3.44.0", "gi.repository.GLib"
-            ),
+            "dbus-loop": import_install_package("dasbus", ">=1.7", "dasbus.loop"),
         }
 
     def start(self):

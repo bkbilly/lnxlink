@@ -10,12 +10,11 @@ requests>=2.28.1
 # Modules dependencies
 PyGObject>=3.44.0
 SpeechRecognition>=3.10.0
-dbus-idle>=2024.3.1
-dbus-python>=1.3.2
+dbus-idle>=2024.7.1
+dbus-mediaplayer>=2024.7.2
+dbus-notification>=2024.7.2
 ewmh>=0.1.6
-mpris2>=1.0.2
 mss>=7.0.1
-notify2>=0.3.1
 numpy>=1.24.0
 nvsmi>=0.4.2
 opencv-python>=4.7.0.68

@@ -18,14 +18,16 @@ class Addon:
         self.lnxlink = lnxlink
         self.players = []
         self._requirements()
+        self.media_player = self.lib["dbus-mediaplayer"].DBusMediaPlayers(
+            self.media_callback
+        )
 
     def _requirements(self):
         self.lib = {
-            "dbus": import_install_package(
-                "dbus-python", ">=1.3.2", "dbus.mainloop.glib"
-            ),
             "alsaaudio": import_install_package("pyalsaaudio", ">=0.9.2", "alsaaudio"),
-            "mpris2": import_install_package("mpris2", ">=1.0.2"),
+            "dbus-mediaplayer": import_install_package(
+                "dbus-mediaplayer", ">=2024.7.2", "dbus_mediaplayer"
+            ),
         }
 
     def exposed_controls(self):
@@ -78,20 +80,19 @@ class Addon:
             mixer.setvolume(int(data))
         elif topic[1] == "playpause":
             if len(self.players) > 0:
-                self.players[0]["player"].PlayPause()
+                self.media_player.control_media("PlayPause")
         elif topic[1] == "previous":
             if len(self.players) > 0:
-                self.players[0]["player"].Previous()
+                self.media_player.control_media("Previous")
         elif topic[1] == "next":
             if len(self.players) > 0:
-                self.players[0]["player"].Next()
+                self.media_player.control_media("Next")
         elif topic[1] == "play_media":
             url = data["media_id"]
             syscommand(f"cvlc --play-and-exit {url}", background=True)
 
     def get_info(self) -> dict:
         """Gather information from the system"""
-        self._get_players()
         info = {
             "title": "",
             "artist": "",
@@ -105,35 +106,34 @@ class Addon:
         if len(self.players) > 0:
             player = self.players[0]
             info["playing"] = True
-            info["title"] = player["title"]
+            info["title"] = self._filter_title(player["title"])
             info["album"] = player["album"]
             info["artist"] = player["artist"]
-            info["status"] = player["status"]
+            info["status"] = player["status"].lower()
             info["position"] = player["position"]
             info["duration"] = player["duration"]
 
-        self.lnxlink.run_module(f"{self.name}/Thumbnail", self.get_thumbnail)
         return info
 
-    def force_update(self, *args, **kwargs):
+    def media_callback(self, players):
         """Callback function to update media information"""
-        logging.debug("Media callback update: %s, %s", args, kwargs)
+        self.players = players
+        self.lnxlink.run_module(f"{self.name}/Thumbnail", self.get_thumbnail)
         self.lnxlink.run_module(self.name, self.get_info)
 
     def get_thumbnail(self):
         """Returns the thumbnail if it exists as a base64 string"""
         if len(self.players) > 0:
             player = self.players[0]
-            if player["status"] != "stopped":
-                try:
-                    arturl = player["arturl"].replace("file://", "")
-                    with open(arturl, "rb") as image_file:
-                        image_thumbnail = base64.b64encode(image_file.read())
-                        return image_thumbnail
-                except Exception as err:
-                    logger.debug(
-                        "Can't create thumbnail: %s, %s", err, traceback.format_exc()
-                    )
+            try:
+                arturl = player["arturl"].replace("file://", "")
+                with open(arturl, "rb") as image_file:
+                    image_thumbnail = base64.b64encode(image_file.read())
+                    return image_thumbnail
+            except Exception as err:
+                logger.debug(
+                    "Can't create thumbnail: %s, %s", err, traceback.format_exc()
+                )
         return b" "
 
     def _get_volume(self):
@@ -143,57 +143,6 @@ class Addon:
         if mixer.getmute()[0] == 1:
             volume = 0
         return volume
-
-    def _get_players(self):
-        """Get all the currently playing players"""
-        try:
-            self.lib["dbus"].mainloop.glib.DBusGMainLoop(set_as_default=True)
-        except Exception:
-            logger.error("Can't use DBus for media")
-            return []
-        self.players = []
-        for uri in self.lib["mpris2"].get_players_uri():
-            player = self.lib["mpris2"].Player(dbus_interface_info={"dbus_uri": uri})
-            player.PropertiesChanged = self.force_update
-            p_status = player.PlaybackStatus.lower()
-            title = player.Metadata.get("xesam:title")
-            title = self._filter_title(title)
-            artist = player.Metadata.get("xesam:artist")
-            album = player.Metadata.get("xesam:album")
-            length = player.Metadata.get("mpris:length")
-            arturl = player.Metadata.get("mpris:artUrl")
-
-            if p_status != "stopped":
-                position = None
-                duration = None
-                if length is not None:
-                    duration = round(length / 1000 / 1000)
-                    position = round(player.Position / 1000 / 1000)
-
-                artist_str = ""
-                if artist is not None:
-                    artist_str = ",".join(artist)
-                self.players.append(
-                    {
-                        "status": p_status,
-                        "title": str(title),
-                        "artist": artist_str,
-                        "album": "" if album is None else str(album),
-                        "player": player,
-                        "duration": duration,
-                        "position": position,
-                        "arturl": arturl,
-                    }
-                )
-        custom_order = {
-            "playing": 1,
-            "paused": 2,
-            "idle": 3,
-        }
-        self.players = sorted(
-            self.players, key=lambda x: custom_order.get(x.get("status"), 100)
-        )
-        return self.players
 
     def _filter_title(self, title):
         """Returns Title if it contains specific words"""

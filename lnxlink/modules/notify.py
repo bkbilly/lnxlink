@@ -15,20 +15,15 @@ class Addon:
         self.name = "Notify"
         self.lnxlink = lnxlink
         self._requirements()
-        self.lib["dbus"].mainloop.glib.DBusGMainLoop(set_as_default=True)
-        self.lib["notify2"].init("LNXlink")
-        self.urgencies = {
-            "low": self.lib["notify2"].URGENCY_LOW,
-            "normal": self.lib["notify2"].URGENCY_NORMAL,
-            "critical": self.lib["notify2"].URGENCY_CRITICAL,
-        }
+        self.notify = self.lib["notify"].DBusNotification(
+            appname="LNXlink", callback=self.callback_action
+        )
 
     def _requirements(self):
         self.lib = {
-            "dbus": import_install_package(
-                "dbus-python", ">=1.3.2", "dbus.mainloop.glib"
+            "notify": import_install_package(
+                "dbus-notification", ">=2024.7.2", "dbus_notification"
             ),
-            "notify2": import_install_package("notify2", ">=0.3.1"),
         }
 
     # pylint: disable=too-many-locals, too-many-branches
@@ -36,9 +31,6 @@ class Addon:
         """Control system"""
         icon_url = data.get("iconUrl")
         sound_url = data.get("sound")
-        timeout = data.get("timeout")
-        urgency = data.get("urgency")
-        buttons = data.get("buttons")
         icon_path = icon_url
         sound_path = sound_url
         if icon_url is not None and icon_url.startswith("http"):
@@ -58,44 +50,27 @@ class Addon:
             except Exception as err:
                 logger.error("Error downloading notification sound: %s", err)
 
-        # notify2
-        notify = self.lib["notify2"].Notification(
-            summary=data["title"],
-            message=data["message"],
-            icon=f"{self.lnxlink.path}/logo.png",
-        )
-        if icon_path is not None:
-            notify.set_hint("image-path", icon_path)
-            logger.info("Setting notification icon to %s", sound_path)
-        if sound_path is not None:
-            if "/" in sound_path:
-                notify.set_hint("sound-file", sound_path)
-            else:
-                notify.set_hint("sound-name", sound_path)
-            logger.info("Setting notification sound to %s", sound_path)
-        if isinstance(timeout, int):
-            notify.set_timeout(timeout)
-            logger.info("Setting notification timeout to %s", timeout)
-        if urgency in self.urgencies:
-            notify.set_urgency(self.urgencies[urgency])
-            logger.info("Setting notification urgency to %s", urgency)
-        if buttons is not None:
-            if isinstance(buttons, str):
-                buttons = [buttons]
-            for button in buttons:
-                notify.add_action(button, button, self.callback_action, None)
-        notify.show()
-
-    def callback_action(self, notification, action_key, user_data=None):
-        """Gather notification options and send to the MQTT broker"""
-        data = {
-            "title": notification.summary,
-            "message": notification.message,
-            "hints": notification.hints,
-            "icon": notification.icon,
-            "id": notification.id,
-            "button": action_key,
-            "timeout": notification.timeout,
+        urgencies = {
+            "low": 0,
+            "normal": 1,
+            "critical": 2,
         }
-        logger.info("Pressed notification button: %s", data)
-        self.lnxlink.run_module(f"{self.name}/button_press", data)
+
+        # notify2
+        notification_id = self.notify.send(
+            title=data["title"],
+            message=data["message"],
+            logo=f"{self.lnxlink.path}/logo.png",
+            image=icon_path,
+            sound=sound_path,
+            actions=data.get("buttons", []),
+            urgency=urgencies.get(data.get("urgency")),
+            timeout=data.get("timeout"),
+        )
+        logger.debug("The notification %s was sent.", notification_id)
+
+    def callback_action(self, notification_type, notification):
+        """Gather notification options and send to the MQTT broker"""
+        if notification_type == "button":
+            logger.debug("Pressed notification button: %s", notification)
+            self.lnxlink.run_module(f"{self.name}/button_press", notification)

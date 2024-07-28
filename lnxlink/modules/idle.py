@@ -3,6 +3,7 @@ import logging
 from lnxlink.modules.scripts.helpers import import_install_package
 
 logger = logging.getLogger("lnxlink")
+logging.getLogger("dasbus").setLevel(logging.WARNING)
 
 
 class Addon:
@@ -17,7 +18,7 @@ class Addon:
 
     def _requirements(self):
         self.lib = {
-            "dbus_idle": import_install_package("dbus-idle", ">=2024.3.1", "dbus_idle"),
+            "dbus_idle": import_install_package("dbus-idle", ">=2024.7.1", "dbus_idle"),
         }
 
     def get_info(self):
