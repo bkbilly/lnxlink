@@ -65,7 +65,7 @@ class Addon:
             sound=sound_path,
             actions=data.get("buttons", []),
             urgency=urgencies.get(data.get("urgency")),
-            timeout=data.get("timeout"),
+            timeout=data.get("timeout", -1),
         )
         logger.debug("The notification %s was sent.", notification_id)
 
