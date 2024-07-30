@@ -86,9 +86,10 @@ class LNXlink:
         # Setup MQTT
         return self.setup_mqtt()
 
-    def publish_monitor_data(self, topic, pub_data):
+    def publish_monitor_data(self, name, pub_data):
         """Publish info data to mqtt in the correct format"""
-        # logger.info(topic, pub_data, type(pub_data))
+        subtopic = name.lower().replace(" ", "_")
+        topic = f"{self.pref_topic}/monitor_controls/{subtopic}"
         if pub_data is None:
             return
         if isinstance(pub_data, bool):
@@ -121,18 +122,15 @@ class LNXlink:
 
     def run_module(self, name, method):
         """Runs the method of a module"""
-        subtopic = name.lower().replace(" ", "_")
-        topic = f"{self.pref_topic}/monitor_controls/{subtopic}"
-
         try:
             start_time = time.time()
             if isinstance(method, (dict, list, bool, bytes, int, str, float)):
                 pub_data = method
             else:
                 pub_data = method()
-            diff_time = round(time.time() - start_time, 5)
-            self.inference_times[name] = diff_time
-            self.publish_monitor_data(topic, pub_data)
+                diff_time = round(time.time() - start_time, 5)
+                self.inference_times[name] = diff_time
+            self.publish_monitor_data(name, pub_data)
         except Exception as err:
             logger.error(
                 "Error with addon %s: %s, %s",

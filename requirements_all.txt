@@ -15,7 +15,7 @@ dbus-mediaplayer>=2024.7.2
 dbus-notification>=2024.7.2
 ewmh>=0.1.6
 mss>=7.0.1
-numpy>=1.24.0
+numpy==1.26.4
 nvsmi>=0.4.2
 opencv-python>=4.7.0.68
 pulsectl>=23.5.2

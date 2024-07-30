@@ -19,7 +19,7 @@ class Addon:
         self.lib = {
             "cv2": import_install_package("opencv-python", ">=4.7.0.68", "cv2"),
             "mss": import_install_package("mss", ">=7.0.1"),
-            "np": import_install_package("numpy", ">=1.24.0"),
+            "np": import_install_package("numpy", "==1.26.4"),
         }
 
     def get_camera_frame(self):
