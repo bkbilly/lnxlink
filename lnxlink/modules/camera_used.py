@@ -2,7 +2,6 @@
 import glob
 from threading import Thread
 from inotify.adapters import Inotify
-from lnxlink.modules.scripts.helpers import syscommand
 
 
 class Addon:
@@ -26,10 +25,7 @@ class Addon:
 
     def _watch_events(self):
         for event in self.inotify.event_gen(yield_nones=False):
-            _, _, returncode = syscommand(f"fuser {event[2]}", ignore_errors=True)
-            cam_used = False
-            if returncode == 0:
-                cam_used = True
+            cam_used = event[1][0] == "IN_OPEN"
             self.lnxlink.run_module(self.name, cam_used)
 
     def exposed_controls(self):

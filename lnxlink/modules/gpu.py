@@ -16,7 +16,11 @@ class Addon:
         self.name = "GPU"
         self.lnxlink = lnxlink
         self._requirements()
-        self.gpu_ids = {"amd": self.lib["amd"].detect_gpus()}
+        self.gpu_ids = {"amd": 0}
+        try:
+            self.gpu_ids["amd"] = self.lib["amd"].detect_gpus()
+        except Exception as err:
+            logger.error("Can't get AMD GPU: %s", err)
         if which("nvidia-smi") is not None:
             try:
                 self.gpu_ids["nvidia"] = len(list(self.lib["nvidia"].get_gpus()))
@@ -25,6 +29,8 @@ class Addon:
                 self.gpu_ids["nvidia"] = 0
         else:
             self.gpu_ids["nvidia"] = 0
+        if self.gpu_ids["nvidia"] == 0 and self.gpu_ids["nvidia"]:
+            raise SystemError("No GPU found")
 
     def _requirements(self):
         self.lib = {

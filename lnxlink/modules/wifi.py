@@ -1,8 +1,6 @@
 """Gets WiFi information"""
 import os
-import re
-from shutil import which
-from lnxlink.modules.scripts.helpers import syscommand
+from lnxlink.modules.scripts.helpers import import_install_package
 
 
 class Addon:
@@ -11,8 +9,16 @@ class Addon:
     def __init__(self, lnxlink):
         """Setup addon"""
         self.name = "WiFi"
-        if which("iwgetid") is None:
-            raise SystemError("System command 'iwgetid' not found")
+        if not os.path.exists("/proc/net/wireless"):
+            raise SystemError("No WiFi found.")
+        self._requirements()
+
+    def _requirements(self):
+        self.lib = {
+            "dbus_nd": import_install_package(
+                "dbus-networkdevices", ">=2024.0.7", "dbus_networkdevices"
+            ),
+        }
 
     def exposed_controls(self):
         """Exposes to home assistant"""
@@ -34,15 +40,13 @@ class Addon:
         ssid = ""
         mac = ""
         signal = None
-        if os.path.exists("/proc/net/wireless"):
-            wireless_info, _, _ = syscommand("cat /proc/net/wireless")
-            match = re.findall(r"\s+(\S+):\s\S+\s+\S+\s+(\S+)", wireless_info)
-            if match:
-                interface = match[0][0]
-                rssi = float(match[0][1])
-                signal = min(2 * (100 + rssi), 100)
-                ssid, _, _ = syscommand("iwgetid -r")
-                mac, _, _ = syscommand("iwgetid -ra")
+        devices = self.lib["dbus_nd"].DBUSNetworkDevices().get_network_devices()
+        for device in devices:
+            if "wifi" in device:
+                interface = device["interface"]
+                signal = device["wifi"]["strength"]
+                ssid = device["wifi"]["ssid"]
+                mac = device["wifi"]["mac"]
 
         return {
             "signal": signal,
