@@ -1,7 +1,6 @@
 """Gets the battery information of connected devices"""
-from shutil import which
-import jc
-from lnxlink.modules.scripts.helpers import syscommand
+from xml.etree import ElementTree
+from lnxlink.modules.scripts.helpers import import_install_package
 
 
 class Addon:
@@ -11,9 +10,12 @@ class Addon:
         """Setup addon"""
         self.name = "Battery"
         self.lnxlink = lnxlink
-        if which("upower") is None:
-            raise SystemError("System command 'upower' not found")
+        self._requirements()
         self.devices = self._get_devices()
+
+    def _requirements(self):
+        dasbus = import_install_package("dasbus", ">=1.7", "dasbus.connection")
+        self.bus = dasbus.connection.SystemMessageBus()
 
     def exposed_controls(self):
         """Exposes to home assistant"""
@@ -45,34 +47,73 @@ class Addon:
         return devices
 
     def _get_devices(self):
-        stdout, _, _ = syscommand("upower --dump")
-        upower_json = jc.parse("upower", stdout)
-
         devices = {}
-        for device in upower_json:
-            if "detail" in device:
-                if "percentage" in device["detail"]:
-                    native_path = device.get("native_path", "").split("/")[-1]
-                    name = " ".join(
-                        [
-                            device.get("vendor", ""),
-                            device.get("model", ""),
-                            device.get("serial", "").replace(":", ""),
-                        ]
-                    ).strip()
-                    if name == "":
-                        name = native_path
-                    if name != "":
-                        devices[name] = {
-                            "percent": device["detail"]["percentage"],
-                            "attributes": {
-                                "vendor": device.get("vendor", ""),
-                                "model": device.get("model", ""),
-                                "serial": device.get("serial", ""),
-                                "native_path": native_path,
-                                "rechargeable": device["detail"].get(
-                                    "rechargeable", ""
-                                ),
-                            },
-                        }
+        for device in self.get_batteries():
+            print(device)
+            native_path = device["NativePath"].split("/")[-1]
+            name = " ".join(
+                [
+                    device["Vendor"],
+                    device["Model"],
+                    device["Serial"].replace(":", ""),
+                ]
+            ).strip()
+            if name == "":
+                name = native_path
+            if name != "":
+                devices[name] = {
+                    "percent": device["Percentage"],
+                    "attributes": {
+                        "vendor": device["Vendor"],
+                        "model": device["Model"],
+                        "serial": device["Serial"],
+                        "native_path": native_path,
+                        "rechargeable": device["IsRechargeable"],
+                    },
+                }
         return devices
+
+    def dbus_paths(self, service, object_path, paths):
+        """Recursive method to read the list of paths from the service"""
+        obj = self.bus.get_proxy(
+            service, object_path, "org.freedesktop.DBus.Introspectable"
+        )
+        xml_string = obj.Introspect()
+        for child in ElementTree.fromstring(xml_string):
+            if child.tag == "node":
+                if object_path == "/":
+                    object_path = ""
+                new_path = "/".join((object_path, child.attrib["name"]))
+                paths.append(new_path)
+                self.dbus_paths(service, new_path, paths)
+        return paths
+
+    def get_batteries(self):
+        """Gets a list of all devices and their status"""
+        batteries = []
+        for dbus_path in self.dbus_paths(
+            "org.freedesktop.UPower", "/org/freedesktop/UPower", []
+        ):
+            proxy = self.bus.get_proxy(
+                service_name="org.freedesktop.UPower",
+                object_path=dbus_path,
+                interface_name="org.freedesktop.UPower.Device",
+            )
+            # pylint: disable=protected-access
+            if (
+                "org.freedesktop.UPower.Device"
+                in proxy._handler.specification.interfaces
+            ):
+                if proxy.Model + proxy.NativePath != "":
+                    batteries.append(
+                        {
+                            "Model": proxy.Model,
+                            "NativePath": proxy.NativePath,
+                            "Percentage": proxy.Percentage,
+                            "Serial": proxy.Serial,
+                            "IconName": proxy.IconName,
+                            "IsRechargeable": proxy.IsRechargeable,
+                            "Vendor": proxy.Vendor,
+                        }
+                    )
+        return batteries

@@ -26,7 +26,7 @@ class Addon:
         self.lib = {
             "alsaaudio": import_install_package("pyalsaaudio", ">=0.9.2", "alsaaudio"),
             "dbus-mediaplayer": import_install_package(
-                "dbus-mediaplayer", ">=2024.7.2", "dbus_mediaplayer"
+                "dbus-mediaplayer", ">=2024.7.3", "dbus_mediaplayer"
             ),
         }
 
