@@ -75,6 +75,7 @@ settings:
     text: What is the water heater temperature?
   - key: <ctrl>+<alt>+x # Same as conversation, but a zenity popup with an entry is displayd for the user to write
     type: popup
+  - key: <ctrl>+<alt>+q  # Creates a sensor on home assistant, without any further configuration
 ```
 
 ## Bash

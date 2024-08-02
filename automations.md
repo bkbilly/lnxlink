@@ -124,7 +124,7 @@ action:
       topic: lnxlink/desktop-linux/commands/notify
       retain: false
       qos: 0
-      payload_template: >-
+      payload: >-
         { "title": "Camera Hikvision", 
           "message": "Line crossing", 
           "iconUrl": "https://homeassistant.local/local/hikvision.jpg" }
