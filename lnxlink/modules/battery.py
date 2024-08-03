@@ -49,7 +49,6 @@ class Addon:
     def _get_devices(self):
         devices = {}
         for device in self.get_batteries():
-            print(device)
             native_path = device["NativePath"].split("/")[-1]
             name = " ".join(
                 [
