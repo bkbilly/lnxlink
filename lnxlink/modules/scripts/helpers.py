@@ -61,8 +61,11 @@ def import_install_package(package, req_version="", syspackage=None):
         ]
         _, _, returncode = syscommand(args, ignore_errors=True, timeout=None)
         if returncode != 0:
-            logger.error("Can't install package %s", package)
-            return None
+            try:
+                return __import__(syspackage)
+            except ModuleNotFoundError:
+                logger.error("Can't install package %s", package)
+                return None
 
     try:
         return __import__(syspackage)
