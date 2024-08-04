@@ -1,6 +1,6 @@
 """Shows notifications"""
-import time
 import logging
+import tempfile
 import requests
 from lnxlink.modules.scripts.helpers import import_install_package
 
@@ -35,18 +35,22 @@ class Addon:
         sound_path = sound_url
         if icon_url is not None and icon_url.startswith("http"):
             try:
-                img_data = requests.get(icon_url, timeout=3).content
-                icon_path = f"/tmp/lnxlink_icon.{int(time.time())}"
-                with open(icon_path, "wb") as handler:
-                    handler.write(img_data)
+                with tempfile.NamedTemporaryFile(
+                    prefix="lnxlink_icon_", delete=False, delete_on_close=False
+                ) as icon_file:
+                    img_data = requests.get(icon_url, timeout=3).content
+                    icon_file.write(img_data)
+                    icon_path = icon_file.name
             except Exception as err:
                 logger.error("Error downloading notification image: %s", err)
         if sound_url is not None and sound_url.startswith("http"):
             try:
-                sound_data = requests.get(sound_url, timeout=3).content
-                sound_path = f"/tmp/lnxlink_sound.{int(time.time())}"
-                with open(sound_path, "wb") as handler:
-                    handler.write(sound_data)
+                with tempfile.NamedTemporaryFile(
+                    prefix="lnxlink_sound_", delete=False, delete_on_close=False
+                ) as sound_file:
+                    sound_data = requests.get(sound_url, timeout=3).content
+                    sound_file.write(sound_data)
+                    sound_path = sound_file.name
             except Exception as err:
                 logger.error("Error downloading notification sound: %s", err)
 
