@@ -36,7 +36,7 @@ class Addon:
         if icon_url is not None and icon_url.startswith("http"):
             try:
                 with tempfile.NamedTemporaryFile(
-                    prefix="lnxlink_icon_", delete=False, delete_on_close=False
+                    prefix="lnxlink_icon_", delete=False
                 ) as icon_file:
                     img_data = requests.get(icon_url, timeout=3).content
                     icon_file.write(img_data)
@@ -46,7 +46,7 @@ class Addon:
         if sound_url is not None and sound_url.startswith("http"):
             try:
                 with tempfile.NamedTemporaryFile(
-                    prefix="lnxlink_sound_", delete=False, delete_on_close=False
+                    prefix="lnxlink_sound_", delete=False
                 ) as sound_file:
                     sound_data = requests.get(sound_url, timeout=3).content
                     sound_file.write(sound_data)
