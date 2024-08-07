@@ -33,7 +33,7 @@ class Addon:
                 "title": "LNXlink",
                 "icon": "mdi:update",
                 "entity_category": "diagnostic",
-                "entity_picture": "https://github.com/bkbilly/lnxlink/raw/master/logo.png?raw=true",
+                "entity_picture": "https://raw.githubusercontent.com/bkbilly/lnxlink/6d844af/images/logo.png",
                 "install": "install",
             },
         }

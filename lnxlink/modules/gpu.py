@@ -29,7 +29,7 @@ class Addon:
                 self.gpu_ids["nvidia"] = 0
         else:
             self.gpu_ids["nvidia"] = 0
-        if len(self.gpu_ids["amd"]) == 0 and len(self.gpu_ids["nvidia"]) == 0:
+        if self.gpu_ids["amd"] == 0 and self.gpu_ids["nvidia"] == 0:
             raise SystemError("No GPU found")
 
     def _requirements(self):
