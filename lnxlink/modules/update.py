@@ -27,13 +27,16 @@ class Addon:
 
     def exposed_controls(self):
         """Exposes to home assistant"""
+        image_url = (
+            "https://raw.githubusercontent.com/bkbilly/lnxlink/6d844af/images/logo.png"
+        )
         return {
             "Update": {
                 "type": "update",
                 "title": "LNXlink",
                 "icon": "mdi:update",
                 "entity_category": "diagnostic",
-                "entity_picture": "https://raw.githubusercontent.com/bkbilly/lnxlink/6d844af/images/logo.png",
+                "entity_picture": image_url,
                 "install": "install",
             },
         }
