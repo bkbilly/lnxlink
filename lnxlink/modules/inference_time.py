@@ -15,7 +15,9 @@ class Addon:
             "modules": self.lnxlink.inference_times,
             "sum": round(sum(self.lnxlink.inference_times.values()), 2),
             "max": max(
-                self.lnxlink.inference_times, key=self.lnxlink.inference_times.get
+                self.lnxlink.inference_times,
+                key=self.lnxlink.inference_times.get,
+                default=None,
             ),
         }
 
