@@ -15,9 +15,9 @@ class Addon:
         self._requirements()
         try:
             # client = docker.from_env()
-            self.client = self.docker.DockerClient(base_url='unix://run/docker.sock')
+            self.client = self.docker.DockerClient(base_url="unix://run/docker.sock")
         except Exception as err:
-            raise SystemError("Docker instance not found")
+            raise SystemError(f"Docker instance not found: {err}") from err
         self.containers = self._get_containers()
 
     def _requirements(self):
@@ -33,7 +33,7 @@ class Addon:
                 "value_template": f"{{{{ value_json.get('{container}', {{}}).get('running') }}}}",
                 "attributes_template": f"{{{{ value_json.get('{container}', {{}}) | tojson }}}}",
             }
-        discovery_info[f"Docker Prune"] = {
+        discovery_info["Docker Prune"] = {
             "type": "button",
             "icon": "mdi:docker",
         }
@@ -48,16 +48,8 @@ class Addon:
         return self.containers
 
     def _get_containers(self):
-        include = (
-            self.lnxlink.config["settings"]
-            .get("docker", {})
-            .get("include", [])
-        )
-        exclude = (
-            self.lnxlink.config["settings"]
-            .get("docker", {})
-            .get("exclude", [])
-        )
+        include = self.lnxlink.config["settings"].get("docker", {}).get("include", [])
+        exclude = self.lnxlink.config["settings"].get("docker", {}).get("exclude", [])
         containers = {}
         for container in self.client.containers.list(all=True):
             if len(include) > 0 and container.name not in include:
@@ -65,7 +57,7 @@ class Addon:
             if container.name in exclude:
                 continue
             ports = set()
-            for virtual, host in container.ports.items():
+            for _, host in container.ports.items():
                 if host is not None:
                     for host_info in host:
                         ports.add(host_info["HostPort"])
@@ -100,4 +92,3 @@ class Addon:
             self.client.images.prune()
             self.client.networks.prune()
             self.client.volumes.prune()
-

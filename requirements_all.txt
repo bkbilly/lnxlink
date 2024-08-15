@@ -15,6 +15,7 @@ dbus-idle>=2024.7.1
 dbus-mediaplayer>=2024.8.0
 dbus-networkdevices>=2024.0.7
 dbus-notification>=2024.7.2
+docker>=7.0.0
 ewmh>=0.1.6
 mss>=7.0.1
 numpy==1.26.4
