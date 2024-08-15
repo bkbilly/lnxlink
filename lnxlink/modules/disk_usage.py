@@ -54,12 +54,12 @@ class Addon:
         disks = {}
         disk_includes = (
             self.lnxlink.config["settings"]
-            .get("disk_usage", [])
+            .get("disk_usage", {})
             .get("include_disks", [])
         )
         disk_excludes = (
             self.lnxlink.config["settings"]
-            .get("disk_usage", [])
+            .get("disk_usage", {})
             .get("exclude_disks", [])
         )
         for disk in psutil.disk_partitions():

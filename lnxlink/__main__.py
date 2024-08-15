@@ -44,6 +44,7 @@ class LNXlink:
 
     def __init__(self, config_path):
         logger.info("LNXlink %s, Python %s", self.version, platform.python_version())
+        logger.debug("Path=%s", self.path)
         self.config_path = config_path
         self.kill = None
         self.display = None
