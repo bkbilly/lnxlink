@@ -30,13 +30,15 @@ class Addon:
 
         # Check if Gnome Idle Time is active
         if which("gsettings"):
-            stdout_dim, _, _ = syscommand(
-                "gsettings get org.gnome.desktop.session idle-delay"
+            stdout_dim, _, returncode_dim = syscommand(
+                "gsettings get org.gnome.desktop.session idle-delay",
+                ignore_errors=True,
             )
-            stdout_suspend, _, _ = syscommand(
-                "gsettings get org.gnome.settings-daemon.plugins.power sleep-inactive-ac-type"
+            stdout_suspend, _, returncode_susp = syscommand(
+                "gsettings get org.gnome.settings-daemon.plugins.power sleep-inactive-ac-type",
+                ignore_errors=True,
             )
-            if stdout_dim != "":
+            if stdout_dim != "" and returncode_dim == 0 and returncode_susp == 0:
                 disabled_dim = "0" == stdout_dim.split()[1]
                 if disabled_dim and stdout_suspend != "":
                     enabled_list.append("nothing" in stdout_suspend)
