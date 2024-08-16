@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <component type="console-application">
-  <content_rating type="oars-1.0" />
+  <content_rating type="oars-1.1" />
   <id>io.github.bkbilly.lnxlink</id>
   <name>LNXlink</name>
 
@@ -40,8 +40,28 @@
     <category>System</category>
     <category>Monitor</category>
   </categories>
-
+  <icon type="stock">io.github.bkbilly.lnxlink</icon>
   <releases>
+    <release version="2024.8.2" date="2024-08-17">
+      <url type="details">https://github.com/bkbilly/lnxlink/releases</url>
+      <description>
+        <p>SystemD</p>
+          <ul>
+            <li>Add SystemD use inside flatpak with DBUS</li>
+            <li>Defaults configuration to ~/Documents/LNXlink/config.yaml</li>
+          </ul>
+      </description>
+    </release>
+    <release version="2024.8.1" date="2024-08-16">
+      <url type="details">https://github.com/bkbilly/lnxlink/releases</url>
+      <description>
+        <p>Run without configuration options</p>
+          <ul>
+            <li>Defaults configuration to ~/Documents/lnxlink.yaml</li>
+            <li>Add Docker containers</li>
+          </ul>
+      </description>
+    </release>
     <release version="2024.8.0" date="2024-08-05">
       <url type="details">https://github.com/bkbilly/lnxlink/releases</url>
       <description>
