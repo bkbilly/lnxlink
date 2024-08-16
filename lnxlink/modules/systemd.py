@@ -1,7 +1,6 @@
 """Controls systemd services"""
 import logging
-from shutil import which
-from lnxlink.modules.scripts.helpers import syscommand
+from lnxlink.modules.scripts.helpers import syscommand, import_install_package
 
 logger = logging.getLogger("lnxlink")
 
@@ -13,22 +12,33 @@ class Addon:
         """Setup addon"""
         self.name = "SystemD"
         self.lnxlink = lnxlink
-        if which("systemctl") is None:
-            raise SystemError("System command 'systemctl' not found")
         self.services = self.lnxlink.config["settings"].get("systemd", [])
         self.services = [] if self.services is None else self.services
         if len(self.services) == 0:
             logger.info("No systemd settings found on configuration.")
+        self._requirements()
+
+    def _requirements(self):
+        dasbus = import_install_package("dasbus", ">=1.7", "dasbus.connection")
+        self.bus = dasbus.connection.SystemMessageBus()
 
     def get_info(self):
         """Gather information from the system"""
         info = {}
         for service in self.services:
-            stdout, _, _ = syscommand(
-                f"systemctl show {service} --no-pager | grep ActiveState"
+            dbus_service = (
+                service.replace("-", "_2d")
+                .replace(".", "_2e")
+                .replace("\\", "_5c")
+                .replace("@", "_40")
+            )
+            proxy = self.bus.get_proxy(
+                service_name="org.freedesktop.systemd1",
+                object_path=f"/org/freedesktop/systemd1/unit/{dbus_service}",
+                interface_name="org.freedesktop.systemd1.Unit",
             )
             status = "OFF"
-            if "=active" in stdout:
+            if proxy.ActiveState == "active":
                 status = "ON"
             name = service.replace(".service", "")
             info[name] = status
@@ -48,8 +58,25 @@ class Addon:
 
     def start_control(self, topic, data):
         """Control system"""
-        service = topic[1].replace("systemd_", "")
+        service = topic[1].replace("systemd_", "") + ".service"
+        dbus_service = (
+            service.replace("-", "_2d")
+            .replace(".", "_2e")
+            .replace("\\", "_5c")
+            .replace("@", "_40")
+        )
+        proxy = self.bus.get_proxy(
+            service_name="org.freedesktop.systemd1",
+            object_path=f"/org/freedesktop/systemd1/unit/{dbus_service}",
+            interface_name="org.freedesktop.systemd1.Unit",
+        )
         if data.lower() == "off":
-            syscommand(f"sudo systemctl stop {service}.service &")
+            try:
+                proxy.Stop("replace")
+            except Exception:
+                syscommand(f"sudo systemctl stop {service} &")
         elif data.lower() == "on":
-            syscommand(f"sudo systemctl start {service}.service &")
+            try:
+                proxy.Start("replace")
+            except Exception:
+                syscommand(f"sudo systemctl start {service} &")
