@@ -2,14 +2,14 @@
 description: Get started with LNXlink
 ---
 
-# 🖥 Setup
+# 🖥️ Setup
 
 ## Installation
 
 Select the installation type you want:
 
 {% tabs %}
-{% tab title="Normal" %}
+{% tab title="System" %}
 Install LNXlink and it's dependencies. It will create a `config.yaml` file and it will guide you through the basic configuration setup:
 
 {% code overflow="wrap" lineNumbers="true" %}
@@ -28,6 +28,49 @@ sudo systemctl restart lnxlink.service  # For root installations
 {% endcode %}
 {% endtab %}
 
+{% tab title="Flatpak" %}
+Install and follow the setup instructions by running it. A new configuration file will be created at `~/Documents/LNXlink/config.yaml`.&#x20;
+
+{% code lineNumbers="true" %}
+```bash
+flatpak install flathub io.github.bkbilly.lnxlink
+flatpak run io.github.bkbilly.lnxlink
+```
+{% endcode %}
+
+Some modules are not supported like `bluetooth`, `sys_updates`, `gpu`, `boot_select`.
+
+You will also need to manually create a systemd service to start LNXlink on boot by creating a service file.
+
+{% code title="/etc/systemd/system/lnxlink.service" %}
+```toml
+[Unit]
+Description=LNXlink
+After=network-online.target multi-user.target graphical.target
+PartOf=graphical-session.target
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=5
+
+ExecStart=flatpak run io.github.bkbilly.lnxlink
+
+[Install]
+WantedBy=default.target
+```
+{% endcode %}
+
+This must be enabled to start on boot:
+
+{% code lineNumbers="true" %}
+```bash
+sudo systemctl enable lnxlink.service
+sudo systemctl daemon-reload
+```
+{% endcode %}
+{% endtab %}
+
 {% tab title="Docker" %}
 Docker is not recommended for desktop environments because it limits many modules which can't run properly. You can download LNXlink image and setup the config directory:
 
@@ -37,8 +80,9 @@ docker run --network host -v ~/config_lnxlink/:/opt/lnxlink/config/ -it bkbillyb
 ```
 {% endcode %}
 
-You can also run as a docker compose image by creating a `docker-compose.yaml` file:
+You can also run as a docker compose image by creating a docker compose file:
 
+{% code title="docker-compose.yaml" %}
 ```yaml
 version: "3"
 services:
@@ -54,6 +98,7 @@ services:
       - ~/config_lnxlink/:/opt/lnxlink/config/
       - /var/run/reboot-required:/var/run/reboot-required:ro
 ```
+{% endcode %}
 
 Run docker compose image:
 
@@ -78,6 +123,8 @@ lnxlink -c config.yaml
 {% endcode %}
 {% endtab %}
 {% endtabs %}
+
+
 
 ### Run sudo commands
 

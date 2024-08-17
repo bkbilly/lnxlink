@@ -2,7 +2,7 @@
 description: User defined settings for the modules that support them
 ---
 
-# 🔗 Settings
+# 🔗 Modules Settings
 
 ## SystemD
 
@@ -13,6 +13,18 @@ settings:
   systemd:
     - docker.service
     - anydesk.service
+```
+
+## Docker
+
+If no configuration is provided, then all the available docker containers will be exposed. This can be configured to only show the ones in the included list or ignore the ones in the exclude list:
+
+```yaml
+settings:
+  docker:
+    include:
+      - esphome
+    exclude: []
 ```
 
 ## GPIO
