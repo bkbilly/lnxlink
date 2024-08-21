@@ -38,7 +38,7 @@ flatpak run io.github.bkbilly.lnxlink
 ```
 {% endcode %}
 
-Some modules are not supported like `bluetooth`, `sys_updates`, `gpu`, `boot_select`.
+Some modules are not supported like `bluetooth`, `sys_updates`, `boot_select`.
 
 You will also need to manually create a systemd service to start LNXlink on boot by creating a service file.
 
@@ -135,7 +135,6 @@ Some commands need to run as a root user. To fix this, you need to allow some of
 sudo visudo
 # Add this line at the end (replace USER with your username):
 USER ALL=(ALL) NOPASSWD: /usr/sbin/grub-reboot
-USER ALL=(ALL) NOPASSWD: /bin/systemctl
 ```
 
 ## Uninstall
