@@ -72,15 +72,15 @@ sudo systemctl daemon-reload
 {% endtab %}
 
 {% tab title="Docker" %}
-Docker is not recommended for desktop environments because it limits many modules which can't run properly. You can download LNXlink image and setup the config directory:
+Docker is not recommended for desktop environments because it limits many modules which can't run properly. Firstly you should download LNXlink image and setup the config directory:
 
 {% code overflow="wrap" %}
 ```bash
-docker run --network host -v ~/config_lnxlink/:/opt/lnxlink/config/ -it bkbillybk/lnxlink:latest
+docker run --network host -v ~/Documents/LNXlink/:/opt/lnxlink/config/ -it bkbillybk/lnxlink:latest
 ```
 {% endcode %}
 
-You can also run as a docker compose image by creating a docker compose file:
+Create a docker compose file:
 
 {% code title="docker-compose.yaml" %}
 ```yaml
@@ -95,8 +95,12 @@ services:
     stdin_open: true
     tty: true
     volumes:
-      - ~/config_lnxlink/:/opt/lnxlink/config/
+      - ~/Documents/LNXlink/:/opt/lnxlink/config/
       - /var/run/reboot-required:/var/run/reboot-required:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /var/run/dbus/:/var/run/dbus/
+      - /proc/:/proc/
+      - /dev/:/dev/
 ```
 {% endcode %}
 
