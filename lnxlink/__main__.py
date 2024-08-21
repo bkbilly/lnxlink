@@ -474,6 +474,7 @@ def setup_logger(config_path, log_level):
     logging.basicConfig(level=log_level)
     file_handler.setFormatter(log_formatter)
     logger.addHandler(file_handler)
+    logging.getLogger("dasbus").setLevel(logging.WARNING)
 
 
 def main():
