@@ -17,6 +17,7 @@ class Addon:
         self.lnxlink = lnxlink
         self._requirements()
         self.gpu_ids = {"amd": 0}
+        self.nvitop_devices = []
         try:
             self.gpu_ids["amd"] = self.lib["amd"].detect_gpus()
         except Exception as err:
@@ -30,12 +31,15 @@ class Addon:
         else:
             self.gpu_ids["nvidia"] = 0
         if self.gpu_ids["amd"] == 0 and self.gpu_ids["nvidia"] == 0:
-            raise SystemError("No GPU found")
+            self.nvitop_devices = self.lib["nvitop"].Device.all()
+            if len(self.nvitop_devices) == 0:
+                raise SystemError("No GPU found")
 
     def _requirements(self):
         self.lib = {
             "amd": import_install_package("pyamdgpuinfo", ">=2.1.4"),
             "nvidia": import_install_package("nvsmi", ">=0.4.2"),
+            "nvitop": import_install_package("nvitop", ">=1.3.2"),
         }
 
     def get_info(self):
@@ -66,6 +70,16 @@ class Addon:
                     "Name": nvidia_gpu.name,
                 },
             }
+        for device in self.nvitop_devices:
+            gpus[f"gpu_{device.index}"] = {
+                "load": device.gpu_utilization(),
+                "memory": device.memory_utilization(),
+                "temperature": device.temperature(),
+                "attributes": {
+                    "Name": device.name(),
+                },
+            }
+
         return gpus
 
     def _older_gpu_load(self, gpu_id, gpu_util):
@@ -111,4 +125,17 @@ class Addon:
                     "attributes_template": f"{{{{ value_json.nvidia_{gpu_id}.attributes | tojson }}}}",
                     "enabled": True,
                 }
+        for device in self.nvitop_devices:
+            index = device.index
+            for expose, unit in (("load", "%"), ("memory", "%"), ("temperature", "°C")):
+                discovery_info[f"GPU {index} {expose}"] = {
+                    "type": "sensor",
+                    "icon": "mdi:expansion-card-variant",
+                    "unit": unit,
+                    "state_class": "measurement",
+                    "value_template": f"{{{{ value_json.gpu_{index}.{expose} }}}}",
+                    "attributes_template": f"{{{{ value_json.gpu_{index}.attributes | tojson }}}}",
+                    "enabled": True,
+                }
+
         return discovery_info
