@@ -20,6 +20,10 @@ class Addon:
         self.started = False
         if not self._is_raspberry():
             raise SystemError("Not supported non Raspberry PI devices")
+        receiver = self.lnxlink.config["settings"]["ir_remote"]["receiver"]
+        transmitter = self.lnxlink.config["settings"]["ir_remote"]["transmitter"]
+        if receiver in [None, []] and transmitter in [None, []]:
+            raise SystemError("No configuration found")
         self._requirements()
         self.irremote = None
 
