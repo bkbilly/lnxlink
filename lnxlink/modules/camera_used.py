@@ -2,6 +2,7 @@
 import glob
 from threading import Thread
 from inotify.adapters import Inotify
+from lnxlink.modules.scripts.helpers import syscommand
 
 
 class Addon:
@@ -22,6 +23,12 @@ class Addon:
             self.cameras = cameras
             for camera in cameras:
                 self.inotify.add_watch(camera)
+            # Initialize camera
+            _, _, returncode = syscommand("fuser /dev/video*", ignore_errors=True)
+            cam_used = False
+            if returncode == 0:
+                cam_used = True
+            self.lnxlink.run_module(self.name, cam_used)
 
     def _watch_events(self):
         for event in self.inotify.event_gen(yield_nones=False):

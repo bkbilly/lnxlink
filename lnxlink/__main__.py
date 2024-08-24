@@ -267,6 +267,16 @@ class LNXlink:
         self.kill = True
         self.client.disconnect()
 
+    def replace_values_with_none(self, data):
+        """Replaces specified values with None recursively"""
+        if isinstance(data, (str, bool, float, int)):
+            return None
+        if isinstance(data, dict):
+            return {
+                key: self.replace_values_with_none(value) for key, value in data.items()
+            }
+        return data
+
     def temp_connection_callback(self, status):
         """Report the connection status to MQTT server"""
         self.kill = True
@@ -279,6 +289,13 @@ class LNXlink:
                     qos=self.config["mqtt"]["lwt"]["qos"],
                     retain=True,
                 )
+                for topic, message in self.prev_publish.items():
+                    message = self.replace_values_with_none(message)
+                    self.client.publish(
+                        topic,
+                        payload=message,
+                    )
+                    print(topic, message)
             else:
                 logger.info("Power Up detected.")
                 if self.kill:
