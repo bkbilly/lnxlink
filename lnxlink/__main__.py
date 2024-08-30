@@ -295,7 +295,6 @@ class LNXlink:
                         topic,
                         payload=message,
                     )
-                    print(topic, message)
             else:
                 logger.info("Power Up detected.")
                 if self.kill:
@@ -455,9 +454,11 @@ class LNXlink:
             retain=True,
         )
 
-    def setup_discovery(self):
+    def setup_discovery(self, filter_name=None):
         """First time setup of discovery for Home Assistant"""
         for service, addon in self.addons.items():
+            if filter_name is not None and filter_name != service:
+                continue
             if hasattr(addon, "exposed_controls"):
                 for exp_name, options in addon.exposed_controls().items():
                     try:
