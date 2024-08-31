@@ -99,6 +99,7 @@ services:
       - /var/run/reboot-required:/var/run/reboot-required:ro
       - /var/run/docker.sock:/var/run/docker.sock
       - /var/run/dbus/:/var/run/dbus/
+      - /sys/block/:/sys/block/
       - /proc/:/proc/
       - /dev/:/dev/
 ```
