@@ -19,17 +19,23 @@ class Addon:
     def start_control(self, topic, data):
         """Control system"""
         self.lnxlink.temp_connection_callback(True)
-        if which("systemctl") is not None:
-            syscommand("systemctl poweroff")
-        elif which("shutdown") is not None:
-            syscommand("shutdown now")
-        else:
-            bus = self.dbus.connection.SystemMessageBus()
-            proxy = bus.get_proxy(
-                service_name="org.freedesktop.login1",
-                object_path="/org/freedesktop/login1",
-            )
-            proxy.PowerOff(True)
+        returncode = None
+        if which("systemctl") is not None and returncode != 0:
+            _, _, returncode = syscommand("systemctl poweroff")
+        if which("shutdown") is not None and returncode != 0:
+            _, _, returncode = syscommand("shutdown now")
+        if returncode != 0:
+            try:
+                bus = self.dbus.connection.SystemMessageBus()
+                proxy = bus.get_proxy(
+                    service_name="org.freedesktop.login1",
+                    object_path="/org/freedesktop/login1",
+                )
+                proxy.PowerOff(True)
+            except Exception:
+                returncode = -1
+        if returncode != 0:
+            self.lnxlink.temp_connection_callback(False)
 
     def exposed_controls(self):
         """Exposes to home assistant"""

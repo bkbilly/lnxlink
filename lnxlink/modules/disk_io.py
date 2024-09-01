@@ -69,7 +69,7 @@ class Addon:
         disks = []
         for disk in glob.glob("/sys/block/*", recursive=False):
             disk_name = disk.removeprefix("/sys/block/")
-            excludes = ["loop", "ram"]
+            excludes = ["loop", "ram", "zram"]
             if any(disk_name.startswith(x) for x in excludes):
                 continue
             disks.append(disk_name)
