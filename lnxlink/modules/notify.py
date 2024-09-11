@@ -16,9 +16,7 @@ class Addon:
         self.name = "Notify"
         self.lnxlink = lnxlink
         self._requirements()
-        self.notify = self.lib["notify"].DBusNotification(
-            appname="LNXlink", callback=self.callback_action
-        )
+        self.notify = None
 
     def _requirements(self):
         self.lib = {
@@ -63,7 +61,11 @@ class Addon:
             "critical": 2,
         }
 
-        # notify2
+        # Send notification
+        if self.notify is None:
+            self.notify = self.lib["notify"].DBusNotification(
+                appname="LNXlink", callback=self.callback_action
+            )
         notification_id = self.notify.send(
             title=data["title"],
             message=data["message"],
