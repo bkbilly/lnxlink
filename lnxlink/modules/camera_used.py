@@ -32,7 +32,10 @@ class Addon:
 
     def _watch_events(self):
         for event in self.inotify.event_gen(yield_nones=False):
-            cam_used = event[1][0] == "IN_OPEN"
+            cam_used = False
+            _, _, returncode = syscommand("fuser /dev/video*", ignore_errors=True)
+            if returncode == 0:
+                cam_used = True
             self.lnxlink.run_module(self.name, cam_used)
 
     def exposed_controls(self):
