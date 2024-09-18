@@ -31,7 +31,7 @@ class Addon:
             self.lnxlink.run_module(self.name, cam_used)
 
     def _watch_events(self):
-        for event in self.inotify.event_gen(yield_nones=False):
+        for _ in self.inotify.event_gen(yield_nones=False):
             cam_used = False
             _, _, returncode = syscommand("fuser /dev/video*", ignore_errors=True)
             if returncode == 0:

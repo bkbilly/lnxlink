@@ -18,6 +18,8 @@ class Addon:
         self.lnxlink = lnxlink
         self.players = []
         self._requirements()
+        self._current_volume = 1
+        self.prev_player = {}
         self.media_player = self.lib["dbus-mediaplayer"].DBusMediaPlayers(
             self.media_callback
         )
@@ -38,6 +40,9 @@ class Addon:
                 "icon": "mdi:music",
                 "value_template": "{{ value_json.status }}",
                 "attributes_template": "{{ value_json | tojson }}",
+            },
+            "Media Player": {
+                "type": "media_player",
             },
             "PlayPause": {
                 "type": "button",
@@ -72,54 +77,50 @@ class Addon:
 
     def start_control(self, topic, data):
         """Control system"""
-        if topic[1] == "volume_set":
+        if topic[2] == "set_volume":
             mixer = self.lib["alsaaudio"].Mixer()
             if data <= 1:
                 data *= 100
             data = min(data, 100)
             mixer.setvolume(int(data))
-        elif topic[1] == "playpause":
-            if len(self.players) > 0:
-                self.media_player.control_media("PlayPause")
-        elif topic[1] == "previous":
-            if len(self.players) > 0:
-                self.media_player.control_media("Previous")
-        elif topic[1] == "next":
-            if len(self.players) > 0:
-                self.media_player.control_media("Next")
-        elif topic[1] == "play_media":
+        elif len(self.players) > 0 and topic[2] == "playpause":
+            self.media_player.control_media("PlayPause")
+        elif len(self.players) > 0 and topic[2] == "play":
+            self.media_player.control_media("Play")
+        elif len(self.players) > 0 and topic[2] == "pause":
+            self.media_player.control_media("Pause")
+        elif len(self.players) > 0 and topic[2] == "previous":
+            self.media_player.control_media("Previous")
+        elif len(self.players) > 0 and topic[2] == "next":
+            self.media_player.control_media("Next")
+        elif topic[2] == "play_media":
             url = data["media_id"]
             syscommand(f"cvlc --play-and-exit {url}", background=True)
 
     def get_info(self) -> dict:
         """Gather information from the system"""
-        info = {
-            "title": "",
-            "artist": "",
-            "album": "",
-            "status": "idle",
-            "volume": self._get_volume(),
-            "playing": False,
-            "position": None,
-            "duration": None,
-        }
+        self._current_volume = self._get_volume()
         if len(self.players) > 0:
             player = self.players[0]
-            info["playing"] = True
-            info["title"] = self._filter_title(player["title"])
-            info["album"] = player["album"]
-            info["artist"] = player["artist"]
-            info["status"] = player["status"].lower()
-            info["position"] = player["position"]
-            info["duration"] = player["duration"]
-
-        return info
+            self.lnxlink.run_module(f"{self.name}/state", player["status"].lower())
+            self.lnxlink.run_module(f"{self.name}/volume", self._current_volume)
+            if self.prev_player != player:
+                self.prev_player = player
+                self.lnxlink.run_module(f"{self.name}/title", player["title"])
+                self.lnxlink.run_module(f"{self.name}/artist", player["artist"])
+                self.lnxlink.run_module(f"{self.name}/album", player["album"])
+                self.lnxlink.run_module(f"{self.name}/duration", player["duration"])
+                self.lnxlink.run_module(f"{self.name}/position", player["position"])
+                self.lnxlink.run_module(f"{self.name}/albumart", self.get_thumbnail())
+        else:
+            self.lnxlink.run_module(f"{self.name}/state", "off")
+            self.lnxlink.run_module(f"{self.name}/volume", self._current_volume)
+            self.lnxlink.run_module(f"{self.name}/albumart", "")
 
     def media_callback(self, players):
         """Callback function to update media information"""
         self.players = players
-        self.lnxlink.run_module(f"{self.name}/Thumbnail", self.get_thumbnail)
-        self.lnxlink.run_module(self.name, self.get_info)
+        self.get_info()
 
     def get_thumbnail(self):
         """Returns the thumbnail if it exists as a base64 string"""
@@ -146,7 +147,7 @@ class Addon:
                 volume = 0
         except Exception as err:
             logger.error("Can't get volume: %s, %s", err, traceback.format_exc())
-        return volume
+        return round(volume / 100, 2)
 
     def _filter_title(self, title):
         """Returns Title if it contains specific words"""
