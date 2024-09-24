@@ -26,4 +26,5 @@ pulsectl>=23.5.2
 pyalsaaudio>=0.9.2
 pyamdgpuinfo>=2.1.4
 python-xlib>=0.33
+vdf>=3.4
 xlib-hotkeys>=2024.3.0
