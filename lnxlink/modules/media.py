@@ -100,8 +100,25 @@ class Addon:
     def get_info(self) -> dict:
         """Gather information from the system"""
         self._current_volume = self._get_volume()
+        info = {
+            "title": "",
+            "artist": "",
+            "album": "",
+            "status": "idle",
+            "volume": self._current_volume,
+            "playing": False,
+            "position": None,
+            "duration": None,
+        }
         if len(self.players) > 0:
             player = self.players[0]
+            info["playing"] = True
+            info["title"] = player["title"]
+            info["album"] = player["album"]
+            info["artist"] = player["artist"]
+            info["status"] = player["status"].lower()
+            info["position"] = player["position"]
+            info["duration"] = player["duration"]
             self.lnxlink.run_module(f"{self.name}/state", player["status"].lower())
             self.lnxlink.run_module(f"{self.name}/volume", self._current_volume)
             if self.prev_player != player:
@@ -116,6 +133,7 @@ class Addon:
             self.lnxlink.run_module(f"{self.name}/state", "off")
             self.lnxlink.run_module(f"{self.name}/volume", self._current_volume)
             self.lnxlink.run_module(f"{self.name}/albumart", "")
+        return info
 
     def media_callback(self, players):
         """Callback function to update media information"""
