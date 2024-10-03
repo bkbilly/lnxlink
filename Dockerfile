@@ -9,5 +9,5 @@ RUN apt update &&\
     pip --no-cache-dir install PyGObject dasbus numpy==1.26.4 dbus-networkdevices docker &&\
     pip --no-cache-dir install -e /opt/lnxlink
 
-ENTRYPOINT ["/usr/local/bin/lnxlink", "-ie", "active_window,audio_select,bluetooth,boot_select,brightness,dbus_idle,display_env,fullscreen,gpu,idle,keep_alive,keyboard_hotkeys,media,mouse,notify,power_profile,screen_onoff,screenshot,send_keys,speech_recognition,suspend,xdg_open"]
+ENTRYPOINT ["/usr/local/bin/lnxlink", "-ie", "active_window,audio_select,bluetooth,boot_select,brightness,dbus_idle,display_env,fullscreen,gpu,idle,keep_alive,keyboard_hotkeys,media,mouse,notify,power_profile,screen_onoff,screenshot,send_keys,speech_recognition,steam,suspend,xdg_open"]
 CMD ["-c", "/opt/lnxlink/config/config.yaml"]

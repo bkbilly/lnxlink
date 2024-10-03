@@ -477,6 +477,11 @@ class LNXlink:
             payload=json.dumps(discovery),
             retain=True,
         )
+        if options["type"] == "media_player":
+            logger.info(
+                "MQTT Media Player configuration name: lnxlink/%s",
+                discovery["unique_id"],
+            )
 
     def setup_discovery(self, filter_name=None):
         """First time setup of discovery for Home Assistant"""
