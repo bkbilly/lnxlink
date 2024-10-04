@@ -454,7 +454,7 @@ class LNXlink:
                 "command_next_payload": "Next",
                 "command_previous_topic": f"{command_topic}previous",
                 "command_previous_payload": "Previous",
-                "command_playmedia_topic": f"{command_topic}playmedia",
+                "command_playmedia_topic": f"{command_topic}play_media",
             },
         }
         discovery = discovery_template.copy()
