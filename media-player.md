@@ -4,65 +4,25 @@ description: Control your media
 
 # 🎬 Media Player
 
-MQTT integration for a media player is not supported by home assistant, so a custom addon must be installed using HACS. I've modified an addon called [mqtt-mediaplayer](https://github.com/bkbilly/hass-mqtt-mediaplayer) for creating a new media\_player entity.
+MQTT integration for a media player is not supported by home assistant, so a custom addon must be installed. Using HACS you can install the [MQTT Media Player](https://github.com/bkbilly/mqtt\_media\_player) integration for creating a new `media_player` entity.
 
-[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](.gitbook/assets/hacs\_repository.svg)](https://my.home-assistant.io/redirect/hacs\_repository/?owner=bkbilly\&repository=hass-mqtt-mediaplayer\&category=integration)
+[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](.gitbook/assets/hacs\_repository.svg)](https://my.home-assistant.io/redirect/hacs\_repository/?owner=bkbilly\&repository=mqtt\_media\_player\&category=integration)
 
-This addon gets the information from the attributes of media\_info sensor. It supports playing remote or local media using `cvlc` which should be installed on your system.
+Once installed you need to restart your Home Assistant instance and add the `MQTT Media Player` integration from `devices & services` page. You can find the appropriate input name under the logs of LNXlink.
+
+<div align="left">
+
+<figure><img src=".gitbook/assets/Screenshot from 2024-10-05 17-11-02.png" alt="" width="287"><figcaption></figcaption></figure>
+
+</div>
+
+It supports playing remote or local media using `cvlc` which should be installed on your system.
 
 <div align="left">
 
 <figure><img src=".gitbook/assets/image.png" alt="" width="449"><figcaption></figcaption></figure>
 
 </div>
-
-Add this yaml block on your configuration.yaml file and restart Home Assistant.
-
-```yaml
-media_player:
-  - platform: mqtt-mediaplayer
-    name: "Desktop Linux"
-    status_keyword: "true"
-    topic:
-      song_title: "{{ state_attr('sensor.desktop_linux_media_info', 'title') }}"
-      song_artist: "{{ state_attr('sensor.desktop_linux_media_info', 'artist') }}"
-      song_album: "{{ state_attr('sensor.desktop_linux_media_info', 'album') }}"
-      song_volume: "{{ state_attr('sensor.desktop_linux_media_info', 'volume') }}"
-      player_status: "{{ state_attr('sensor.desktop_linux_media_info', 'status') }}"
-      track_duration: "{{ state_attr('sensor.desktop_linux_media_info', 'duration') }}"
-      track_position: "{{ state_attr('sensor.desktop_linux_media_info', 'position') }}"
-      album_art: "lnxlink/desktop-linux/monitor_controls/media_info/thumbnail"
-      volume:
-        service: mqtt.publish
-        data:
-          topic: "lnxlink/desktop-linux/commands/media/volume_set"
-          payload: "{{volume}}"
-    next:
-      service: mqtt.publish
-      data:
-        topic: "lnxlink/desktop-linux/commands/media/next"
-        payload: "ON"
-    previous:
-      service: mqtt.publish
-      data:
-        topic: "lnxlink/desktop-linux/commands/media/previous"
-        payload: "ON"
-    play_media:
-      service: mqtt.publish
-      data:
-        topic: "lnxlink/desktop-linux/commands/media/play_media"
-        payload: "{{media}}"
-    play:
-      service: mqtt.publish
-      data:
-        topic: "lnxlink/desktop-linux/commands/media/playpause"
-        payload: "ON"
-    pause:
-      service: mqtt.publish
-      data:
-        topic: "lnxlink/desktop-linux/commands/media/playpause"
-        payload: "ON"
-```
 
 ### Text To Speech
 

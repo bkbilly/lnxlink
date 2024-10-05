@@ -46,6 +46,7 @@ The <mark style="color:orange;">Orange</mark> indicate that they need a graphica
 | <mark style="color:orange;">Audio Select (microphone, speaker)</mark>                                                             | <mark style="color:orange;">Display Variable</mark>                                   |
 | <mark style="color:orange;">Brightness</mark>                                                                                     | <mark style="color:orange;">Idle time</mark>                                          |
 | <mark style="color:orange;">Keep Alive</mark>                                                                                     |                                                                                       |
+| <mark style="color:orange;">Steam</mark>                                                                                          |                                                                                       |
 
 ## Supported OS
 
