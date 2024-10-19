@@ -1,9 +1,11 @@
 """List all steam games and start them when selected"""
 import os
+import re
 import glob
 import struct
 import binascii
 import logging
+import psutil
 from lnxlink.modules.scripts.helpers import import_install_package, syscommand
 
 logger = logging.getLogger("lnxlink")
@@ -30,6 +32,7 @@ class Addon:
         """Exposes to home assistant"""
         mygames = list(self.games.values())
         mygames.sort()
+        mygames.insert(0, "Stopped")
         discovery_info = {
             "Game Select": {
                 "type": "select",
@@ -45,7 +48,7 @@ class Addon:
         if self.games != games:
             self.lnxlink.setup_discovery()
         self.games = games
-        return self.games
+        return self._get_current_game()
 
     def start_control(self, topic, data):
         """Control system"""
@@ -56,6 +59,33 @@ class Addon:
             syscommand(f"steam steam://rungameid/{game_id}")
         except ValueError:
             logger.error("Can't find selected game: %s", data)
+
+    def _get_current_game(self):
+        """Checks running processes"""
+        app_ids = set()
+        for p in psutil.process_iter():
+            try:
+                process = " ".join(p.cmdline())
+            except psutil.ZombieProcess:
+                process = ""
+            if "AppId=" in process:
+                match = re.findall(r"AppId=(\d+) ", process)
+                if match:
+                    app_ids.add(match[0])
+        if len(app_ids) > 1:
+            logger.info(
+                "More than one game instance has been found: %s", ",".join(app_ids)
+            )
+        for app_id in app_ids:
+            game = self.games.get(app_id)
+            if game is None:
+                long_app_id = int(app_id) << 32 | 0x02000000
+                game = self.games.get(long_app_id)
+            if game is not None:
+                return game
+            logger.error("Can't find game app id: %s", app_id)
+
+        return "Stopped"
 
     def _find_libary_config(self, level=4):
         """Finds the library folders configuration from home directory
@@ -71,6 +101,7 @@ class Addon:
                 return os.path.join(root, name)
         return None
 
+    # pylint: disable=too-many-locals
     def _get_games(self):
         """Gets a dictionary of the game_ids and their names"""
         with open(self.steam_config, encoding="UTF-8") as file:
@@ -104,7 +135,7 @@ class Addon:
 
                 # Convert to long_appid
                 reversed_hex = bytes.fromhex(hex_appid)[::-1].hex()
-                app_id = int(reversed_hex, 16) << 32 | 0x02000000
-                games[app_id] = shortcut["AppName"]
+                long_app_id = int(reversed_hex, 16) << 32 | 0x02000000
+                games[long_app_id] = shortcut["AppName"]
 
         return games
