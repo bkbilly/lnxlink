@@ -34,7 +34,7 @@ class Addon:
         mygames.sort()
         mygames.insert(0, "Stopped")
         discovery_info = {
-            "Game Select": {
+            "Steam Game Select": {
                 "type": "select",
                 "icon": "mdi:steam",
                 "options": mygames,
