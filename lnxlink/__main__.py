@@ -51,6 +51,7 @@ class LNXlink:
         self.inference_times = {}
         self.addons = {}
         self.prev_publish = {}
+        self.saved_publish = {}
         self.update_change_interval = 900
         self.pref_topic = "lnxlink"
         if hasattr(mqtt, "CallbackAPIVersion"):
@@ -117,6 +118,7 @@ class LNXlink:
             return
 
         self.prev_publish[topic] = pub_data
+        self.saved_publish[subtopic] = pub_data
         self.client.publish(
             topic, payload=pub_data, retain=self.config["mqtt"]["lwt"]["retain"]
         )
