@@ -68,6 +68,8 @@ class Addon:
                 process = " ".join(p.cmdline())
             except psutil.ZombieProcess:
                 process = ""
+            except psutil.NoSuchProcess:
+                process = ""
             if "AppId=" in process:
                 match = re.findall(r"AppId=(\d+) ", process)
                 if match:

@@ -33,8 +33,8 @@ fi
 
 echo -e "\e[35mInstalling system dependencies...\e[0m"
 if [ "$system" == "redhat/fedora" ]; then
-    # python3-devel and  needed on fedora to install evdev (a dependency of pynput)
-    sudo $installcommand kernel-headers-$(uname -r) python3-devel gcc
+    sudo $installcommand kernel-headers
+    sudo $installcommand python3-devel gcc
 fi
 if [ "$system" != 'debian/ubuntu' ]; then
     echo -e "\n\n\e[31mSystem dependencies might not be correct...\e[0m"
@@ -42,9 +42,23 @@ fi
 
 if [[ $(pidof dbus-daemon) ]]; then
     echo -e "\e[35mFound dbus...\e[0m"
-    sudo $installcommand patchelf meson libdbus-glib-1-dev libglib2.0-dev libcairo2-dev libgirepository1.0-dev
+    sudo $installcommand patchelf meson 
+    if [ "$system" == "redhat/fedora" ]; then
+        sudo $installcommand dbus-glib-devel glib2-devel cairo-devel gobject-introspection-devel python3-gobject-devel cairo-gobject-devel
+    else
+        sudo $installcommand libdbus-glib-1-dev libglib2.0-dev libcairo2-dev libgirepository1.0-dev
+    fi
 fi
-sudo $installcommand libasound2-dev upower xdotool xdg-utils python3-pyaudio portaudio19-dev
+
+
+echo -e "\e[35mInstalling extra packages...\e[0m"
+sudo $installcommand upower xdotool xdg-utils python3-pyaudio
+if [ "$system" == "redhat/fedora" ]; then
+    sudo $installcommand alsa-lib-devel portaudio-devel
+else
+    sudo $installcommand libasound2-dev portaudio19-dev
+fi
+
 
 
 # Install LNXlink
@@ -57,6 +71,7 @@ else
     echo -e "\e[31mUpgrading LNXlink...\e[0m"
     pipx upgrade lnxlink
 fi
+
 
 # Done
 echo -e "\e[35m\n\n\nAll done!\e[0m"
