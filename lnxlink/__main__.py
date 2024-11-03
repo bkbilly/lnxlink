@@ -83,7 +83,9 @@ class LNXlink:
                 logger.debug(
                     traceback.format_exc(),
                 )
-        logger.info("Loaded addons: %s", ", ".join(self.addons.keys()))
+        loaded = list(self.addons.keys())
+        loaded.sort()
+        logger.info("Loaded addons: %s", ", ".join(loaded))
 
         # Setup MQTT
         return self.setup_mqtt()
