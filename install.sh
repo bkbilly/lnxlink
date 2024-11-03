@@ -42,7 +42,7 @@ fi
 
 if [[ $(pidof dbus-daemon) ]]; then
     echo -e "\e[35mFound dbus...\e[0m"
-    sudo $installcommand patchelf meson 
+    sudo $installcommand patchelf meson
     if [ "$system" == "redhat/fedora" ]; then
         sudo $installcommand dbus-glib-devel glib2-devel cairo-devel gobject-introspection-devel python3-gobject-devel cairo-gobject-devel
     else

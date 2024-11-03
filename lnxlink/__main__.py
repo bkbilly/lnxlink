@@ -118,7 +118,7 @@ class LNXlink:
             return
 
         self.prev_publish[topic] = pub_data
-        self.saved_publish[subtopic] = pub_data
+        self.saved_publish[subtopic.replace("/", "_")] = pub_data
         self.client.publish(
             topic, payload=pub_data, retain=self.config["mqtt"]["lwt"]["retain"]
         )
