@@ -103,6 +103,6 @@ settings:
     receiver: null
     transmitter: null
     buttons: []
-  restfull:
+  restful:
     port: 5000
 """

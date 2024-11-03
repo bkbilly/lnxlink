@@ -1,4 +1,4 @@
-"""Expose sensors as a Restfull API"""
+"""Expose sensors as a Restful API"""
 import json
 import logging
 import threading
@@ -14,7 +14,7 @@ class Addon:
 
     def __init__(self, lnxlink):
         """Setup addon"""
-        self.name = "Restfull"
+        self.name = "RESTful"
         self.lnxlink = lnxlink
         self._requirements()
 
@@ -91,5 +91,5 @@ class Addon:
 
     def _serve(self, app):
         waitress = import_install_package("waitress", ">=3.0.0", "waitress")
-        port = self.lnxlink.config["settings"].get("restfull", {}).get("port", 5000)
+        port = self.lnxlink.config["settings"].get("restful", {}).get("port", 5000)
         waitress.serve(app, host="0.0.0.0", port=port)
