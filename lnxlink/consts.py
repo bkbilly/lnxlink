@@ -76,6 +76,7 @@ exclude:
   - network
   - notify
   - power_profile
+  - restful
   - screen_onoff
   - screenshot
   - send_keys
@@ -104,5 +105,5 @@ settings:
     transmitter: null
     buttons: []
   restful:
-    port: 5000
+    port: 8112
 """
