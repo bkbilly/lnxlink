@@ -212,7 +212,7 @@ class LNXlink:
             self.mqtt.send_lwt("ON")
 
     def on_message(self, client, userdata, msg):
-        """MQTT message is received with a module command to excecute"""
+        """MQTT message is received with a module command to execute"""
         topic = msg.topic.replace(f"{self.config['pref_topic']}/commands/", "")
         message = msg.payload
         logger.info("Message received %s: %s", topic, message)
