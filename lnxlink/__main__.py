@@ -170,6 +170,7 @@ class LNXlink:
     def setup_mqtt(self):
         """Creates the mqtt object"""
         self.client.on_connect = self.on_connect
+        self.client.on_disconnect = self.on_disconnect
         self.client.on_message = self.on_message
 
         keyfile = self.config["mqtt"]["auth"]["keyfile"]
@@ -257,6 +258,10 @@ class LNXlink:
         if self.kill is None:
             self.kill = False
             self.monitor_run_thread()
+
+    def on_disconnect(self, *args):
+        """Disconnected from MQTT broker"""
+        logger.warning("Lost connection to MQTT Broker...")
 
     def disconnect(self, *args):
         """Reports to MQTT server that the service has stopped"""
