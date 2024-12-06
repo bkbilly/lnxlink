@@ -51,7 +51,6 @@ class Addon:
                         modules.append(addonmodule)
                 return json.dumps(modules)
 
-
             def post(self, module=None):
                 """Control an Addon module"""
                 if module is None:

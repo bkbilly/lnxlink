@@ -369,7 +369,7 @@ class LNXlink:
             subcontrol = exp_name.lower().replace(" ", "_")
             subtopic = f"{subtopic}/{subcontrol}"
         state_topic = f"{self.pref_topic}/monitor_controls/{subtopic}"
-        command_topic = f"{self.pref_topic}/commands/{service}/{control_name_topic}/"
+        command_topic = f"{self.pref_topic}/commands/{service}/{control_name_topic}"
 
         lookup_options = {
             "value_template": {
@@ -452,18 +452,18 @@ class LNXlink:
                 "state_volume_topic": f"{state_topic}/volume",
                 "state_albumart_topic": f"{state_topic}/albumart",
                 "state_mediatype_topic": f"{state_topic}/mediatype",
-                "command_volume_topic": f"{command_topic}set_volume",
-                "command_play_topic": f"{command_topic}play",
+                "command_volume_topic": f"{command_topic}/set_volume",
+                "command_play_topic": f"{command_topic}/play",
                 "command_play_payload": "Play",
-                "command_pause_topic": f"{command_topic}pause",
+                "command_pause_topic": f"{command_topic}/pause",
                 "command_pause_payload": "Pause",
-                "command_playpause_topic": f"{command_topic}playpause",
+                "command_playpause_topic": f"{command_topic}/playpause",
                 "command_playpause_payload": "PlayPause",
-                "command_next_topic": f"{command_topic}next",
+                "command_next_topic": f"{command_topic}/next",
                 "command_next_payload": "Next",
-                "command_previous_topic": f"{command_topic}previous",
+                "command_previous_topic": f"{command_topic}/previous",
                 "command_previous_payload": "Previous",
-                "command_playmedia_topic": f"{command_topic}play_media",
+                "command_playmedia_topic": f"{command_topic}/play_media",
             },
         }
         discovery = discovery_template.copy()

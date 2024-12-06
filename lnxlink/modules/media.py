@@ -63,8 +63,9 @@ class Addon:
                 "type": "number",
                 "icon": "mdi:volume-high",
                 "min": 0,
-                "max": 100,
-                "enabled": False,
+                "max": 1,
+                "step": 0.01,
+                "enabled": True,
                 "value_template": "{{ value_json.volume }}",
             },
             "Thumbnail": {
@@ -77,23 +78,23 @@ class Addon:
 
     def start_control(self, topic, data):
         """Control system"""
-        if topic[2] == "set_volume":
+        if topic[-1] in ["set_volume", "volume_set"]:
             mixer = self.lib["alsaaudio"].Mixer()
             if data <= 1:
                 data *= 100
             data = min(data, 100)
             mixer.setvolume(int(data))
-        elif len(self.players) > 0 and topic[2] == "playpause":
+        elif len(self.players) > 0 and topic[-1] == "playpause":
             self.media_player.control_media("PlayPause")
-        elif len(self.players) > 0 and topic[2] == "play":
+        elif len(self.players) > 0 and topic[-1] == "play":
             self.media_player.control_media("Play")
-        elif len(self.players) > 0 and topic[2] == "pause":
+        elif len(self.players) > 0 and topic[-1] == "pause":
             self.media_player.control_media("Pause")
-        elif len(self.players) > 0 and topic[2] == "previous":
+        elif len(self.players) > 0 and topic[-1] == "previous":
             self.media_player.control_media("Previous")
-        elif len(self.players) > 0 and topic[2] == "next":
+        elif len(self.players) > 0 and topic[-1] == "next":
             self.media_player.control_media("Next")
-        elif topic[2] == "play_media":
+        elif topic[-1] == "play_media":
             url = data["media_id"]
             syscommand(f"cvlc --play-and-exit {url}", background=True)
 
