@@ -43,6 +43,15 @@ class Addon:
                 """Init the application"""
                 self.lnxlink = lnxlink
 
+            def get(self):
+                """Information about control modules"""
+                modules = []
+                for addonmodule, addon in self.lnxlink.addons.items():
+                    if hasattr(addon, "start_control"):
+                        modules.append(addonmodule)
+                return json.dumps(modules)
+
+
             def post(self, module=None):
                 """Control an Addon module"""
                 if module is None:
@@ -91,5 +100,5 @@ class Addon:
 
     def _serve(self, app):
         waitress = import_install_package("waitress", ">=3.0.0", "waitress")
-        port = self.lnxlink.config["settings"].get("restful", {}).get("port", 5000)
+        port = self.lnxlink.config["settings"].get("restful", {}).get("port", 8112)
         waitress.serve(app, host="0.0.0.0", port=port)
