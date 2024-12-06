@@ -31,7 +31,7 @@ class Addon:
             data = json.loads(stdout)
             for output in data:
                 app_name = output.get("properties", {}).get("application.name")
-                if app_name is not None:
+                if app_name and app_name != "":
                     return {"is_used": "ON", "application": app_name}
             return {"is_used": "OFF", "application": None}
         mics = glob.glob("/proc/asound/**/*c/sub*/status", recursive=True)
