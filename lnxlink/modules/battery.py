@@ -112,6 +112,8 @@ class Addon:
                         "native_path": native_path,
                         "rechargeable": device["IsRechargeable"],
                         "status": u_power_states[device["State"]],
+                        "time_to_empty": device["TimeToEmpty"],
+                        "time_to_full": device["TimeToFull"],
                     },
                 }
         return devices
@@ -165,6 +167,8 @@ class Addon:
                     ),
                     "Vendor": self.get_property(path, device_iface, "Vendor"),
                     "State": self.get_property(path, device_iface, "State"),
+                    "TimeToEmpty": self.get_property(path, device_iface, "TimeToEmpty"),
+                    "TimeToFull": self.get_property(path, device_iface, "TimeToFull"),
                 }
                 if props["Model"] + props["NativePath"] not in ["bb", "b", ""]:
                     if isinstance(props["Percentage"], float):
