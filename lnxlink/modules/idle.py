@@ -15,16 +15,18 @@ class Addon:
         self._requirements()
         if self.lib["dbus_idle"] is None:
             raise SystemError("Python package 'dbus_idle' can't be installed")
-        self.idleMonitor = self.lib["dbus_idle"].IdleMonitor()
+        self.idle_monitor = self.lib["dbus_idle"].IdleMonitor()
 
     def _requirements(self):
         self.lib = {
-            "dbus_idle": import_install_package("dbus-idle", ">=2024.12.0", "dbus_idle"),
+            "dbus_idle": import_install_package(
+                "dbus-idle", ">=2024.12.0", "dbus_idle"
+            ),
         }
 
     def get_info(self):
         """Gather information from the system"""
-        idle_ms = self.idleMonitor.get_dbus_idle()
+        idle_ms = self.idle_monitor.get_dbus_idle()
         if idle_ms is None:
             return None
         idle_sec = round(idle_ms / 1000, 0)
