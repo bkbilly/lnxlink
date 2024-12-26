@@ -13,6 +13,9 @@ elif [ -d /etc/yum.repos.d ]; then
 elif [ -d /etc/pacman.d ]; then
     installcommand='pacman -S --noconfirm '
     system='arch/manjaro'
+elif [ -z $(which apk) ]; then
+    installcommand='apk add'
+    system='alpine'
 else
     echo 'Warning! System type not recognized. Trying apt package manager.'
     installcommand='apt-get --yes --force-yes install'
@@ -33,18 +36,19 @@ fi
 
 echo -e "\e[35mInstalling system dependencies...\e[0m"
 if [ "$system" == "redhat/fedora" ]; then
-    sudo $installcommand kernel-headers
-    sudo $installcommand python3-devel gcc
+    sudo $installcommand gcc kernel-headers python3-devel
+elif [ "$system" == "alpine" ]; then
+    sudo $installcommand gcc linux-headers python3-dev musl-dev
 fi
-if [ "$system" != 'debian/ubuntu' ]; then
-    echo -e "\n\n\e[31mSystem dependencies might not be correct...\e[0m"
-fi
+
 
 if [[ $(pidof dbus-daemon) ]]; then
     echo -e "\e[35mFound dbus...\e[0m"
     sudo $installcommand patchelf meson
     if [ "$system" == "redhat/fedora" ]; then
         sudo $installcommand dbus-glib-devel glib2-devel cairo-devel gobject-introspection-devel python3-gobject-devel cairo-gobject-devel
+    elif [ "$system" == "alpine" ]; then
+        sudo $installcommand py3-gobject3 py3-dasbus
     else
         sudo $installcommand libdbus-glib-1-dev libglib2.0-dev libcairo2-dev libgirepository1.0-dev
     fi
@@ -60,7 +64,6 @@ else
 fi
 
 
-
 # Install LNXlink
 if [ -z $(which lnxlink) ]; then
     echo -e "\e[35mInstalling LNXlink...\e[0m"
@@ -70,6 +73,17 @@ if [ -z $(which lnxlink) ]; then
 else
     echo -e "\e[31mUpgrading LNXlink...\e[0m"
     pipx upgrade lnxlink
+fi
+
+
+# Manual Steps
+if [ "$system" == "alpine" ]; then
+    echo -e "\e[31mManual steps needed for alpine...\e[0m"
+    echo "# Edit the file: ~/.local/share/pipx/venvs/lnxlink/pyvenv.cfg"
+    echo "# Set the value from false to true, to import also system packages, that possibly were installed after venv creation:"
+    echo "include-system-site-packages = true"
+    echo "Run this command:"
+    echo "pipx inject lnxlink dbus-idle"
 fi
 
 
