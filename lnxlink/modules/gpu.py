@@ -86,19 +86,19 @@ class Addon:
         """For older GPUs, use nvidia-settings to get gpu usage"""
         if math.isnan(gpu_util):
             gpu_util = None
-            if which("nvidia-settings") is not None:
-                display = self.lnxlink.display
-                if display:
+            display = self.lnxlink.display
+            if display:
+                if which("nvidia-settings") is not None:
                     settings_out, _, _ = syscommand(
                         f"nvidia-settings -q '[gpu:{gpu_id}]/GPUUtilization' --display {display}"
                     )
                     match = re.findall(r"graphics=(\d+)", settings_out)
                     if match:
                         gpu_util = int(match[0])
-            else:
-                logger.error(
-                    "Older NVIDIA GPUs need nvidia-settings which is not installed."
-                )
+                else:
+                    logger.error(
+                        "Older NVIDIA GPUs need nvidia-settings which is not installed."
+                    )
         return gpu_util
 
     def exposed_controls(self):
