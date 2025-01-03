@@ -71,7 +71,7 @@ class Addon:
                     "unit": expose.get("unit"),
                     "local_command": expose.get("command"),
                     "subtopic": True,
-                    "update_interval": expose.get("update_interval",0),
+                    "update_interval": expose.get("update_interval", 0),
                     "last_time": 0,
                 }
             elif expose_type == "binary_sensor":
@@ -82,7 +82,7 @@ class Addon:
                     "attributes_template": "{{ value_json.attributes | tojson }}",
                     "local_command": expose.get("command"),
                     "subtopic": True,
-                    "update_interval": expose.get("update_interval",0),
+                    "update_interval": expose.get("update_interval", 0),
                     "last_time": 0,
                 }
             elif expose_type == "switch":
