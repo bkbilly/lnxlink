@@ -92,7 +92,7 @@ settings:
 
 ## Bash
 
-Using this option you can create `sensors`, `binary_sensors`, `buttons` or `switches` that run custom commands. These options are optional: unit, entity\_category.
+Using this option you can create `sensors`, `binary_sensors`, `buttons` or `switches` that run custom commands. These options are optional: unit, entity\_category, update_interval.
 
 ```yaml
 settings:
@@ -108,9 +108,11 @@ settings:
       command: cat /proc/loadavg | awk '{print $1}'
       unit: load
       entity_category: diagnostic
+      update_interval: 60
     - name: WiFi Exists
       type: binary_sensor
       command: ip a | grep wlan0
+      update_interval: 300
     - name: Microphone Mute
       type: switch
       command: amixer get Capture | grep "\[off\]"
