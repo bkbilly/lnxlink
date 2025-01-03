@@ -21,14 +21,14 @@ class Addon:
             if discovery.get("type") == "sensor":
                 cur_time = time.time()
                 if cur_time - discovery["last_time"] > discovery["update_interval"]:
-                    self.discovery_info[expose_name]["last_time"] = cur_time
+                    discovery["last_time"] = cur_time
                     stdout, _, returncode = syscommand(discovery["local_command"])
                     if returncode == 0:
                         self.lnxlink.run_module(f"{self.name}/{expose_name}", stdout)
             elif discovery.get("type") == "binary_sensor":
                 cur_time = time.time()
                 if cur_time - discovery["last_time"] > discovery["update_interval"]:
-                    self.discovery_info[expose_name]["last_time"] = cur_time
+                    discovery["last_time"] = cur_time
                     stdout, _, _ = syscommand(discovery["local_command"])
                     status = stdout.lower() not in ["false", "no", "0", ""]
                     senddata = {
