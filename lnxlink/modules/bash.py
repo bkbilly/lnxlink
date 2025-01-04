@@ -1,5 +1,6 @@
 """Run a terminal command"""
 import logging
+import time
 from lnxlink.modules.scripts.helpers import syscommand
 
 logger = logging.getLogger("lnxlink")
@@ -18,17 +19,23 @@ class Addon:
         """Gather information from the system"""
         for expose_name, discovery in self.discovery_info.items():
             if discovery.get("type") == "sensor":
-                stdout, _, returncode = syscommand(discovery["local_command"])
-                if returncode == 0:
-                    self.lnxlink.run_module(f"{self.name}/{expose_name}", stdout)
+                cur_time = time.time()
+                if cur_time - discovery["last_time"] > discovery["update_interval"]:
+                    discovery["last_time"] = cur_time
+                    stdout, _, returncode = syscommand(discovery["local_command"])
+                    if returncode == 0:
+                        self.lnxlink.run_module(f"{self.name}/{expose_name}", stdout)
             elif discovery.get("type") == "binary_sensor":
-                stdout, _, _ = syscommand(discovery["local_command"])
-                status = stdout.lower() not in ["false", "no", "0", ""]
-                senddata = {
-                    "status": "ON" if status else "OFF",
-                    "attributes": {"raw": stdout.split("\n")},
-                }
-                self.lnxlink.run_module(f"{self.name}/{expose_name}", senddata)
+                cur_time = time.time()
+                if cur_time - discovery["last_time"] > discovery["update_interval"]:
+                    discovery["last_time"] = cur_time
+                    stdout, _, _ = syscommand(discovery["local_command"])
+                    status = stdout.lower() not in ["false", "no", "0", ""]
+                    senddata = {
+                        "status": "ON" if status else "OFF",
+                        "attributes": {"raw": stdout.split("\n")},
+                    }
+                    self.lnxlink.run_module(f"{self.name}/{expose_name}", senddata)
             elif discovery.get("type") == "switch":
                 stdout, _, _ = syscommand(
                     discovery["local_command"], ignore_errors=True
@@ -64,6 +71,8 @@ class Addon:
                     "unit": expose.get("unit"),
                     "local_command": expose.get("command"),
                     "subtopic": True,
+                    "update_interval": expose.get("update_interval", 0),
+                    "last_time": 0,
                 }
             elif expose_type == "binary_sensor":
                 self.discovery_info[expose_name] = {
@@ -73,6 +82,8 @@ class Addon:
                     "attributes_template": "{{ value_json.attributes | tojson }}",
                     "local_command": expose.get("command"),
                     "subtopic": True,
+                    "update_interval": expose.get("update_interval", 0),
+                    "last_time": 0,
                 }
             elif expose_type == "switch":
                 self.discovery_info[expose_name] = {
