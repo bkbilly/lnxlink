@@ -41,6 +41,7 @@ class MonitorSuspend:
             )
 
     def _requirements(self):
+        import_install_package("PyGObject", ">=3.44.0", "gi")
         dbus = import_install_package("dasbus", ">=1.7", "dasbus.connection")
         if dbus is None:
             self.lib = {"dbus": dbus}

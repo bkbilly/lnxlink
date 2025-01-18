@@ -29,7 +29,11 @@ if [ -z $(which python3) ]; then
 fi
 if [ -z $(which pipx) ]; then
     echo -e "\e[31mPIPX not found, installing from $system package manager:\e[0m"
-    sudo $installcommand pipx
+    if [ "$system" == "arch/manjaro" ]; then
+        sudo $installcommand python-pipx
+    else
+        sudo $installcommand pipx
+    fi    
     pipx ensurepath
 fi
 
@@ -39,16 +43,20 @@ if [ "$system" == "redhat/fedora" ]; then
     sudo $installcommand gcc kernel-headers python3-devel
 elif [ "$system" == "alpine" ]; then
     sudo $installcommand gcc linux-headers python3-dev musl-dev
+elif [ "$system" == "arch/manjaro" ]; then
+    sudo $installcommand gcc linux-headers
 fi
 
 
 if [[ $(pidof dbus-daemon) ]]; then
     echo -e "\e[35mFound dbus...\e[0m"
-    sudo $installcommand patchelf meson
+    sudo $installcommand patchelf meson cmake
     if [ "$system" == "redhat/fedora" ]; then
         sudo $installcommand dbus-glib-devel glib2-devel cairo-devel gobject-introspection-devel python3-gobject-devel cairo-gobject-devel
     elif [ "$system" == "alpine" ]; then
         sudo $installcommand py3-gobject3 py3-dasbus
+    elif [ "$system" == "arch/manjaro" ]; then
+        sudo $installcommand dbus-glib glib2-devel cairo gobject-introspection libgirepository
     else
         sudo $installcommand libdbus-glib-1-dev libglib2.0-dev libcairo2-dev libgirepository1.0-dev
     fi
@@ -56,11 +64,13 @@ fi
 
 
 echo -e "\e[35mInstalling extra packages...\e[0m"
-sudo $installcommand upower xdotool xdg-utils python3-pyaudio
+sudo $installcommand upower xdotool xdg-utils
 if [ "$system" == "redhat/fedora" ]; then
-    sudo $installcommand alsa-lib-devel portaudio-devel
+    sudo $installcommand alsa-lib-devel portaudio-devel python3-pyaudio
+elif [ "$system" == "arch/manjaro" ]; then
+    sudo $installcommand python-pyaudio portaudio
 else
-    sudo $installcommand libasound2-dev portaudio19-dev
+    sudo $installcommand libasound2-dev portaudio19-dev python3-pyaudio
 fi
 
 
