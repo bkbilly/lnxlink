@@ -33,7 +33,7 @@ if [ -z $(which pipx) ]; then
         sudo $installcommand python-pipx
     else
         sudo $installcommand pipx
-    fi    
+    fi
     pipx ensurepath
 fi
 
@@ -68,7 +68,7 @@ sudo $installcommand upower xdotool xdg-utils
 if [ "$system" == "redhat/fedora" ]; then
     sudo $installcommand alsa-lib-devel portaudio-devel python3-pyaudio
 elif [ "$system" == "arch/manjaro" ]; then
-    sudo $installcommand python-pyaudio portaudio
+    sudo $installcommand python-pyaudio portaudio python-pyaudio
 else
     sudo $installcommand libasound2-dev portaudio19-dev python3-pyaudio
 fi
