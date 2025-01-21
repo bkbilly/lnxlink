@@ -13,6 +13,7 @@ elif [ -d /etc/yum.repos.d ]; then
 elif [ -d /etc/pacman.d ]; then
     installcommand='pacman -S --noconfirm '
     system='arch/manjaro'
+    sudo pacman -Sy
 elif [ -z $(which apk) ]; then
     installcommand='apk add'
     system='alpine'

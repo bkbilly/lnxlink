@@ -4,11 +4,15 @@ import hashlib
 import traceback
 import logging
 import base64
-from lnxlink.modules.scripts.helpers import import_install_package, syscommand
+import threading
+import subprocess
+from shutil import which
+from lnxlink.modules.scripts.helpers import import_install_package
 
 logger = logging.getLogger("lnxlink")
 
 
+# pylint: disable=too-many-instance-attributes
 class Addon:
     """Addon module"""
 
@@ -23,6 +27,8 @@ class Addon:
         self.media_player = self.lib["dbus-mediaplayer"].DBusMediaPlayers(
             self.media_callback
         )
+        self.playmedia_thread = None
+        self.process = None
 
     def _requirements(self):
         self.lib = {
@@ -95,8 +101,7 @@ class Addon:
         elif len(self.players) > 0 and topic[-1] == "next":
             self.media_player.control_media("Next")
         elif topic[-1] == "play_media":
-            url = data["media_id"]
-            syscommand(f"cvlc --play-and-exit {url}", background=True)
+            self.play_media(data)
 
     def get_info(self) -> dict:
         """Gather information from the system"""
@@ -155,6 +160,103 @@ class Addon:
                     "Can't create thumbnail: %s, %s", err, traceback.format_exc()
                 )
         return b" "
+
+    # pylint: disable=too-many-branches
+    def play_media(self, data):
+        """Finds an plays media using one of the supported players"""
+        if self.playmedia_thread is not None:
+            try:
+                self.playmedia_thread.join(0)
+                self.process.kill()
+            except Exception:
+                self.playmedia_thread = None
+        players = {
+            "gst-play-1.0": {
+                "supported_media": ["audio", "video", "image"],
+                "opt_static": "--wait-on-eos",
+                "opt_foreground": "",
+                "opt_background": "",
+            },
+            "ffplay": {
+                "supported_media": ["audio", "video", "image"],
+                "opt_static": "",
+                "opt_foreground": "-autoexit",
+                "opt_background": "-nodisp -autoexit",
+            },
+            "mpv": {
+                "supported_media": ["audio", "video", "image", "playlist", "other"],
+                "opt_static": "--pause",
+                "opt_foreground": "--force-window",
+                "opt_background": "",
+            },
+            "cvlc": {
+                "supported_media": ["audio"],
+                "opt_static": "--play-and-exit",
+                "opt_foreground": "--play-and-exit",
+                "opt_background": "--play-and-exit",
+            },
+            "vlc": {
+                "supported_media": ["audio", "video", "playlist", "other"],
+                "opt_static": "--play-and-exit",
+                "opt_foreground": "--play-and-exit",
+                "opt_background": "--play-and-exit",
+            },
+        }
+        audio_extentions = [".mp3", ".wav", ".ogg", ".wma", ".aac"]
+        video_extentions = [".mp4", ".avi", ".mov", ".mkv", ".mpg", ".mpeg"]
+        image_extentions = [".jpg", ".jpeg", ".png", ".gif", ".ico"]
+        for player, options in players.items():
+            if which(player) is not None:
+                url = data["media_id"]
+                media_type = "other"
+                if ".m3u" in url:
+                    media_type = "playlist"
+                elif any(ext in url for ext in audio_extentions):
+                    media_type = "audio"
+                elif any(ext in url for ext in video_extentions):
+                    media_type = "video"
+                elif any(ext in url for ext in image_extentions):
+                    media_type = "image"
+                elif "audio" in data["media_type"]:
+                    media_type = "audio"
+                elif "music" in data["media_type"]:
+                    media_type = "audio"
+                elif "video" in data["media_type"]:
+                    media_type = "video"
+                elif "image" in data["media_type"]:
+                    media_type = "video"
+
+                if media_type not in options["supported_media"]:
+                    continue
+                self.playmedia_thread = threading.Thread(
+                    target=self.run_playmedia_thread,
+                    args=(player, options, url, media_type),
+                    daemon=True,
+                )
+                self.playmedia_thread.start()
+                return
+        logger.error(
+            "You don't have any player installed on your system: %s", players.keys()
+        )
+
+    def run_playmedia_thread(self, player, options, url, media_type):
+        """Runs in the background"""
+        logger.info("Playing %s using app %s", media_type, player)
+        commands = ["exec", player]
+        if media_type == "image":
+            commands.append(options["opt_static"])
+        elif media_type == "audio":
+            commands.append(options["opt_background"])
+        elif media_type in ["video", "playlist", "other"]:
+            commands.append(options["opt_foreground"])
+        commands.append(url)
+        # pylint: disable=consider-using-with
+        self.process = subprocess.Popen(
+            " ".join(commands),
+            shell=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
 
     def _get_volume(self):
         """Get system volume"""
