@@ -24,11 +24,11 @@ class Addon:
         self._requirements()
         self._current_volume = 1
         self.prev_player = {}
+        self.playmedia_thread = None
+        self.process = None
         self.media_player = self.lib["dbus-mediaplayer"].DBusMediaPlayers(
             self.media_callback
         )
-        self.playmedia_thread = None
-        self.process = None
 
     def _requirements(self):
         self.lib = {
@@ -100,13 +100,14 @@ class Addon:
             self.media_player.control_media("Play")
         elif len(self.players) > 0 and topic[-1] == "pause":
             self.media_player.control_media("Pause")
+            self.stop_playmedia()
         elif len(self.players) > 0 and topic[-1] == "previous":
             self.media_player.control_media("Previous")
         elif len(self.players) > 0 and topic[-1] == "next":
             self.media_player.control_media("Next")
         elif topic[-1] == "play_media":
             self.play_media(data)
-        elif topic[-1] == "stop_media":
+        elif topic[-1] in ["stop_media", "pause"]:
             self.stop_playmedia()
 
     def get_info(self) -> dict:
@@ -131,7 +132,10 @@ class Addon:
             info["status"] = player["status"].lower()
             info["position"] = player["position"]
             info["duration"] = player["duration"]
-            self.lnxlink.run_module(f"{self.name}/state", player["status"].lower())
+            if self.playmedia_thread is None:
+                self.lnxlink.run_module(f"{self.name}/state", player["status"].lower())
+            else:
+                self.lnxlink.run_module(f"{self.name}/state", "playing".lower())
             self.lnxlink.run_module(f"{self.name}/volume", self._current_volume)
             if self.prev_player != player:
                 self.prev_player = player
@@ -142,7 +146,10 @@ class Addon:
                 self.lnxlink.run_module(f"{self.name}/position", player["position"])
                 self.lnxlink.run_module(f"{self.name}/albumart", self.get_thumbnail())
         else:
-            self.lnxlink.run_module(f"{self.name}/state", "off")
+            if self.playmedia_thread is None:
+                self.lnxlink.run_module(f"{self.name}/state", "off")
+            else:
+                self.lnxlink.run_module(f"{self.name}/state", "playing")
             self.lnxlink.run_module(f"{self.name}/volume", self._current_volume)
             self.lnxlink.run_module(f"{self.name}/albumart", "")
         return info
@@ -173,6 +180,7 @@ class Addon:
             try:
                 self.playmedia_thread.join(0)
                 self.process.kill()
+                self.playmedia_thread = None
             except Exception:
                 self.playmedia_thread = None
 
@@ -180,12 +188,6 @@ class Addon:
     def play_media(self, data):
         """Finds an plays media using one of the supported players"""
         self.stop_playmedia()
-        if self.playmedia_thread is not None:
-            try:
-                self.playmedia_thread.join(0)
-                self.process.kill()
-            except Exception:
-                self.playmedia_thread = None
         players = {
             "gst-play-1.0": {
                 "supported_media": ["audio", "video", "image"],
