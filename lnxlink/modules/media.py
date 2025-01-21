@@ -50,6 +50,10 @@ class Addon:
             "Media Player": {
                 "type": "media_player",
             },
+            "Stop Media": {
+                "type": "button",
+                "icon": "mdi:stop",
+            },
             "PlayPause": {
                 "type": "button",
                 "icon": "mdi:play-pause",
@@ -102,6 +106,8 @@ class Addon:
             self.media_player.control_media("Next")
         elif topic[-1] == "play_media":
             self.play_media(data)
+        elif topic[-1] == "stop_media":
+            self.stop_playmedia()
 
     def get_info(self) -> dict:
         """Gather information from the system"""
@@ -161,9 +167,19 @@ class Addon:
                 )
         return b" "
 
+    def stop_playmedia(self):
+        """Stops the background media process if it's running"""
+        if self.playmedia_thread is not None:
+            try:
+                self.playmedia_thread.join(0)
+                self.process.kill()
+            except Exception:
+                self.playmedia_thread = None
+
     # pylint: disable=too-many-branches
     def play_media(self, data):
         """Finds an plays media using one of the supported players"""
+        self.stop_playmedia()
         if self.playmedia_thread is not None:
             try:
                 self.playmedia_thread.join(0)
