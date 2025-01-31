@@ -53,6 +53,7 @@ class Addon:
             "Stop Media": {
                 "type": "button",
                 "icon": "mdi:stop",
+                "enabled": False,
             },
             "PlayPause": {
                 "type": "button",

@@ -56,7 +56,7 @@ class Addon:
                     device["Model"],
                     device["Serial"].replace(":", ""),
                 ]
-            ).strip()
+            ).strip().replace("'", "_")
             if name == "":
                 name = native_path
             if name != "":
