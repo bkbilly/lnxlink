@@ -243,7 +243,7 @@ class Addon:
                 elif "video" in data["media_type"]:
                     media_type = "video"
                 elif "image" in data["media_type"]:
-                    media_type = "video"
+                    media_type = "image"
 
                 if media_type not in options["supported_media"]:
                     continue

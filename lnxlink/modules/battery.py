@@ -50,13 +50,17 @@ class Addon:
         devices = {}
         for device in self.get_batteries():
             native_path = device["NativePath"].split("/")[-1]
-            name = " ".join(
-                [
-                    device["Vendor"],
-                    device["Model"],
-                    device["Serial"].replace(":", ""),
-                ]
-            ).strip().replace("'", "_")
+            name = (
+                " ".join(
+                    [
+                        device["Vendor"],
+                        device["Model"],
+                        device["Serial"].replace(":", ""),
+                    ]
+                )
+                .strip()
+                .replace("'", "_")
+            )
             if name == "":
                 name = native_path
             if name != "":
