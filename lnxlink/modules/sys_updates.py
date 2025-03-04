@@ -19,7 +19,7 @@ class Addon:
         self.package_manager = None
         if which("apt") is not None:
             self.package_manager = {
-                "command": "apt list --upgradable | grep -v 'Listing...' | awk -F '/' '{print $1}'",
+                "command": "apt list --upgradable | grep -v '.*...' | awk -F '/' '{print $1}'",
                 "largerthan": 0,
             }
         elif which("yum") is not None:
