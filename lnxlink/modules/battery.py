@@ -14,8 +14,19 @@ class Addon:
         self.devices = self._get_devices()
 
     def _requirements(self):
-        dasbus = import_install_package("dasbus", ">=1.7", "dasbus.connection")
-        self.bus = dasbus.connection.SystemMessageBus()
+        self.jeepney = import_install_package(
+            "jeepney",
+            ">=0.9.0",
+            (
+                "jeepney",
+                [
+                    "DBusAddress",
+                    "new_method_call",
+                    "io.blocking.open_dbus_connection",
+                ],
+            ),
+        )
+        self.conn = self.jeepney.io.blocking.open_dbus_connection(bus="SYSTEM")
 
     def exposed_controls(self):
         """Exposes to home assistant"""
@@ -77,46 +88,59 @@ class Addon:
         return devices
 
     def dbus_paths(self, service, object_path, paths):
-        """Recursive method to read the list of paths from the service"""
-        obj = self.bus.get_proxy(
-            service, object_path, "org.freedesktop.DBus.Introspectable"
+        """Recursively get all child object paths via introspection"""
+        introspect_iface = "org.freedesktop.DBus.Introspectable"
+        addr = self.jeepney.DBusAddress(
+            object_path, bus_name=service, interface=introspect_iface
         )
-        xml_string = obj.Introspect()
+        msg = self.jeepney.new_method_call(addr, "Introspect")
+        reply = self.conn.send_and_get_reply(msg)
+        xml_string = reply.body[0]
+
         for child in ElementTree.fromstring(xml_string):
             if child.tag == "node":
-                if object_path == "/":
-                    object_path = ""
-                new_path = "/".join((object_path, child.attrib["name"]))
+                name = child.attrib["name"]
+                new_path = object_path.rstrip("/") + "/" + name
                 paths.append(new_path)
                 self.dbus_paths(service, new_path, paths)
         return paths
 
+    def get_property(self, object_path, interface, prop):
+        """Gets the device property"""
+        addr = self.jeepney.DBusAddress(
+            object_path,
+            bus_name="org.freedesktop.UPower",
+            interface="org.freedesktop.DBus.Properties",
+        )
+        msg = self.jeepney.new_method_call(addr, "Get", "ss", (interface, prop))
+        reply = self.conn.send_and_get_reply(msg)
+        return reply.body[0][1]
+
     def get_batteries(self):
         """Gets a list of all devices and their status"""
+        device_iface = "org.freedesktop.UPower.Device"
         batteries = []
-        for dbus_path in self.dbus_paths(
-            "org.freedesktop.UPower", "/org/freedesktop/UPower", []
-        ):
-            proxy = self.bus.get_proxy(
-                service_name="org.freedesktop.UPower",
-                object_path=dbus_path,
-                interface_name="org.freedesktop.UPower.Device",
-            )
-            # pylint: disable=protected-access
-            if (
-                "org.freedesktop.UPower.Device"
-                in proxy._handler.specification.interfaces
-            ):
-                if proxy.Model + proxy.NativePath != "":
-                    batteries.append(
-                        {
-                            "Model": proxy.Model,
-                            "NativePath": proxy.NativePath,
-                            "Percentage": proxy.Percentage,
-                            "Serial": proxy.Serial,
-                            "IconName": proxy.IconName,
-                            "IsRechargeable": proxy.IsRechargeable,
-                            "Vendor": proxy.Vendor,
-                        }
-                    )
+        paths = self.dbus_paths("org.freedesktop.UPower", "/org/freedesktop/UPower", [])
+
+        for path in paths:
+            try:
+                # Check if it's a UPower.Device
+                props = {
+                    "Model": self.get_property(path, device_iface, "Model"),
+                    "NativePath": self.get_property(path, device_iface, "NativePath"),
+                    "Percentage": self.get_property(path, device_iface, "Percentage"),
+                    "Serial": self.get_property(path, device_iface, "Serial"),
+                    "IconName": self.get_property(path, device_iface, "IconName"),
+                    "IsRechargeable": self.get_property(
+                        path, device_iface, "IsRechargeable"
+                    ),
+                    "Vendor": self.get_property(path, device_iface, "Vendor"),
+                }
+                if props["Model"] + props["NativePath"] not in ["bb", "b", ""]:
+                    if isinstance(props["Percentage"], float):
+                        batteries.append(props)
+            except Exception:
+                # Not a UPower.Device or missing properties
+                continue
+
         return batteries

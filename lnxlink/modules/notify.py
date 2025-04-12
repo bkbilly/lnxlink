@@ -21,7 +21,7 @@ class Addon:
     def _requirements(self):
         self.lib = {
             "notify": import_install_package(
-                "dbus-notification", ">=2024.7.2", "dbus_notification"
+                "dbus-notification", ">=2025.3.0", "dbus_notification"
             ),
         }
 

@@ -14,24 +14,44 @@ class MonitorSuspend:
     """Monitor DBUS for Suspend and Shutdown events"""
 
     def __init__(self, callback):
+        self.callback = callback
         self.use = False
-        self._requirements()
-        if self.lib["dbus"] is None:
-            logger.error("Can't use DBus for system monitor")
-            return
+        self.jeepney = import_install_package(
+            "jeepney",
+            ">=0.9.0",
+            (
+                "jeepney",
+                [
+                    "DBusAddress",
+                    "new_method_call",
+                    "io.blocking.open_dbus_connection",
+                ],
+            ),
+        )
         try:
-            bus = self.lib["dbus"].connection.SystemMessageBus()
-
-            proxy = bus.get_proxy(
-                service_name="org.freedesktop.login1",
-                object_path="/org/freedesktop/login1",
-                interface_name="org.freedesktop.login1.Manager",
+            self.connection = self.jeepney.io.blocking.open_dbus_connection(
+                bus="SYSTEM"
             )
-            proxy.PrepareForSleep.connect(callback)
-            proxy.PrepareForShutdown.connect(callback)
+            sleep_match = self.jeepney.MatchRule(
+                type="signal",
+                interface="org.freedesktop.login1.Manager",
+                member="PrepareForSleep",
+                path="/org/freedesktop/login1",
+            )
+            self.connection.send_and_get_reply(
+                self.jeepney.new_method_call(
+                    self.jeepney.DBusAddress(
+                        object_path="/org/freedesktop/DBus",
+                        bus_name="org.freedesktop.DBus",
+                        interface="org.freedesktop.DBus",
+                    ),
+                    "AddMatch",
+                    "s",
+                    (sleep_match.serialise(),),
+                )
+            )
 
-            self.loop = self.lib["dbus-loop"].loop.EventLoop()
-            self.timer1 = threading.Thread(target=self.loop.run, daemon=True)
+            self.timer1 = threading.Thread(target=self.watch_loop, daemon=True)
             self.use = True
         except Exception as err:
             logger.error(
@@ -40,27 +60,40 @@ class MonitorSuspend:
                 traceback.format_exc(),
             )
 
-    def _requirements(self):
-        import_install_package("PyGObject", ">=3.44.0", "gi")
-        dbus = import_install_package("dasbus", ">=1.7", "dasbus.connection")
-        if dbus is None:
-            self.lib = {"dbus": dbus}
-            return
-        self.lib = {
-            "dbus": dbus,
-            "dbus-loop": import_install_package("dasbus", ">=1.7", "dasbus.loop"),
-        }
+    def watch_loop(self):
+        """Run the dbus check for new sleep messages"""
+        while True:
+            try:
+                message = self.connection.receive()
+                self.callback(message.body[0])
+            except Exception as err:
+                logger.error(
+                    "DBus Error: %s, %s",
+                    err,
+                    traceback.format_exc(),
+                )
 
     def start(self):
         """Start the timer of the thread"""
-        if self.use:
+        try:
             self.timer1.start()
+        except Exception as err:
+            logger.error(
+                "Can't start systemMonitor: %s, %s",
+                err,
+                traceback.format_exc(),
+            )
 
     def stop(self):
         """Stop the timer of the thread"""
-        if self.use:
-            self.loop.quit()
-            self.timer1.join()
+        try:
+            self.connection.close()
+        except Exception as err:
+            logger.error(
+                "Can't stop systemMonitor: %s, %s",
+                err,
+                traceback.format_exc(),
+            )
 
 
 class GracefulKiller:

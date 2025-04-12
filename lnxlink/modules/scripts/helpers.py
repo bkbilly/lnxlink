@@ -10,6 +10,7 @@ logger = logging.getLogger("lnxlink")
 # pylint: disable=consider-using-with
 def syscommand(command, ignore_errors=False, timeout=3, background=False):
     """Global subprocess command"""
+    logger.debug("Executing command: %s", command)
     if isinstance(command, list):
         command = " ".join(command)
     if background:
@@ -62,12 +63,16 @@ def import_install_package(package, req_version="", syspackage=None):
         _, _, returncode = syscommand(args, ignore_errors=True, timeout=None)
         if returncode != 0:
             try:
+                if isinstance(syspackage, tuple):
+                    return __import__(syspackage[0], fromlist=syspackage[1])
                 return __import__(syspackage)
             except ModuleNotFoundError:
                 logger.error("Can't install package %s", package)
                 return None
 
     try:
+        if isinstance(syspackage, tuple):
+            return __import__(syspackage[0], fromlist=syspackage[1])
         return __import__(syspackage)
     except Exception as err:
         logger.error("Can't import package %s: %s", package, err)

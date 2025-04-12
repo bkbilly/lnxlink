@@ -14,7 +14,18 @@ class Addon:
         self.name = "Shutdown"
         self.lnxlink = lnxlink
         if which("systemctl") is None and which("shutdown") is None:
-            self.dbus = import_install_package("dasbus", ">=1.7", "dasbus.connection")
+            self.jeepney = import_install_package(
+                "jeepney",
+                ">=0.9.0",
+                (
+                    "jeepney",
+                    [
+                        "DBusAddress",
+                        "new_method_call",
+                        "io.blocking.open_dbus_connection",
+                    ],
+                ),
+            )
 
     def start_control(self, topic, data):
         """Control system"""
@@ -26,12 +37,19 @@ class Addon:
             _, _, returncode = syscommand("shutdown now")
         if returncode != 0:
             try:
-                bus = self.dbus.connection.SystemMessageBus()
-                proxy = bus.get_proxy(
-                    service_name="org.freedesktop.login1",
-                    object_path="/org/freedesktop/login1",
+                conn = self.jeepney.io.blocking.open_dbus_connection(bus="SYSTEM")
+                conn.send(
+                    self.jeepney.new_method_call(
+                        self.jeepney.DBusAddress(
+                            object_path="/org/freedesktop/login1",
+                            bus_name="org.freedesktop.login1",
+                            interface="org.freedesktop.login1.Manager",
+                        ),
+                        method="PowerOff",
+                        signature="b",
+                        body=(True,),
+                    )
                 )
-                proxy.PowerOff(True)
             except Exception:
                 returncode = -1
         if returncode != 0:
