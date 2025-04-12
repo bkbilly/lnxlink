@@ -36,7 +36,7 @@ class Addon:
                         discovery["local_command"],
                         timeout=discovery.get("sensor_timeout", 3),
                     )
-                    status = stdout.lower() not in ["false", "no", "0", ""]
+                    status = stdout.lower() not in ["false", "no", "0", "off", ""]
                     senddata = {
                         "status": "ON" if status else "OFF",
                         "attributes": {"raw": stdout.split("\n")},
@@ -48,7 +48,7 @@ class Addon:
                     ignore_errors=True,
                     timeout=discovery.get("sensor_timeout", 3),
                 )
-                status = stdout.lower() not in ["false", "no", "0", ""]
+                status = stdout.lower() not in ["false", "no", "0", "off", ""]
                 self.lnxlink.run_module(f"{self.name}/{expose_name}", status)
 
     def exposed_controls(self):
