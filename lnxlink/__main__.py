@@ -239,6 +239,24 @@ class LNXlink:
 
         if conf["modules"] is not None:
             conf["modules"] = [x.lower().replace("-", "_") for x in conf["modules"]]
+
+        if os.environ.get("LNXLINK_MQTT_PREFIX") not in [None, ""]:
+            conf["mqtt"]["prefix"] = os.environ.get("LNXLINK_MQTT_PREFIX")
+        if os.environ.get("LNXLINK_MQTT_CLIENTID") not in [None, ""]:
+            conf["mqtt"]["clientId"] = os.environ.get("LNXLINK_MQTT_CLIENTID")
+        if os.environ.get("LNXLINK_MQTT_SERVER") not in [None, ""]:
+            conf["mqtt"]["server"] = os.environ.get("LNXLINK_MQTT_SERVER")
+        if os.environ.get("LNXLINK_MQTT_PORT") not in [None, ""]:
+            conf["mqtt"]["port"] = os.environ.get("LNXLINK_MQTT_PORT")
+        if os.environ.get("LNXLINK_MQTT_USER") not in [None, ""]:
+            conf["mqtt"]["user"] = os.environ.get("LNXLINK_MQTT_USER")
+        if os.environ.get("LNXLINK_MQTT_PASS") not in [None, ""]:
+            conf["mqtt"]["pass"] = os.environ.get("LNXLINK_MQTT_PASS")
+        if os.environ.get("LNXLINK_HASS_URL") not in [None, ""]:
+            conf["hass_url"] = os.environ.get("LNXLINK_HASS_URL")
+        if os.environ.get("LNXLINK_HASS_API") not in [None, ""]:
+            conf["hass_api"] = os.environ.get("LNXLINK_HASS_API")
+
         return conf
 
     def on_connect(self, client, userdata, flags, rcode, *args):
