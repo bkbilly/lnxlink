@@ -22,14 +22,20 @@ class Addon:
                 cur_time = time.time()
                 if cur_time - discovery["last_time"] > discovery["update_interval"]:
                     discovery["last_time"] = cur_time
-                    stdout, _, returncode = syscommand(discovery["local_command"])
+                    stdout, _, returncode = syscommand(
+                        discovery["local_command"],
+                        timeout=discovery.get("sensor_timeout", 3),
+                    )
                     if returncode == 0:
                         self.lnxlink.run_module(f"{self.name}/{expose_name}", stdout)
             elif discovery.get("type") == "binary_sensor":
                 cur_time = time.time()
                 if cur_time - discovery["last_time"] > discovery["update_interval"]:
                     discovery["last_time"] = cur_time
-                    stdout, _, _ = syscommand(discovery["local_command"])
+                    stdout, _, _ = syscommand(
+                        discovery["local_command"],
+                        timeout=discovery.get("sensor_timeout", 3),
+                    )
                     status = stdout.lower() not in ["false", "no", "0", ""]
                     senddata = {
                         "status": "ON" if status else "OFF",
@@ -38,7 +44,9 @@ class Addon:
                     self.lnxlink.run_module(f"{self.name}/{expose_name}", senddata)
             elif discovery.get("type") == "switch":
                 stdout, _, _ = syscommand(
-                    discovery["local_command"], ignore_errors=True
+                    discovery["local_command"],
+                    ignore_errors=True,
+                    timeout=discovery.get("sensor_timeout", 3),
                 )
                 status = stdout.lower() not in ["false", "no", "0", ""]
                 self.lnxlink.run_module(f"{self.name}/{expose_name}", status)
@@ -73,6 +81,7 @@ class Addon:
                     "subtopic": True,
                     "update_interval": expose.get("update_interval", 0),
                     "last_time": 0,
+                    "sensor_timeout": expose.get("sensor_timeout", 3),
                 }
             elif expose_type == "binary_sensor":
                 self.discovery_info[expose_name] = {
@@ -84,6 +93,7 @@ class Addon:
                     "subtopic": True,
                     "update_interval": expose.get("update_interval", 0),
                     "last_time": 0,
+                    "sensor_timeout": expose.get("sensor_timeout", 3),
                 }
             elif expose_type == "switch":
                 self.discovery_info[expose_name] = {
@@ -93,6 +103,7 @@ class Addon:
                     "command_on": expose.get("command_on"),
                     "command_off": expose.get("command_off"),
                     "subtopic": True,
+                    "sensor_timeout": expose.get("sensor_timeout", 3),
                 }
             if expose.get("entity_category") in ["diagnostic", "config"]:
                 self.discovery_info[expose_name]["entity_category"] = expose[
@@ -116,7 +127,10 @@ class Addon:
                 expose.get("command_off", "").strip(),
             ]
             if data.strip() in command_list:
-                stdout, _, _ = syscommand(data, timeout=120)
+                stdout, _, _ = syscommand(
+                    data,
+                    timeout=expose.get("command_timeout", 120),
+                )
                 return stdout
         logger.error(
             "Check bash configuration option allow_any_command to run this command: %s",
