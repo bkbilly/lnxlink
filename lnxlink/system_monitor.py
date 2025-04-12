@@ -22,9 +22,12 @@ class MonitorSuspend:
             (
                 "jeepney",
                 [
-                    "DBusAddress",
                     "new_method_call",
+                    "DBusAddress",
+                    "MatchRule",
+                    "DBus",
                     "io.blocking.open_dbus_connection",
+                    "io.blocking.Proxy",
                 ],
             ),
         )
@@ -32,24 +35,16 @@ class MonitorSuspend:
             self.connection = self.jeepney.io.blocking.open_dbus_connection(
                 bus="SYSTEM"
             )
+            bus_proxy = self.jeepney.io.blocking.Proxy(
+                self.jeepney.DBus(), self.connection
+            )
             sleep_match = self.jeepney.MatchRule(
                 type="signal",
                 interface="org.freedesktop.login1.Manager",
                 member="PrepareForSleep",
                 path="/org/freedesktop/login1",
             )
-            self.connection.send_and_get_reply(
-                self.jeepney.new_method_call(
-                    self.jeepney.DBusAddress(
-                        object_path="/org/freedesktop/DBus",
-                        bus_name="org.freedesktop.DBus",
-                        interface="org.freedesktop.DBus",
-                    ),
-                    "AddMatch",
-                    "s",
-                    (sleep_match.serialise(),),
-                )
-            )
+            bus_proxy.AddMatch(sleep_match)
 
             self.timer1 = threading.Thread(target=self.watch_loop, daemon=True)
             self.use = True
@@ -75,25 +70,27 @@ class MonitorSuspend:
 
     def start(self):
         """Start the timer of the thread"""
-        try:
-            self.timer1.start()
-        except Exception as err:
-            logger.error(
-                "Can't start systemMonitor: %s, %s",
-                err,
-                traceback.format_exc(),
-            )
+        if self.use:
+            try:
+                self.timer1.start()
+            except Exception as err:
+                logger.error(
+                    "Can't start systemMonitor: %s, %s",
+                    err,
+                    traceback.format_exc(),
+                )
 
     def stop(self):
         """Stop the timer of the thread"""
-        try:
-            self.connection.close()
-        except Exception as err:
-            logger.error(
-                "Can't stop systemMonitor: %s, %s",
-                err,
-                traceback.format_exc(),
-            )
+        if self.use:
+            try:
+                self.connection.close()
+            except Exception as err:
+                logger.error(
+                    "Can't stop systemMonitor: %s, %s",
+                    err,
+                    traceback.format_exc(),
+                )
 
 
 class GracefulKiller:

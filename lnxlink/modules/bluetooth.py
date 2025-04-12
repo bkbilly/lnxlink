@@ -48,7 +48,8 @@ class Addon:
                 for addr in bluetoothdevices:
                     if addr is not None:
                         self.bluetoothdata[device][addr] = None
-            bluetoothdata[device] = self.bluetoothdata[device]
+            if device in self.bluetoothdata:
+                bluetoothdata[device] = self.bluetoothdata[device]
         self.bluetoothdata = bluetoothdata
         if len(loaded) > 0:
             self.lnxlink.setup_discovery("bluetooth")
