@@ -43,7 +43,7 @@ class Addon:
             self.disks[disk_name]["percent"] = None
         self.disks = disks
         if len(mounted) > 0:
-            self.lnxlink.setup_discovery()
+            self.lnxlink.setup_discovery("disk_usage")
         return self.disks
 
     def _bytetogb(self, byte):

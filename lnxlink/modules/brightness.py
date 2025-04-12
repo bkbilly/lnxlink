@@ -23,7 +23,7 @@ class Addon:
         displays = self._get_displays()
         if displays != self.displays:
             self.displays = displays
-            self.lnxlink.setup_discovery()
+            self.lnxlink.setup_discovery("brightness")
         values = [disp["brightness"] for disp in displays.values()]
         avg_brightness = sum(values) / max(1, len(values))
         avg_brightness = max(0.1, avg_brightness)

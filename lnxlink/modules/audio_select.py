@@ -48,7 +48,7 @@ class Addon:
         """Gather information from the system"""
         self._get_devices()
         if self.devices["changed"]:
-            self.lnxlink.setup_discovery()
+            self.lnxlink.setup_discovery("audio_select")
         return self.devices["defaults"]
 
     def start_control(self, topic, data):

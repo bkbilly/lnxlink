@@ -38,7 +38,7 @@ class Addon:
             interfaces[interface] = self.interfaces[interface]
         self.interfaces = interfaces
         if len(loaded) > 0:
-            self.lnxlink.setup_discovery()
+            self.lnxlink.setup_discovery("interfaces")
         return self.interfaces
 
     def _bytetogb(self, byte):

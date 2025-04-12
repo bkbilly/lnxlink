@@ -43,7 +43,7 @@ class Addon:
             self.mounts[mount_name]["percent"] = None
         self.mounts = mounts
         if len(mounted) > 0:
-            self.lnxlink.setup_discovery()
+            self.lnxlink.setup_discovery("mounts")
         return self.mounts
 
     def _get_mounts(self):

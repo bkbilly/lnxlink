@@ -53,7 +53,7 @@ class Addon:
             self.devices[device_name]["percent"] = None
         self.devices = devices
         if len(new_devices) > 0:
-            self.lnxlink.setup_discovery()
+            self.lnxlink.setup_discovery("battery")
 
         return devices
 

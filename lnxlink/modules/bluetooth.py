@@ -43,13 +43,15 @@ class Addon:
         loaded = set(bluetoothdata["devices"]) - set(self.bluetoothdata["devices"])
         unloaded = set(self.bluetoothdata["devices"]) - set(bluetoothdata["devices"])
         for device in unloaded:
-            for addr in self.bluetoothdata.get(device):
-                if addr is not None:
-                    self.bluetoothdata[device][addr] = None
+            bluetoothdevices = self.bluetoothdata.get(device)
+            if bluetoothdevices is not None:
+                for addr in bluetoothdevices:
+                    if addr is not None:
+                        self.bluetoothdata[device][addr] = None
             bluetoothdata[device] = self.bluetoothdata[device]
         self.bluetoothdata = bluetoothdata
         if len(loaded) > 0:
-            self.lnxlink.setup_discovery()
+            self.lnxlink.setup_discovery("bluetooth")
         return self.bluetoothdata
 
     def _bytetogb(self, byte):

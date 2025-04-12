@@ -46,7 +46,7 @@ class Addon:
         """Gather information from the system"""
         games = self._get_games()
         if self.games != games:
-            self.lnxlink.setup_discovery()
+            self.lnxlink.setup_discovery("steam")
         self.games = games
         return self._get_current_game()
 
@@ -117,9 +117,10 @@ class Addon:
                     acf_path = os.path.join(
                         num["path"], f"steamapps/appmanifest_{app_id}.acf"
                     )
-                    with open(acf_path, encoding="UTF-8") as file:
-                        game_properties = self.vdf.load(file)
-                    games[app_id] = game_properties["AppState"]["name"]
+                    if os.path.exists(acf_path):
+                        with open(acf_path, encoding="UTF-8") as file:
+                            game_properties = self.vdf.load(file)
+                        games[app_id] = game_properties["AppState"]["name"]
                 else:
                     games[app_id] = self.games[app_id]
 

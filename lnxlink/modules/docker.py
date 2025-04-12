@@ -43,7 +43,7 @@ class Addon:
         """Gather information from the system"""
         containers = self._get_containers()
         if len(containers) != len(self.containers):
-            self.lnxlink.setup_discovery()
+            self.lnxlink.setup_discovery("docker")
         self.containers = containers
         return self.containers
 
