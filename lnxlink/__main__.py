@@ -50,6 +50,7 @@ class LNXlink:
         self.display = None
         self.inference_times = {}
         self.addons = {}
+        self.publish_rc_code = 0
         self.prev_publish = {}
         self.saved_publish = {}
         self.update_change_interval = 900
@@ -121,9 +122,16 @@ class LNXlink:
 
         self.prev_publish[topic] = pub_data
         self.saved_publish[subtopic.replace("/", "_")] = pub_data
-        self.client.publish(
-            topic, payload=pub_data, retain=self.config["mqtt"]["lwt"]["retain"]
+        # logger.debug("Publishing %s: %s", topic, pub_data)
+        msg_info = self.client.publish(
+            topic,
+            payload=pub_data,
+            qos=self.config["mqtt"]["lwt"]["qos"],
+            retain=self.config["mqtt"]["lwt"]["retain"],
         )
+        logger.info(msg_info)
+        logger.info(msg_info.rc)
+        self.publish_rc_code = msg_info.rc
 
     def run_module(self, name, method):
         """Runs the method of a module"""
@@ -135,6 +143,7 @@ class LNXlink:
                 pub_data = method()
                 diff_time = round(time.time() - start_time, 5)
                 self.inference_times[name] = diff_time
+            time.sleep(0.001)
             self.publish_monitor_data(name, pub_data)
         except Exception as err:
             logger.error(
@@ -160,6 +169,9 @@ class LNXlink:
 
     def monitor_run_thread(self):
         """Runs method to get sensor information every prespecified interval"""
+        if self.publish_rc_code != 0:
+            logger.error("Publish Error, trying to reconnect...")
+            self.client.reconnect()
         self.monitor_run()
 
         interval = self.config["update_interval"]
@@ -321,6 +333,7 @@ class LNXlink:
                     self.client.publish(
                         topic,
                         payload=message,
+                        qos=self.config["mqtt"]["lwt"]["qos"],
                     )
             else:
                 logger.info("Power Up detected.")
@@ -356,7 +369,12 @@ class LNXlink:
                         result_topic = (
                             f"{self.pref_topic}/command_result/{topic.strip('/')}"
                         )
-                        self.client.publish(result_topic, payload=result, retain=False)
+                        self.client.publish(
+                            result_topic,
+                            payload=result,
+                            qos=self.config["mqtt"]["lwt"]["qos"],
+                            retain=False,
+                        )
                 except Exception as err:
                     logger.error(
                         "Couldn't run command for module %s: %s, %s",
@@ -502,6 +520,7 @@ class LNXlink:
         self.client.publish(
             f"homeassistant/{options['type']}/lnxlink/{discovery['unique_id']}/config",
             payload=json.dumps(discovery),
+            qos=self.config["mqtt"]["lwt"]["qos"],
             retain=True,
         )
         if options["type"] == "media_player":
