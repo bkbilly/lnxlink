@@ -23,7 +23,7 @@ class Addon:
         self.players = []
         self._requirements()
         self._current_volume = 1
-        self.prev_player = {}
+        self.prev_info = {}
         self.playmedia_thread = None
         self.process = None
         self.media_player = self.lib["dbus-mediaplayer"].DBusMediaPlayers(
@@ -34,7 +34,7 @@ class Addon:
         self.lib = {
             "alsaaudio": import_install_package("pyalsaaudio", ">=0.9.2", "alsaaudio"),
             "dbus-mediaplayer": import_install_package(
-                "dbus-mediaplayer", ">=2025.3.0", "dbus_mediaplayer"
+                "dbus-mediaplayer", ">=2025.4.0", "dbus_mediaplayer"
             ),
         }
 
@@ -111,7 +111,7 @@ class Addon:
         elif topic[-1] in ["stop_media", "pause"]:
             self.stop_playmedia()
 
-    def get_info(self) -> dict:
+    def get_info(self):
         """Gather information from the system"""
         self._current_volume = self._get_volume()
         info = {
@@ -130,29 +130,30 @@ class Addon:
             info["title"] = player["title"]
             info["album"] = player["album"]
             info["artist"] = player["artist"]
-            info["status"] = player["status"].lower()
             info["position"] = player["position"]
             info["duration"] = player["duration"]
-            if self.playmedia_thread is None:
-                self.lnxlink.run_module(f"{self.name}/state", player["status"].lower())
-            else:
-                self.lnxlink.run_module(f"{self.name}/state", "playing".lower())
-            self.lnxlink.run_module(f"{self.name}/volume", self._current_volume)
-            if self.prev_player != player:
-                self.prev_player = player
-                self.lnxlink.run_module(f"{self.name}/title", player["title"])
-                self.lnxlink.run_module(f"{self.name}/artist", player["artist"])
-                self.lnxlink.run_module(f"{self.name}/album", player["album"])
-                self.lnxlink.run_module(f"{self.name}/duration", player["duration"])
-                self.lnxlink.run_module(f"{self.name}/position", player["position"])
+            info["status"] = player["status"].lower()
+            if self.playmedia_thread is not None:
+                info["status"] = "playing"
+            if self.prev_info != info:
+                self.prev_info = info
+                self.lnxlink.run_module(f"{self.name}/volume", info["volume"])
+                self.lnxlink.run_module(f"{self.name}/state", info["status"])
+                self.lnxlink.run_module(f"{self.name}/title", info["title"])
+                self.lnxlink.run_module(f"{self.name}/artist", info["artist"])
+                self.lnxlink.run_module(f"{self.name}/album", info["album"])
+                self.lnxlink.run_module(f"{self.name}/duration", info["duration"])
+                self.lnxlink.run_module(f"{self.name}/position", info["position"])
                 self.lnxlink.run_module(f"{self.name}/albumart", self.get_thumbnail())
         else:
-            if self.playmedia_thread is None:
-                self.lnxlink.run_module(f"{self.name}/state", "off")
-            else:
-                self.lnxlink.run_module(f"{self.name}/state", "playing")
-            self.lnxlink.run_module(f"{self.name}/volume", self._current_volume)
-            self.lnxlink.run_module(f"{self.name}/albumart", "")
+            info["status"] = "off"
+            if self.playmedia_thread is not None:
+                info["status"] = "playing"
+            if self.prev_info != info:
+                self.prev_info = info
+                self.lnxlink.run_module(f"{self.name}/state", info["status"])
+                self.lnxlink.run_module(f"{self.name}/volume", info["volume"])
+                self.lnxlink.run_module(f"{self.name}/albumart", "")
         return info
 
     def media_callback(self, players):

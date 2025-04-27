@@ -122,15 +122,14 @@ class LNXlink:
 
         self.prev_publish[topic] = pub_data
         self.saved_publish[subtopic.replace("/", "_")] = pub_data
-        # logger.debug("Publishing %s: %s", topic, pub_data)
+        time.sleep(0.001)
         msg_info = self.client.publish(
             topic,
             payload=pub_data,
             qos=self.config["mqtt"]["lwt"]["qos"],
             retain=self.config["mqtt"]["lwt"]["retain"],
         )
-        logger.info(msg_info)
-        logger.info(msg_info.rc)
+        logger.debug("Message RC Code: %s, MQTT Number: %s", msg_info.rc, msg_info.mid)
         self.publish_rc_code = msg_info.rc
 
     def run_module(self, name, method):
@@ -143,7 +142,6 @@ class LNXlink:
                 pub_data = method()
                 diff_time = round(time.time() - start_time, 5)
                 self.inference_times[name] = diff_time
-            time.sleep(0.001)
             self.publish_monitor_data(name, pub_data)
         except Exception as err:
             logger.error(
@@ -170,7 +168,7 @@ class LNXlink:
     def monitor_run_thread(self):
         """Runs method to get sensor information every prespecified interval"""
         if self.publish_rc_code != 0:
-            logger.error("Publish Error, trying to reconnect...")
+            logger.error("Publish RC Code Error, trying to reconnect...")
             self.client.reconnect()
         self.monitor_run()
 
@@ -184,6 +182,7 @@ class LNXlink:
         self.client.on_connect = self.on_connect
         self.client.on_disconnect = self.on_disconnect
         self.client.on_message = self.on_message
+        self.client.on_publish = self.on_publish
 
         keyfile = self.config["mqtt"]["auth"]["keyfile"]
         keyfile = None if keyfile == "" else keyfile
@@ -382,6 +381,13 @@ class LNXlink:
                         err,
                         traceback.format_exc(),
                     )
+
+    # pylint: disable=too-many-arguments
+    def on_publish(self, client, userdata, mid, reason_code, properties):
+        """Trying to reconnect if the reason code is not Success"""
+        if reason_code != "Success":
+            logger.error("Publish Error, trying to reconnect...")
+            self.client.reconnect()
 
     def setup_discovery_entities(self, addon, service, exp_name, options):
         """Send discovery information on Home Assistant for controls"""
