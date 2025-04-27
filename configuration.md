@@ -50,7 +50,7 @@ custom_modules:
 
 3rd party custom modules:
 
-* [GPU nvidia-settings](https://github.com/PW999/lnxlink\_gpu\_nvidia\_settings)
+* [GPU nvidia-settings](https://github.com/PW999/lnxlink_gpu_nvidia_settings)
 * [AM2302 Temperature and Humidity](https://github.com/bkbilly/lnxlink/discussions/81)
 
 ## Exclude Modules
@@ -62,8 +62,6 @@ exclude:
 - screenshot
 - webcam
 ```
-
-
 
 ## Extra options
 
@@ -90,6 +88,8 @@ mqtt:
     retain: false
 update_interval: 5
 update_on_change: false
+hass_url: null
+hass_api: null
 ```
 
 * **MQTT Topic:** This consists of the prefix and the clientId: `/lnxlink/DESKTOP-Linux`**.**
@@ -98,3 +98,18 @@ update_on_change: false
 * **Retain:** Keeps the values of entities on MQTT broker.
 * **Update Interval:** Sets the interval in seconds for when the sensors are updated.
 * **Update on change:** Sends an update to the MQTT broker when a change is detected or every 15 minutes.
+
+### Environmental Options
+
+If the following environment variables are defined, they replace the options from the configuration file:
+
+```bash
+LNXLINK_MQTT_PREFIX
+LNXLINK_MQTT_CLIENTID
+LNXLINK_MQTT_SERVER
+LNXLINK_MQTT_PORT
+LNXLINK_MQTT_USER
+LNXLINK_MQTT_PASS
+LNXLINK_HASS_URL
+LNXLINK_HASS_API
+```

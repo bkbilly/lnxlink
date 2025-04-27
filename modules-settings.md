@@ -92,27 +92,23 @@ settings:
 
 ## Bash
 
-Using this option you can create `sensors`, `binary_sensors`, `buttons` or `switches` that run custom commands. These options are optional: unit, entity\_category, update_interval.
+Using this option you can create `sensors`, `binary_sensors`, `buttons` or `switches` that run custom commands. These options are optional: unit, entity\_category, update\_interval.
 
 ```yaml
 settings:
   bash:
+    allow_any_command: false
     expose:
     - name: Prune Docker
       type: button
       command: docker system prune -af
-      icon: mdi:script-text
-      entity_category: config
     - name: Load 1minute
       type: sensor
       command: cat /proc/loadavg | awk '{print $1}'
       unit: load
-      entity_category: diagnostic
-      update_interval: 60
     - name: WiFi Exists
       type: binary_sensor
       command: ip a | grep wlan0
-      update_interval: 300
     - name: Microphone Mute
       type: switch
       command: amixer get Capture | grep "\[off\]"
@@ -120,11 +116,34 @@ settings:
       command_off: amixer set Capture cap
 ```
 
+There are some optional options:
+
+```yaml
+settings:
+  bash:
+    expose:
+    - name: ....
+      type: ....
+      command: ....
+      icon: mdi:script-text
+      entity_category: config  # config or diagnostic
+      update_interval: 300  # Minimum is the update_interval
+      sensor_timeout: 10  # Timeout info command, defaults to 3 sec
+      command_timeout: 30  # Timeout control command, defaults to 120 sec
+```
+
 <details>
 
 <summary>Create Bash sensors on Home Assistant side</summary>
 
 The bash module can run any command on a remote computer which makes it dangerous, but also very helpful to create sensors without creating modules on LNXlink.
+
+If you want to use it, you should set the following in your LNXlink configuration:
+
+<pre class="language-yaml"><code class="lang-yaml"><strong>settings:
+</strong><strong>  bash:
+</strong>    allow_any_command: true
+</code></pre>
 
 You will need to create a new sensor on your Home Assistant configuration file like so:
 
