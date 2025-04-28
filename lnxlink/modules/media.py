@@ -281,13 +281,14 @@ class Addon:
     def _get_volume(self):
         """Get system volume"""
         volume = 1
-        try:
-            mixer = self.lib["alsaaudio"].Mixer()
-            volume = mixer.getvolume()[0]
-            if mixer.getmute()[0] == 1:
-                volume = 0
-        except Exception as err:
-            logger.error("Can't get volume: %s, %s", err, traceback.format_exc())
+        if self.lib["alsaaudio"] is not None:
+            try:
+                mixer = self.lib["alsaaudio"].Mixer()
+                volume = mixer.getvolume()[0]
+                if mixer.getmute()[0] == 1:
+                    volume = 0
+            except Exception as err:
+                logger.error("Can't get volume: %s, %s", err, traceback.format_exc())
         return round(volume / 100, 2)
 
     def _filter_title(self, title):

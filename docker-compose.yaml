@@ -1,0 +1,32 @@
+services:
+  lnxlink:
+    image: bkbillybk/lnxlink:latest
+    container_name: lnxlink
+    restart: unless-stopped
+    network_mode: host
+    privileged: true
+    stdin_open: true
+    tty: true
+    user: "1000:1000"
+    ports:
+      - 8112:8112
+    volumes:
+      - ~/Documents/LNXlink/:/opt/lnxlink/config/
+      - ~/.local/share/Steam/:/.local/share/Steam/
+      - /var/run/reboot-required:/var/run/reboot-required:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /var/run/user/1000/bus:/var/run/user/1000/bus
+      - /var/run/dbus/:/var/run/dbus/
+      - /tmp/.X11-unix:/tmp/.X11-unix
+      - /proc/:/proc/
+      - /dev/:/dev/
+    environment:
+      - DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/bus
+      - DISPLAY=$DISPLAY
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]

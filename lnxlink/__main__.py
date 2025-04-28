@@ -28,7 +28,10 @@ version = importlib.metadata.version(__package__ or __name__)
 path = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 if os.path.exists(os.path.join(path, "lnxlink/edit.txt")):
     version += "+edit"
-    git_hash, _, return_code = syscommand(f"git -C {path} rev-parse --short HEAD")
+    git_hash, _, return_code = syscommand(
+        f"git -C {path} rev-parse --short HEAD",
+        ignore_errors=True,
+    )
     if return_code == 0:
         version += f"-{git_hash}"
 
