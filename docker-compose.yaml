@@ -7,7 +7,7 @@ services:
     privileged: true
     stdin_open: true
     tty: true
-    user: "1000:1000"
+    user: "1000:1000"  # UID:GID
     ports:
       - 8112:8112
     volumes:

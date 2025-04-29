@@ -11,14 +11,14 @@ from logging.handlers import RotatingFileHandler
 import argparse
 import platform
 import importlib.metadata
-import ssl
 import traceback
+from collections import OrderedDict
 
 import yaml
 import distro
-import paho.mqtt.client as mqtt
 from lnxlink import modules
 from lnxlink import config_setup
+from lnxlink.mqtt import MQTT
 from lnxlink.system_monitor import MonitorSuspend, GracefulKiller
 from lnxlink.modules.scripts.helpers import syscommand
 
@@ -38,6 +38,48 @@ if os.path.exists(os.path.join(path, "lnxlink/edit.txt")):
 logger = logging.getLogger("lnxlink")
 
 
+class UniqueQueue:
+    """
+    A queue that maintains unique named items with a maximum size limit.
+    If an item with the same name is added, it replaces the old one.
+    When full, the oldest item is discarded to make room.
+    """
+
+    def __init__(self, max_size=200):
+        """Initializes the UniqueQueue"""
+        self.queue = OrderedDict()
+        self.max_size = max_size
+
+    def __repr__(self):
+        """Returns a string representation of the queue."""
+        return f"<{self.__class__.__name__} queue: {repr(self.queue)}>"
+
+    def __iter__(self):
+        """Returns an iterator that yields and removes items from the queue in FIFO order"""
+        while self.queue:
+            yield self.queue.popitem(last=False)
+
+    def add_item(self, name, value):
+        """Adds an item to the queue. If the item already exists, it replaces it"""
+        # If item exists, remove it so we can re-add at the end
+        if name in self.queue:
+            del self.queue[name]
+        # If queue is full, remove the oldest item
+        elif len(self.queue) >= self.max_size:
+            self.queue.popitem(last=False)
+        self.queue[name] = value
+
+    def get_item(self):
+        """Retrieves and removes the next item from the queue (FIFO)"""
+        if self.queue:
+            return self.queue.popitem(last=False)
+        return None, None
+
+    def clear(self):
+        """Clears all items from the queue"""
+        self.queue.clear()
+
+
 # pylint: disable=too-many-instance-attributes
 class LNXlink:
     """Start LNXlink service that loads all modules and connects to MQTT"""
@@ -53,18 +95,14 @@ class LNXlink:
         self.display = None
         self.inference_times = {}
         self.addons = {}
-        self.publish_rc_code = 0
         self.prev_publish = {}
         self.saved_publish = {}
         self.update_change_interval = 900
-        self.pref_topic = "lnxlink"
-        if hasattr(mqtt, "CallbackAPIVersion"):
-            self.client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
-        else:
-            self.client = mqtt.Client()
 
         # Read configuration from yaml file
+        self.publ_queue = UniqueQueue()
         self.config = self.read_config(config_path)
+        self.mqtt = MQTT(self.config)
 
     def start(self, exclude_modules_arg):
         """Run each addon included in the modules folder"""
@@ -92,12 +130,12 @@ class LNXlink:
         logger.info("Loaded addons: %s", ", ".join(loaded))
 
         # Setup MQTT
-        return self.setup_mqtt()
+        return self.mqtt.setup_mqtt(self.on_connect, self.on_message)
 
     def publish_monitor_data(self, name, pub_data):
         """Publish info data to mqtt in the correct format"""
         subtopic = name.lower().replace(" ", "_")
-        topic = f"{self.pref_topic}/monitor_controls/{subtopic}"
+        topic = f"{self.config['pref_topic']}/monitor_controls/{subtopic}"
         if pub_data is None:
             return
         if isinstance(pub_data, bool):
@@ -125,15 +163,12 @@ class LNXlink:
 
         self.prev_publish[topic] = pub_data
         self.saved_publish[subtopic.replace("/", "_")] = pub_data
-        time.sleep(0.001)
-        msg_info = self.client.publish(
+        self.mqtt.publish(
             topic,
             payload=pub_data,
             qos=self.config["mqtt"]["lwt"]["qos"],
             retain=self.config["mqtt"]["lwt"]["retain"],
         )
-        logger.debug("Message RC Code: %s, MQTT Number: %s", msg_info.rc, msg_info.mid)
-        self.publish_rc_code = msg_info.rc
 
     def run_module(self, name, method):
         """Runs the method of a module"""
@@ -145,7 +180,7 @@ class LNXlink:
                 pub_data = method()
                 diff_time = round(time.time() - start_time, 5)
                 self.inference_times[name] = diff_time
-            self.publish_monitor_data(name, pub_data)
+            self.publ_queue.add_item(name, pub_data)
         except Exception as err:
             logger.error(
                 "Error with addon %s: %s, %s",
@@ -170,86 +205,24 @@ class LNXlink:
 
     def monitor_run_thread(self):
         """Runs method to get sensor information every prespecified interval"""
-        if self.publish_rc_code != 0:
-            logger.error("Publish RC Code Error, trying to reconnect...")
-            self.client.reconnect()
         self.monitor_run()
 
         interval = self.config["update_interval"]
         if not self.kill:
+            print(self.publ_queue)
+            for name, pub_data in self.publ_queue:
+                self.publish_monitor_data(name, pub_data)
+                time.sleep(0.01)
             monitor = threading.Timer(interval, self.monitor_run_thread)
             monitor.start()
-
-    def setup_mqtt(self):
-        """Creates the mqtt object"""
-        self.client.on_connect = self.on_connect
-        self.client.on_disconnect = self.on_disconnect
-        self.client.on_message = self.on_message
-        self.client.on_publish = self.on_publish
-
-        keyfile = self.config["mqtt"]["auth"]["keyfile"]
-        keyfile = None if keyfile == "" else keyfile
-        certfile = self.config["mqtt"]["auth"]["certfile"]
-        certfile = None if certfile == "" else certfile
-        ca_certs = self.config["mqtt"]["auth"]["ca_certs"]
-        ca_certs = None if ca_certs == "" else ca_certs
-        use_cert = all(option is not None for option in [keyfile, certfile, ca_certs])
-        use_tls = self.config["mqtt"]["auth"]["tls"]
-        username = self.config["mqtt"]["auth"]["user"]
-        password = self.config["mqtt"]["auth"]["pass"]
-        use_userpass = all(option != "" for option in [username, password])
-
-        if use_userpass:
-            self.client.username_pw_set(username, password)
-        if use_tls:
-            cert_reqs = ssl.CERT_NONE
-            if use_cert:
-                cert_reqs = ssl.CERT_REQUIRED
-            logger.info("Using MQTT ca_certs: %s", ca_certs)
-            logger.info("Using MQTT certfile: %s", certfile)
-            logger.info("Using MQTT keyfile: %s", keyfile)
-            self.client.tls_set(
-                ca_certs=ca_certs,
-                certfile=certfile,
-                keyfile=keyfile,
-                cert_reqs=cert_reqs,
-            )
-            if ca_certs is None:
-                self.client.tls_insecure_set(True)
-        if self.config["mqtt"]["lwt"]["enabled"]:
-            self.client.will_set(
-                f"{self.pref_topic}/lwt",
-                payload="OFF",
-                qos=self.config["mqtt"]["lwt"]["qos"],
-                retain=True,
-            )
-        try:
-            self.client.connect(
-                self.config["mqtt"]["server"], self.config["mqtt"]["port"], 60
-            )
-        except ssl.SSLCertVerificationError:
-            logger.info("TLS not verified, using insecure connection instead")
-            self.client.tls_insecure_set(True)
-            self.client.connect(
-                self.config["mqtt"]["server"], self.config["mqtt"]["port"], 60
-            )
-        except Exception as err:
-            logger.error(
-                "Error establishing connection to MQTT broker: %s, %s",
-                err,
-                traceback.format_exc(),
-            )
-            return False
-        self.client.loop_start()
-        return True
 
     def read_config(self, config_path):
         """Reads the config file and prepares module names for import"""
         with open(config_path, "r", encoding="utf8") as file:
             conf = yaml.load(file, Loader=yaml.FullLoader)
 
-        self.pref_topic = f"{conf['mqtt']['prefix']}/{conf['mqtt']['clientId']}"
-        self.pref_topic = self.pref_topic.lower()
+        pref_topic = f"{conf['mqtt']['prefix']}/{conf['mqtt']['clientId']}"
+        conf["pref_topic"] = pref_topic.lower()
 
         if conf["modules"] is not None:
             conf["modules"] = [x.lower().replace("-", "_") for x in conf["modules"]]
@@ -276,11 +249,11 @@ class LNXlink:
     def on_connect(self, client, userdata, flags, rcode, *args):
         """Callback for MQTT connect which reports the connection status
         back to MQTT server"""
-        logger.info("MQTT connection: %s", mqtt.connack_string(rcode))
-        client.subscribe(f"{self.pref_topic}/commands/#")
+        logger.info("MQTT connection: %s", self.mqtt.get_rcode_name(rcode))
+        client.subscribe(f"{self.config['pref_topic']}/commands/#")
         if self.config["mqtt"]["lwt"]["enabled"]:
-            self.client.publish(
-                f"{self.pref_topic}/lwt",
+            self.mqtt.publish(
+                f"{self.config['pref_topic']}/lwt",
                 payload="ON",
                 qos=self.config["mqtt"]["lwt"]["qos"],
                 retain=True,
@@ -291,22 +264,10 @@ class LNXlink:
             self.kill = False
             self.monitor_run_thread()
 
-    def on_disconnect(self, *args):
-        """Disconnected from MQTT broker"""
-        logger.warning("Lost connection to MQTT Broker...")
-
     def disconnect(self, *args):
         """Reports to MQTT server that the service has stopped"""
-        logger.info("Disconnected from MQTT.")
-        if self.config["mqtt"]["lwt"]["enabled"]:
-            self.client.publish(
-                f"{self.pref_topic}/lwt",
-                payload="OFF",
-                qos=self.config["mqtt"]["lwt"]["qos"],
-                retain=True,
-            )
         self.kill = True
-        self.client.disconnect()
+        self.mqtt.disconnect()
 
     def replace_values_with_none(self, data):
         """Replaces specified values with None recursively"""
@@ -324,15 +285,15 @@ class LNXlink:
         if self.config["mqtt"]["lwt"]["enabled"]:
             if status:
                 logger.info("Power Down detected.")
-                self.client.publish(
-                    f"{self.pref_topic}/lwt",
+                self.mqtt.publish(
+                    f"{self.config['pref_topic']}/lwt",
                     payload="OFF",
                     qos=self.config["mqtt"]["lwt"]["qos"],
                     retain=True,
                 )
                 for topic, message in self.prev_publish.items():
                     message = self.replace_values_with_none(message)
-                    self.client.publish(
+                    self.mqtt.publish(
                         topic,
                         payload=message,
                         qos=self.config["mqtt"]["lwt"]["qos"],
@@ -342,8 +303,8 @@ class LNXlink:
                 if self.kill:
                     self.kill = False
                     self.monitor_run_thread()
-                self.client.publish(
-                    f"{self.pref_topic}/lwt",
+                self.mqtt.publish(
+                    f"{self.config['pref_topic']}/lwt",
                     payload="ON",
                     qos=self.config["mqtt"]["lwt"]["qos"],
                     retain=True,
@@ -351,7 +312,7 @@ class LNXlink:
 
     def on_message(self, client, userdata, msg):
         """MQTT message is received with a module command to excecute"""
-        topic = msg.topic.replace(f"{self.pref_topic}/commands/", "")
+        topic = msg.topic.replace(f"{self.config['pref_topic']}/commands/", "")
         message = msg.payload
         logger.info("Message received %s: %s", topic, message)
         try:
@@ -368,10 +329,8 @@ class LNXlink:
                 try:
                     result = addon.start_control(select_service, message)
                     if result is not None:
-                        result_topic = (
-                            f"{self.pref_topic}/command_result/{topic.strip('/')}"
-                        )
-                        self.client.publish(
+                        result_topic = f"{self.config['pref_topic']}/command_result/{topic.strip('/')}"
+                        self.mqtt.publish(
                             result_topic,
                             payload=result,
                             qos=self.config["mqtt"]["lwt"]["qos"],
@@ -385,18 +344,11 @@ class LNXlink:
                         traceback.format_exc(),
                     )
 
-    # pylint: disable=too-many-arguments
-    def on_publish(self, client, userdata, mid, reason_code, properties):
-        """Trying to reconnect if the reason code is not Success"""
-        if reason_code != "Success":
-            logger.error("Publish Error, trying to reconnect...")
-            self.client.reconnect()
-
     def setup_discovery_entities(self, addon, service, exp_name, options):
         """Send discovery information on Home Assistant for controls"""
         discovery_template = {
             "availability": {
-                "topic": f"{self.pref_topic}/lwt",
+                "topic": f"{self.config['pref_topic']}/lwt",
                 "payload_available": "ON",
                 "payload_not_available": "OFF",
             },
@@ -413,8 +365,10 @@ class LNXlink:
         if "method" in options or options.get("subtopic", False):
             subcontrol = exp_name.lower().replace(" ", "_")
             subtopic = f"{subtopic}/{subcontrol}"
-        state_topic = f"{self.pref_topic}/monitor_controls/{subtopic}"
-        command_topic = f"{self.pref_topic}/commands/{service}/{control_name_topic}"
+        state_topic = f"{self.config['pref_topic']}/monitor_controls/{subtopic}"
+        command_topic = (
+            f"{self.config['pref_topic']}/commands/{service}/{control_name_topic}"
+        )
 
         lookup_options = {
             "value_template": {
@@ -526,7 +480,7 @@ class LNXlink:
         if "value_template" in discovery and options["type"] in ["camera", "image"]:
             del discovery["json_attributes_topic"]
             del discovery["json_attributes_template"]
-        self.client.publish(
+        self.mqtt.publish(
             f"homeassistant/{options['type']}/lnxlink/{discovery['unique_id']}/config",
             payload=json.dumps(discovery),
             qos=self.config["mqtt"]["lwt"]["qos"],
