@@ -1,7 +1,7 @@
 ---
 description: >-
-  You can easily create your own modules for exposing any sensor you want for
-  controlling or monitoring it.
+  For simple tasks, use the bash module, but for more advanced control or
+  monitoring, you can create custom modules to expose any sensor.
 ---
 
 # 🛠️ Development

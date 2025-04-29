@@ -6,16 +6,6 @@ description: >-
 
 # 🔱 Modules Usage
 
-## Statistics
-
-&#x20;It is used to send basic information of the app  to gather daily usage per version.&#x20;
-
-The data is sent after 15 minutes of startup and then every 24 hours. Only some basic information is sent which includes **UUID** (a unique identifier that is generated and stored when first used) and the **version** of the app.
-
-The server is a CloudFlare Worker that stores the data sent by the app including the **date** and the **country** the request originated from.
-
-The statistics server is configurable under the configuration file of LNXlink, so you can use your own analytics server. By setting the URL to null or excluding the statistics module, you can disable it from sending any data.
-
 ## Notification
 
 Sends a notification with a `title` and `message`. The other options are optional:
@@ -58,6 +48,44 @@ action:
     target:
       entity_id: text.desktop_linux_xdg_open
 ```
+
+## RESTful
+
+This could be used as an alternative to MQTT for getting information or controlling the system using HTTP requests by exposing a configurable port which by default is 8112.
+
+#### Endpoints
+
+* **GET `/status`**\
+  Retrieves a list of available modules that support info data.
+* **GET `/status/<module>`**\
+  Get information from the provided module.
+* **GET, POST `/control`**\
+  Retrieves a list of available modules that support control.
+* **POST `/control/<module>`**\
+  Form request data:
+  * `topic`:  \<module>\_\<controlname>, eg. systemd\_anydesk
+  * `message`: data to send, eg. off
+
+#### Usage
+
+* **GET Requests**\
+  Use GET requests to fetch information. For example, to obtain the current status, send a request to the `/status` endpoint.
+* **POST Requests**\
+  Use POST requests to send commands and perform actions. Ensure that the POST requests include necessary payload data to specify the action to be performed.
+
+#### Configuration
+
+The RESTful API is accessible through a configurable port, with the default being **8112**. You can modify this setting in the LNXlink configuration file to suit your network requirements.
+
+## Statistics
+
+&#x20;It is used to send basic information of the app  to gather daily usage per version.&#x20;
+
+The data is sent after 15 minutes of startup and then every 24 hours. Only some basic information is sent which includes **UUID** (a unique identifier that is generated and stored when first used) and the **version** of the app.
+
+The server is a CloudFlare Worker that stores the data sent by the app including the **date** and the **country** the request originated from.
+
+The statistics server is configurable under the configuration file of LNXlink, so you can use your own analytics server. By setting the URL to null or excluding the statistics module, you can disable it from sending any data.
 
 ## Voice Assistant
 
@@ -170,11 +198,7 @@ data:
 
 You can create a virtual keyboard on your frontend:
 
-<div align="left" data-full-width="false">
-
-<figure><img src=".gitbook/assets/Screenshot from 2023-11-02 11-10-09.png" alt=""><figcaption></figcaption></figure>
-
-</div>
+<div align="left" data-full-width="false"><figure><img src=".gitbook/assets/Screenshot from 2023-11-02 11-10-09.png" alt=""><figcaption></figcaption></figure></div>
 
 <details>
 
@@ -678,11 +702,7 @@ card:
 
 </details>
 
-<div align="left">
-
-<figure><img src=".gitbook/assets/Screenshot from 2023-11-02 11-10-20.png" alt=""><figcaption></figcaption></figure>
-
-</div>
+<div align="left"><figure><img src=".gitbook/assets/Screenshot from 2023-11-02 11-10-20.png" alt=""><figcaption></figcaption></figure></div>
 
 <details>
 

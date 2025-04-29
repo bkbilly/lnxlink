@@ -28,6 +28,61 @@ sudo systemctl restart lnxlink.service  # For root installations
 {% endcode %}
 {% endtab %}
 
+{% tab title="Docker" %}
+Some modules may not work yet. This command will download the LNXlink image and set up the configuration file:
+
+{% code overflow="wrap" %}
+```bash
+docker run --network host -v ~/Documents/LNXlink/:/opt/lnxlink/config/ -it bkbillybk/lnxlink:latest
+```
+{% endcode %}
+
+Create a docker compose file:
+
+{% code title="docker-compose.yaml" %}
+```yaml
+services:
+  lnxlink:
+    image: bkbillybk/lnxlink:latest
+    container_name: lnxlink
+    restart: unless-stopped
+    network_mode: host
+    privileged: true
+    stdin_open: true
+    tty: true
+    user: "1000:1000"  # UID:GID
+    ports:
+      - 8112:8112
+    volumes:
+      - ~/Documents/LNXlink/:/opt/lnxlink/config/
+      - ~/.local/share/Steam/:/.local/share/Steam/
+      - /var/run/reboot-required:/var/run/reboot-required:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /var/run/user/1000/bus:/var/run/user/1000/bus
+      - /var/run/dbus/:/var/run/dbus/
+      - /tmp/.X11-unix:/tmp/.X11-unix
+      - /proc/:/proc/
+      - /dev/:/dev/
+    environment:
+      - DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/bus
+      - DISPLAY=$DISPLAY
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+```
+{% endcode %}
+
+Run docker compose image:
+
+```bash
+docker compose -f docker-compose.yaml up
+```
+{% endtab %}
+
 {% tab title="Flatpak" %}
 Install and follow the setup instructions by running it. A new configuration file will be created at `~/Documents/LNXlink/config.yaml`.&#x20;
 
@@ -71,47 +126,6 @@ sudo systemctl daemon-reload
 {% endcode %}
 {% endtab %}
 
-{% tab title="Docker" %}
-Docker is not recommended for desktop environments because it limits many modules which can't run properly. Firstly you should download LNXlink image and setup the config directory:
-
-{% code overflow="wrap" %}
-```bash
-docker run --network host -v ~/Documents/LNXlink/:/opt/lnxlink/config/ -it bkbillybk/lnxlink:latest
-```
-{% endcode %}
-
-Create a docker compose file:
-
-{% code title="docker-compose.yaml" %}
-```yaml
-version: "3"
-services:
-  lnxlink:
-    image: bkbillybk/lnxlink:latest
-    container_name: lnxlink
-    restart: unless-stopped
-    network_mode: host
-    privileged: true
-    stdin_open: true
-    tty: true
-    volumes:
-      - ~/Documents/LNXlink/:/opt/lnxlink/config/
-      - /var/run/reboot-required:/var/run/reboot-required:ro
-      - /var/run/docker.sock:/var/run/docker.sock
-      - /var/run/dbus/:/var/run/dbus/
-      - /sys/block/:/sys/block/
-      - /proc/:/proc/
-      - /dev/:/dev/
-```
-{% endcode %}
-
-Run docker compose image:
-
-```bash
-docker compose -f docker-compose.yaml up
-```
-{% endtab %}
-
 {% tab title="Development" %}
 This installs LNXlink as a development platform which is helpful if you want to create your own changes or create a new module. Read on the Development section for more information.
 
@@ -128,8 +142,6 @@ lnxlink -c config.yaml
 {% endcode %}
 {% endtab %}
 {% endtabs %}
-
-
 
 ### Run sudo commands
 
