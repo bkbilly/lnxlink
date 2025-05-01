@@ -39,11 +39,11 @@ class MQTT:
         self.publish_rc_code = msg_info.rc
         # if self.publish_rc_code != 0:
         #     logger.error("Publish RC Code Error, trying to reconnect...")
-        #     self.publish_rc_code = 0
-        #     self.client.disconnect()
-        #     time.sleep(2)
-        #     self.client.reconnect()
-        #     time.sleep(3)
+        # self.publish_rc_code = 0
+        # self.client.disconnect()
+        # time.sleep(2)
+        # self.client.reconnect()
+        # time.sleep(3)
         return msg_info
 
     def reconnect(self):
@@ -111,13 +111,17 @@ class MQTT:
             )
         try:
             self.client.connect(
-                self.config["mqtt"]["server"], self.config["mqtt"]["port"], 60
+                host=self.config["mqtt"]["server"],
+                port=self.config["mqtt"]["port"],
+                keepalive=60,
             )
         except ssl.SSLCertVerificationError:
             logger.info("TLS not verified, using insecure connection instead")
             self.client.tls_insecure_set(True)
             self.client.connect(
-                self.config["mqtt"]["server"], self.config["mqtt"]["port"], 60
+                host=self.config["mqtt"]["server"],
+                port=self.config["mqtt"]["port"],
+                keepalive=60,
             )
         except Exception as err:
             logger.error(

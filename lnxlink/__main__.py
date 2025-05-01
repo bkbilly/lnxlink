@@ -7,77 +7,20 @@ import time
 import json
 import threading
 import logging
-from logging.handlers import RotatingFileHandler
 import argparse
 import platform
-import importlib.metadata
 import traceback
-from collections import OrderedDict
 
-import yaml
 import distro
 from lnxlink import modules
 from lnxlink import config_setup
+from lnxlink import files_setup
 from lnxlink.mqtt import MQTT
 from lnxlink.system_monitor import MonitorSuspend, GracefulKiller
-from lnxlink.modules.scripts.helpers import syscommand
 
 
-# Get the current version of the app
-version = importlib.metadata.version(__package__ or __name__)
-path = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-if os.path.exists(os.path.join(path, "lnxlink/edit.txt")):
-    version += "+edit"
-    git_hash, _, return_code = syscommand(
-        f"git -C {path} rev-parse --short HEAD",
-        ignore_errors=True,
-    )
-    if return_code == 0:
-        version += f"-{git_hash}"
-
+version, path = files_setup.get_version()
 logger = logging.getLogger("lnxlink")
-
-
-class UniqueQueue:
-    """
-    A queue that maintains unique named items with a maximum size limit.
-    If an item with the same name is added, it replaces the old one.
-    When full, the oldest item is discarded to make room.
-    """
-
-    def __init__(self, max_size=200):
-        """Initializes the UniqueQueue"""
-        self.queue = OrderedDict()
-        self.max_size = max_size
-
-    def __repr__(self):
-        """Returns a string representation of the queue."""
-        return f"<{self.__class__.__name__} queue: {repr(self.queue)}>"
-
-    def __iter__(self):
-        """Returns an iterator that yields and removes items from the queue in FIFO order"""
-        while self.queue:
-            yield self.queue.popitem(last=False)
-
-    def add_item(self, name, value):
-        """Adds an item to the queue. If the item already exists, it replaces it"""
-        # If item exists, remove it so we can re-add at the end
-        if name in self.queue:
-            del self.queue[name]
-        # If queue is full, remove the oldest item
-        elif len(self.queue) >= self.max_size:
-            self.queue.popitem(last=False)
-        self.queue[name] = value
-
-    def get_item(self):
-        """Retrieves and removes the next item from the queue (FIFO)"""
-        if self.queue:
-            return self.queue.popitem(last=False)
-        return None, None
-
-    def clear(self):
-        """Clears all items from the queue"""
-        self.queue.clear()
 
 
 # pylint: disable=too-many-instance-attributes
@@ -87,10 +30,11 @@ class LNXlink:
     version = version
     path = path
 
-    def __init__(self, config_path):
+    def __init__(self, config):
         logger.info("LNXlink %s, Python %s", self.version, platform.python_version())
         logger.debug("Path=%s", self.path)
-        self.config_path = config_path
+        self.config = config
+        self.config_path = config["config_path"]
         self.kill = None
         self.display = None
         self.inference_times = {}
@@ -100,9 +44,11 @@ class LNXlink:
         self.update_change_interval = 900
 
         # Read configuration from yaml file
-        self.publ_queue = UniqueQueue()
-        self.config = self.read_config(config_path)
+        self.publ_queue = files_setup.UniqueQueue()
         self.mqtt = MQTT(self.config)
+        self.stop_event = threading.Event()
+        threading.Thread(target=self.monitor_run, daemon=True).start()
+        threading.Thread(target=self.monitor_queue, daemon=True).start()
 
     def start(self, exclude_modules_arg):
         """Run each addon included in the modules folder"""
@@ -190,61 +136,34 @@ class LNXlink:
             )
 
     def monitor_run(self):
-        """Gets information from each Addon and sends it to MQTT"""
-        methods_to_run = []
-        for _, addon in self.addons.items():
-            if hasattr(addon, "get_info"):
-                methods_to_run.append(
-                    {
-                        "name": addon.name,
-                        "method": addon.get_info,
-                    }
-                )
-        for method in methods_to_run:
-            self.run_module(method["name"], method["method"])
+        """Gets information from each Addon and adds it to the queue"""
+        while not self.stop_event.is_set():
+            methods_to_run = []
+            if not self.kill:
+                for _, addon in self.addons.items():
+                    if hasattr(addon, "get_info"):
+                        methods_to_run.append(
+                            {
+                                "name": addon.name,
+                                "method": addon.get_info,
+                            }
+                        )
+                for method in methods_to_run:
+                    self.run_module(method["name"], method["method"])
+            if self.stop_event.wait(timeout=self.config["update_interval"]):
+                break
+        logger.info("Stopped monitor_run")
 
-    def monitor_run_thread(self):
-        """Runs method to get sensor information every prespecified interval"""
-        self.monitor_run()
-
-        interval = self.config["update_interval"]
-        if not self.kill:
-            print(self.publ_queue)
-            for name, pub_data in self.publ_queue:
-                self.publish_monitor_data(name, pub_data)
-                time.sleep(0.01)
-            monitor = threading.Timer(interval, self.monitor_run_thread)
-            monitor.start()
-
-    def read_config(self, config_path):
-        """Reads the config file and prepares module names for import"""
-        with open(config_path, "r", encoding="utf8") as file:
-            conf = yaml.load(file, Loader=yaml.FullLoader)
-
-        pref_topic = f"{conf['mqtt']['prefix']}/{conf['mqtt']['clientId']}"
-        conf["pref_topic"] = pref_topic.lower()
-
-        if conf["modules"] is not None:
-            conf["modules"] = [x.lower().replace("-", "_") for x in conf["modules"]]
-
-        if os.environ.get("LNXLINK_MQTT_PREFIX") not in [None, ""]:
-            conf["mqtt"]["prefix"] = os.environ.get("LNXLINK_MQTT_PREFIX")
-        if os.environ.get("LNXLINK_MQTT_CLIENTID") not in [None, ""]:
-            conf["mqtt"]["clientId"] = os.environ.get("LNXLINK_MQTT_CLIENTID")
-        if os.environ.get("LNXLINK_MQTT_SERVER") not in [None, ""]:
-            conf["mqtt"]["server"] = os.environ.get("LNXLINK_MQTT_SERVER")
-        if os.environ.get("LNXLINK_MQTT_PORT") not in [None, ""]:
-            conf["mqtt"]["port"] = os.environ.get("LNXLINK_MQTT_PORT")
-        if os.environ.get("LNXLINK_MQTT_USER") not in [None, ""]:
-            conf["mqtt"]["user"] = os.environ.get("LNXLINK_MQTT_USER")
-        if os.environ.get("LNXLINK_MQTT_PASS") not in [None, ""]:
-            conf["mqtt"]["pass"] = os.environ.get("LNXLINK_MQTT_PASS")
-        if os.environ.get("LNXLINK_HASS_URL") not in [None, ""]:
-            conf["hass_url"] = os.environ.get("LNXLINK_HASS_URL")
-        if os.environ.get("LNXLINK_HASS_API") not in [None, ""]:
-            conf["hass_api"] = os.environ.get("LNXLINK_HASS_API")
-
-        return conf
+    def monitor_queue(self):
+        """Loop through the queue list and publish data to MQTT broker"""
+        while not self.stop_event.is_set():
+            if not self.kill:
+                for name, pub_data in self.publ_queue:
+                    self.publish_monitor_data(name, pub_data)
+                    time.sleep(0.01)
+            if self.stop_event.wait(timeout=0.2):
+                break
+        logger.info("Stopped monitor_queue")
 
     def on_connect(self, client, userdata, flags, rcode, *args):
         """Callback for MQTT connect which reports the connection status
@@ -262,12 +181,12 @@ class LNXlink:
             self.setup_discovery()
         if self.kill is None:
             self.kill = False
-            self.monitor_run_thread()
 
     def disconnect(self, *args):
-        """Reports to MQTT server that the service has stopped"""
+        """Service has stopped"""
         self.kill = True
         self.mqtt.disconnect()
+        self.stop_event.set()
 
     def replace_values_with_none(self, data):
         """Replaces specified values with None recursively"""
@@ -302,7 +221,6 @@ class LNXlink:
                 logger.info("Power Up detected.")
                 if self.kill:
                     self.kill = False
-                    self.monitor_run_thread()
                 self.mqtt.publish(
                     f"{self.config['pref_topic']}/lwt",
                     payload="ON",
@@ -512,26 +430,6 @@ class LNXlink:
         os.execv(sys.executable, ["python"] + sys.argv)
 
 
-def setup_logger(config_path, log_level):
-    """Save logs on the same directory as the config file"""
-    config_dir = os.path.dirname(os.path.realpath(config_path))
-    start_sec = str(int(time.time()))[-4:]
-    log_formatter = logging.Formatter(
-        "%(asctime)s ["
-        + start_sec
-        + ":%(threadName)s.%(module)s.%(funcName)s.%(lineno)d] [%(levelname)s]  %(message)s"
-    )
-
-    file_handler = RotatingFileHandler(
-        f"{config_dir}/lnxlink.log",
-        maxBytes=5 * 1024 * 1024,
-        backupCount=1,
-    )
-    logging.basicConfig(level=log_level)
-    file_handler.setFormatter(log_formatter)
-    logger.addHandler(file_handler)
-
-
 def main():
     """Starts the app with some arguments"""
     description = (
@@ -583,20 +481,21 @@ def main():
     if args.config is None:
         parser.print_help()
         parser.exit("\nSomething went wrong, --config condition was not set")
-    config_file = os.path.abspath(args.config)
-    setup_logger(config_file, args.logging)
-    config_setup.setup_config(config_file)
+    config_path = os.path.abspath(args.config)
+    files_setup.setup_logger(config_path, args.logging)
+    config_setup.setup_config(config_path)
     if args.setup:
-        logger.info("The configuration exists under the file: %s", config_file)
+        logger.info("The configuration exists under the file: %s", config_path)
         sys.exit()
     if not args.ignore_systemd:
-        config_setup.setup_systemd(config_file)
+        config_setup.setup_systemd(config_path)
     else:
         logger.info(
             "By not setting up the SystemD, LNXlink won't be able to start on boot..."
         )
 
-    lnxlink = LNXlink(config_file)
+    config = files_setup.read_config(config_path)
+    lnxlink = LNXlink(config)
 
     # Monitor for system changes (Shutdown/Suspend/Sleep)
     monitor_suspend = MonitorSuspend(lnxlink.temp_connection_callback)
