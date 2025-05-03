@@ -39,11 +39,11 @@ class MQTT:
         self.publish_rc_code = msg_info.rc
         # if self.publish_rc_code != 0:
         #     logger.error("Publish RC Code Error, trying to reconnect...")
-        # self.publish_rc_code = 0
-        # self.client.disconnect()
-        # time.sleep(2)
-        # self.client.reconnect()
-        # time.sleep(3)
+        #     self.publish_rc_code = 0
+        #     self.client.disconnect()
+        #     time.sleep(2)
+        #     self.client.reconnect()
+        #     time.sleep(3)
         return msg_info
 
     def reconnect(self):

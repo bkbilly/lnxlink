@@ -47,8 +47,6 @@ class LNXlink:
         self.publ_queue = files_setup.UniqueQueue()
         self.mqtt = MQTT(self.config)
         self.stop_event = threading.Event()
-        threading.Thread(target=self.monitor_run, daemon=True).start()
-        threading.Thread(target=self.monitor_queue, daemon=True).start()
 
     def start(self, exclude_modules_arg):
         """Run each addon included in the modules folder"""
@@ -75,8 +73,10 @@ class LNXlink:
         loaded.sort()
         logger.info("Loaded addons: %s", ", ".join(loaded))
 
-        # Setup MQTT
-        return self.mqtt.setup_mqtt(self.on_connect, self.on_message)
+        mqtt_status = self.mqtt.setup_mqtt(self.on_connect, self.on_message)
+        threading.Thread(target=self.monitor_run, daemon=True).start()
+        threading.Thread(target=self.monitor_queue, daemon=True).start()
+        return mqtt_status
 
     def publish_monitor_data(self, name, pub_data):
         """Publish info data to mqtt in the correct format"""
@@ -240,27 +240,37 @@ class LNXlink:
         except Exception as err:
             logger.debug("Error reading message: %s", err)
 
-        select_service = topic.split("/")
-        addon = self.addons.get(select_service[0])
+        service = topic.split("/")
+        addon = self.addons.get(service[0])
         if addon is not None:
             if hasattr(addon, "start_control"):
-                try:
-                    result = addon.start_control(select_service, message)
-                    if result is not None:
-                        result_topic = f"{self.config['pref_topic']}/command_result/{topic.strip('/')}"
-                        self.mqtt.publish(
-                            result_topic,
-                            payload=result,
-                            qos=self.config["mqtt"]["lwt"]["qos"],
-                            retain=False,
-                        )
-                except Exception as err:
-                    logger.error(
-                        "Couldn't run command for module %s: %s, %s",
-                        addon,
-                        err,
-                        traceback.format_exc(),
-                    )
+                threading.Thread(
+                    target=self.start_control_bg,
+                    args=(addon, topic, service, message),
+                    daemon=True,
+                ).start()
+
+    def start_control_bg(self, addon, topic, service, message):
+        """Starts the start_control method of a module in the background"""
+        try:
+            result = addon.start_control(service, message)
+            if result is not None:
+                result_topic = (
+                    f"{self.config['pref_topic']}/command_result/{topic.strip('/')}"
+                )
+                self.mqtt.publish(
+                    result_topic,
+                    payload=result,
+                    qos=self.config["mqtt"]["lwt"]["qos"],
+                    retain=False,
+                )
+        except Exception as err:
+            logger.error(
+                "Couldn't run command for module %s: %s, %s",
+                addon,
+                err,
+                traceback.format_exc(),
+            )
 
     def setup_discovery_entities(self, addon, service, exp_name, options):
         """Send discovery information on Home Assistant for controls"""
