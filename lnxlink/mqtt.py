@@ -27,7 +27,7 @@ class MQTT:
                 client_id=f"LNXlink-{self.config['mqtt']['clientId']}"
             )
 
-    def publish(self, topic, payload, qos=0, retain=False):
+    def publish(self, topic, payload):
         """Publishes messages to the MQTT broker"""
         msg_info = self.client.publish(
             topic,
@@ -48,6 +48,7 @@ class MQTT:
 
     def reconnect(self):
         """Try to reconnect to broker"""
+        logger.info("Reconnecting to MQTT")
         self.publish_rc_code = 0
         self.client.disconnect()
         time.sleep(2)
@@ -59,12 +60,16 @@ class MQTT:
         self.client.disconnect()
         logger.info("Disconnected from MQTT.")
         if self.config["mqtt"]["lwt"]["enabled"]:
-            self.client.publish(
-                f"{self.config['pref_topic']}/lwt",
-                payload="OFF",
-                qos=self.config["mqtt"]["lwt"]["qos"],
-                retain=True,
-            )
+            self.send_lwt("OFF")
+
+    def send_lwt(self, status):
+        """Sends the status of lwt"""
+        self.client.publish(
+            f"{self.config['pref_topic']}/lwt",
+            payload=status,
+            qos=self.config["mqtt"]["lwt"]["qos"],
+            retain=True,
+        )
 
     def setup_mqtt(self, on_connect, on_message):
         """Creates the mqtt object"""

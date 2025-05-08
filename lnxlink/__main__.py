@@ -109,12 +109,7 @@ class LNXlink:
 
         self.prev_publish[topic] = pub_data
         self.saved_publish[subtopic.replace("/", "_")] = pub_data
-        self.mqtt.publish(
-            topic,
-            payload=pub_data,
-            qos=self.config["mqtt"]["lwt"]["qos"],
-            retain=self.config["mqtt"]["lwt"]["retain"],
-        )
+        self.mqtt.publish(topic, pub_data)
 
     def run_module(self, name, method):
         """Runs the method of a module"""
@@ -158,10 +153,13 @@ class LNXlink:
         """Loop through the queue list and publish data to MQTT broker"""
         while not self.stop_event.is_set():
             if not self.kill:
+                self.mqtt.send_lwt("ON")
+                time.sleep(0.01)
                 for name, pub_data in self.publ_queue:
                     self.publish_monitor_data(name, pub_data)
                     time.sleep(0.01)
             if self.stop_event.wait(timeout=0.2):
+                self.mqtt.send_lwt("OFF")
                 break
         logger.info("Stopped monitor_queue")
 
@@ -171,12 +169,7 @@ class LNXlink:
         logger.info("MQTT connection: %s", self.mqtt.get_rcode_name(rcode))
         client.subscribe(f"{self.config['pref_topic']}/commands/#")
         if self.config["mqtt"]["lwt"]["enabled"]:
-            self.mqtt.publish(
-                f"{self.config['pref_topic']}/lwt",
-                payload="ON",
-                qos=self.config["mqtt"]["lwt"]["qos"],
-                retain=True,
-            )
+            self.mqtt.send_lwt("ON")
         if self.config["mqtt"]["discovery"]["enabled"]:
             self.setup_discovery()
         if self.kill is None:
@@ -200,33 +193,19 @@ class LNXlink:
 
     def temp_connection_callback(self, status):
         """Report the connection status to MQTT server"""
+        logger.info("Got Temp Connection Callback with status %s", status)
         self.kill = True
-        if self.config["mqtt"]["lwt"]["enabled"]:
-            if status:
-                logger.info("Power Down detected.")
-                self.mqtt.publish(
-                    f"{self.config['pref_topic']}/lwt",
-                    payload="OFF",
-                    qos=self.config["mqtt"]["lwt"]["qos"],
-                    retain=True,
-                )
-                for topic, message in self.prev_publish.items():
-                    message = self.replace_values_with_none(message)
-                    self.mqtt.publish(
-                        topic,
-                        payload=message,
-                        qos=self.config["mqtt"]["lwt"]["qos"],
-                    )
-            else:
-                logger.info("Power Up detected.")
-                if self.kill:
-                    self.kill = False
-                self.mqtt.publish(
-                    f"{self.config['pref_topic']}/lwt",
-                    payload="ON",
-                    qos=self.config["mqtt"]["lwt"]["qos"],
-                    retain=True,
-                )
+        if status:
+            logger.info("Power Down detected.")
+            self.mqtt.send_lwt("OFF")
+            for topic, message in self.prev_publish.items():
+                message = self.replace_values_with_none(message)
+                self.mqtt.publish(topic, message)
+        else:
+            logger.info("Power Up detected.")
+            if self.kill:
+                self.kill = False
+            self.mqtt.send_lwt("ON")
 
     def on_message(self, client, userdata, msg):
         """MQTT message is received with a module command to excecute"""
@@ -258,12 +237,7 @@ class LNXlink:
                 result_topic = (
                     f"{self.config['pref_topic']}/command_result/{topic.strip('/')}"
                 )
-                self.mqtt.publish(
-                    result_topic,
-                    payload=result,
-                    qos=self.config["mqtt"]["lwt"]["qos"],
-                    retain=False,
-                )
+                self.mqtt.publish(result_topic, result)
         except Exception as err:
             logger.error(
                 "Couldn't run command for module %s: %s, %s",
@@ -411,8 +385,6 @@ class LNXlink:
         self.mqtt.publish(
             f"homeassistant/{options['type']}/lnxlink/{discovery['unique_id']}/config",
             payload=json.dumps(discovery),
-            qos=self.config["mqtt"]["lwt"]["qos"],
-            retain=True,
         )
         if options["type"] == "media_player":
             logger.info(
