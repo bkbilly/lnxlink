@@ -29,7 +29,7 @@ class Addon:
         }
         for mac, blinfo in self.bluetoothdata["devices"].items():
             discovery_info[
-                f"Bluetooth Device {blinfo['name']} {mac.replace(':', '')}"
+                f"Bluetooth Device {blinfo['name'].replace('+', '')} {mac.replace(':', '')}"
             ] = {
                 "type": "switch",
                 "icon": "mdi:bluetooth",
