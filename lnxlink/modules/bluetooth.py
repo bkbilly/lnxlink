@@ -28,12 +28,14 @@ class Addon:
             }
         }
         for mac, blinfo in self.bluetoothdata["devices"].items():
+            attr_templ = f"{{{{ value_json.devices.get('{mac}', {{}}).get('attributes') | tojson }}}}"
             discovery_info[
                 f"Bluetooth Device {blinfo['name'].replace('+', '')} {mac.replace(':', '')}"
             ] = {
                 "type": "switch",
                 "icon": "mdi:bluetooth",
                 "value_template": f"{{{{ value_json.devices.get('{mac}', {{}}).get('power') }}}}",
+                "attributes_template": attr_templ,
             }
         return discovery_info
 
@@ -63,6 +65,9 @@ class Addon:
         data = {
             "power": "OFF",
             "devices": {},
+            "attributes": {
+                "battery": None,
+            },
         }
         stdout, _, _ = syscommand("bluetoothctl show | grep Powered")
         if "yes" in stdout:
@@ -74,15 +79,20 @@ class Addon:
         if stdout != "":
             for device in stdout.split("\n"):
                 _, mac, name = device.split(" ", maxsplit=2)
-                stdoutdevice, _, _ = syscommand(
-                    f"bluetoothctl info {mac} | grep Connected"
-                )
+                stdoutdevice, _, _ = syscommand(f"bluetoothctl info {mac}")
                 power = "OFF"
-                if "yes" in stdoutdevice:
+                if re.search(r"Connected:\s*yes", stdoutdevice):
                     power = "ON"
+                battery = None
+                match = re.search(r"Battery Percentage:.*\((\d+)\)", stdoutdevice)
+                if match:
+                    battery = match.group(1)
                 data["devices"][mac] = {
                     "name": name,
                     "power": power,
+                    "attributes": {
+                        "battery": battery,
+                    },
                 }
 
         return data
