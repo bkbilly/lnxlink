@@ -7,7 +7,7 @@ import base64
 import threading
 import subprocess
 from shutil import which
-from lnxlink.modules.scripts.helpers import import_install_package
+from lnxlink.modules.scripts.helpers import import_install_package, syscommand
 
 logger = logging.getLogger("lnxlink")
 
@@ -22,21 +22,16 @@ class Addon:
         self.lnxlink = lnxlink
         self.players = []
         self._requirements()
-        self._current_volume = 1
         self.prev_info = {}
         self.playmedia_thread = None
         self.process = None
-        self.media_player = self.lib["dbus-mediaplayer"].DBusMediaPlayers(
-            self.media_callback
-        )
+        self.volume_system = self._get_volume_system()
+        self.media_player = self.dbus_mediaplayer.DBusMediaPlayers(self.media_callback)
 
     def _requirements(self):
-        self.lib = {
-            "alsaaudio": import_install_package("pyalsaaudio", ">=0.9.2", "alsaaudio"),
-            "dbus-mediaplayer": import_install_package(
-                "dbus-mediaplayer", ">=2025.4.0", "dbus_mediaplayer"
-            ),
-        }
+        self.dbus_mediaplayer = import_install_package(
+            "dbus-mediaplayer", ">=2025.4.0", "dbus_mediaplayer"
+        )
 
     def exposed_controls(self):
         """Exposes to home assistant"""
@@ -90,11 +85,10 @@ class Addon:
     def start_control(self, topic, data):
         """Control system"""
         if topic[-1] in ["set_volume", "volume_set"]:
-            mixer = self.lib["alsaaudio"].Mixer()
             if data <= 1:
                 data *= 100
             data = min(data, 100)
-            mixer.setvolume(int(data))
+            self._set_volume(data)
         elif len(self.players) > 0 and topic[-1] == "playpause":
             self.media_player.control_media("PlayPause")
         elif len(self.players) > 0 and topic[-1] == "play":
@@ -113,13 +107,12 @@ class Addon:
 
     def get_info(self):
         """Gather information from the system"""
-        self._current_volume = self._get_volume()
         info = {
             "title": "",
             "artist": "",
             "album": "",
             "status": "idle",
-            "volume": self._current_volume,
+            "volume": self._get_volume(),
             "playing": False,
             "position": None,
             "duration": None,
@@ -278,18 +271,45 @@ class Addon:
             stderr=subprocess.PIPE,
         )
 
+    def _get_volume_system(self):
+        """Get system volume type"""
+        _, _, returncode = syscommand(
+            "pactl get-sink-volume @DEFAULT_SINK@", ignore_errors=True
+        )
+        if returncode == 0:
+            return "pactl"
+
+        _, _, returncode = syscommand("amixer get Master", ignore_errors=True)
+        if returncode == 0:
+            return "amixer"
+
+        return None
+
     def _get_volume(self):
         """Get system volume"""
-        volume = 1
-        if self.lib["alsaaudio"] is not None:
-            try:
-                mixer = self.lib["alsaaudio"].Mixer()
-                volume = mixer.getvolume()[0]
-                if mixer.getmute()[0] == 1:
-                    volume = 0
-            except Exception as err:
-                logger.error("Can't get volume: %s, %s", err, traceback.format_exc())
+        volume = 100
+        if self.volume_system == "pactl":
+            result, _, _ = syscommand(
+                "pactl get-sink-volume @DEFAULT_SINK@", ignore_errors=True
+            )
+            match = re.search(r"(\d+)%", result)
+            if match:
+                volume = int(match.group(1))
+        elif self.volume_system == "amixer":
+            result, _, _ = syscommand("amixer get Master", ignore_errors=True)
+            match = re.search(r"(\d+)%", result)
+            if match:
+                volume = int(match.group(1))
         return round(volume / 100, 2)
+
+    def _set_volume(self, volume):
+        """Set system volume"""
+        if self.volume_system == "pactl":
+            syscommand(f"pactl set-sink-volume @DEFAULT_SINK@ {volume}%")
+        elif self.volume_system == "amixer":
+            syscommand(f"amixer set Master {volume}%")
+        else:
+            logger.error("Can't find pactl or amixer commands")
 
     def _filter_title(self, title):
         """Returns Title if it contains specific words"""
