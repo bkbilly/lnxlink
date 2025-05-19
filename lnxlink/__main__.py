@@ -17,7 +17,7 @@ from lnxlink import config_setup
 from lnxlink import files_setup
 from lnxlink.mqtt import MQTT
 from lnxlink.system_monitor import MonitorSuspend, GracefulKiller
-
+from lnxlink.modules.scripts import helpers
 
 version, path = files_setup.get_version()
 logger = logging.getLogger("lnxlink")
@@ -80,7 +80,7 @@ class LNXlink:
 
     def publish_monitor_data(self, name, pub_data):
         """Publish info data to mqtt in the correct format"""
-        subtopic = name.lower().replace(" ", "_")
+        subtopic = helpers.text_to_topic(name)
         topic = f"{self.config['pref_topic']}/monitor_controls/{subtopic}"
         if pub_data is None:
             return
@@ -262,12 +262,12 @@ class LNXlink:
                 "sw_version": version,
             },
         }
-        control_name_topic = exp_name.lower().replace(" ", "_")
-        subtopic = addon.name.lower().replace(" ", "_")
+        subtopic = helpers.text_to_topic(addon.name)
         if "method" in options or options.get("subtopic", False):
-            subcontrol = exp_name.lower().replace(" ", "_")
+            subcontrol = helpers.text_to_topic(exp_name)
             subtopic = f"{subtopic}/{subcontrol}"
         state_topic = f"{self.config['pref_topic']}/monitor_controls/{subtopic}"
+        control_name_topic = helpers.text_to_topic(exp_name)
         command_topic = (
             f"{self.config['pref_topic']}/commands/{service}/{control_name_topic}"
         )

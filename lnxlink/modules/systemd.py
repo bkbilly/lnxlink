@@ -74,9 +74,9 @@ class Addon:
             try:
                 proxy.Stop("replace")
             except Exception:
-                syscommand(f"sudo systemctl stop {service} &")
+                syscommand(f"sudo -n systemctl stop {service} &")
         elif data.lower() == "on":
             try:
                 proxy.Start("replace")
             except Exception:
-                syscommand(f"sudo systemctl start {service} &")
+                syscommand(f"sudo -n systemctl start {service} &")

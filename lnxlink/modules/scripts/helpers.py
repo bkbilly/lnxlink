@@ -98,3 +98,15 @@ def needs_update(current_version, request_version):
         if req_version < cur_version:
             return False
     return False
+
+
+def text_to_topic(text):
+    """Used for setting a text to be sent to mqtt topic"""
+    text = text.lower()
+    text = text.replace(" ", "_")
+    text = text.replace("+", "")
+    text = text.replace("*", "")
+    text = text.replace("(", "")
+    text = text.replace(")", "")
+    text = text.replace("@", "")
+    return text

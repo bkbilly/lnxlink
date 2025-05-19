@@ -12,13 +12,18 @@ class Addon:
         """Setup addon"""
         self.name = "Boot Select"
         self.lnxlink = lnxlink
+        self.command = None
         if which("grub-editenv") is None:
+            self.command = "grub-editenv"
+        elif which("grub-editenv") is None:
+            self.command = "grub2-editenv"
+        if self.command is None:
             raise SystemError("System command 'grub-editenv' not found")
         self.options = self._get_grub_entries()
 
     def get_info(self):
         """Gather information from the system"""
-        stdout, _, _ = syscommand("grub-editenv list")
+        stdout, _, _ = syscommand(f"{self.command} list")
         nextentry_pattern = re.compile(r"^next_entry=(\d+)")
         nextentry_match = re.match(nextentry_pattern, stdout)
         entry_ind = 0
@@ -42,7 +47,7 @@ class Addon:
     def start_control(self, topic, data):
         """Control system"""
         ind = self.options.index(data)
-        syscommand(f"sudo grub-reboot {ind}")
+        syscommand(f"sudo -n grub-reboot {ind}")
 
     def _get_grub_entries(self):
         """Get the grub entities in the correct order"""
@@ -51,8 +56,14 @@ class Addon:
 
         grub_entries = []
 
+        file_path = None
         if os.path.exists("/boot/grub/grub.cfg"):
-            with open("/boot/grub/grub.cfg", encoding="UTF-8") as file:
+            file_path = "/boot/grub/grub.cfg"
+        elif os.path.exists("/boot/grub2/grub.cfg"):
+            file_path = "/boot/grub2/grub.cfg"
+
+        if file_path is not None:
+            with open(file_path, encoding="UTF-8") as file:
                 for line in file.readlines():
                     menu_entry_match = re.match(menu_pattern, line)
                     if menu_entry_match:
