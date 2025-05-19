@@ -31,7 +31,7 @@ The <mark style="color:orange;">Orange</mark> indicate that they need a graphica
 | [<mark style="color:blue;">Speech Recognition</mark>](examples.md#voice-assistant)                                                | <mark style="color:blue;">Network Speed</mark>                                        |
 | [<mark style="color:blue;">LNXlink Update</mark>](examples.md#install-update)                                                     | <mark style="color:blue;">Update required</mark>                                      |
 | <mark style="color:blue;">Bluetooth</mark>                                                                                        | <mark style="color:blue;">Network Interfaces</mark>                                   |
-| <mark style="color:blue;">Logging Level</mark>                                                                                    | <mark style="color:blue;">Microphone used</mark>                                      |
+| [<mark style="color:blue;">Logging Level</mark>](#user-content-fn-1)[^1]                                                          | <mark style="color:blue;">Microphone used</mark>                                      |
 | [<mark style="color:green;">Bash commands</mark>](modules-settings.md#bash)                                                       | <mark style="color:blue;">Camera used</mark>                                          |
 | [<mark style="color:green;">SystemD</mark>](modules-settings.md#systemd)                                                          | <mark style="color:blue;">Gamepad Used</mark>                                         |
 | [<mark style="color:green;">Docker</mark>](modules-settings.md#docker)                                                            | <mark style="color:blue;">Temperature</mark>                                          |
@@ -52,3 +52,9 @@ The <mark style="color:orange;">Orange</mark> indicate that they need a graphica
 ## Supported OS
 
 Only Linux is supported and there is no plan on supporting Windows or MAC because it has many system dependencies that can't be ported. A recommended companion app for windows is [HASS.Agent](https://lab02-research.org/hassagent/) and a cross platform alternative is the [IoTuring](https://github.com/richibrics/IoTuring).
+
+[^1]: test
+
+    ## hello
+
+    this is a test
