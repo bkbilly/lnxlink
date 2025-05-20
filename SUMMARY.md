@@ -5,6 +5,6 @@
 * [📂 Configuration](configuration.md)
 * [🎬 Media Player](media-player.md)
 * [🔗 Modules Settings](modules-settings.md)
-* [🔱 Modules Usage](examples.md)
+* [🔱 Modules Usage](usage.md)
 * [🤯 Automations](automations.md)
 * [🛠️ Development](development.md)
