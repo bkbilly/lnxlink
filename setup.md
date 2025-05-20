@@ -26,10 +26,16 @@ systemctl --user restart lnxlink.service  # For user installations
 sudo systemctl restart lnxlink.service  # For root installations
 ```
 {% endcode %}
+
+
 {% endtab %}
 
 {% tab title="Docker" %}
-Some modules may not work yet. This command will download the LNXlink image and set up the configuration file:
+{% hint style="info" %}
+Some modules may not work yet.&#x20;
+{% endhint %}
+
+This command will download the LNXlink image and set up the configuration file:
 
 {% code overflow="wrap" %}
 ```bash
@@ -84,6 +90,10 @@ docker compose -f docker-compose.yaml up
 {% endtab %}
 
 {% tab title="Flatpak" %}
+{% hint style="warning" %}
+This is not easily maintained, so it might not be updated to the latest version. Also some modules are not fully supported.
+{% endhint %}
+
 Install and follow the setup instructions by running it. A new configuration file will be created at `~/Documents/LNXlink/config.yaml`.&#x20;
 
 {% code lineNumbers="true" %}
