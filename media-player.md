@@ -4,25 +4,17 @@ description: Control your media
 
 # 🎬 Media Player
 
-MQTT integration for a media player is not supported by home assistant, so a custom addon must be installed. Using HACS you can install the [MQTT Media Player](https://github.com/bkbilly/mqtt\_media\_player) integration for creating a new `media_player` entity.
+**Note:** Home Assistant does not natively support MQTT integration for media players, so a custom add-on must be installed. Using **HACS**, you can install the **MQTT Media Player** integration to create a new `media_player` entity.
 
-[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](.gitbook/assets/hacs\_repository.svg)](https://my.home-assistant.io/redirect/hacs\_repository/?owner=bkbilly\&repository=mqtt\_media\_player\&category=integration)
+[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](.gitbook/assets/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=bkbilly\&repository=mqtt_media_player\&category=integration)
 
-Once installed you need to restart your Home Assistant instance and add the `MQTT Media Player` integration from `devices & services` page. You can find the appropriate input name under the logs of LNXlink.
+After installation, restart your Home Assistant instance and add the MQTT Media Player integration from the **Devices & Services** page. You can find the correct input name by checking the **LNXlink** logs.
 
-<div align="left">
+<div align="left"><figure><img src=".gitbook/assets/Screenshot from 2024-10-05 17-11-02.png" alt=""><figcaption></figcaption></figure></div>
 
-<figure><img src=".gitbook/assets/Screenshot from 2024-10-05 17-11-02.png" alt="" width="287"><figcaption></figcaption></figure>
+This setup supports playing both local and remote media using one of the following backends: `cvlc`, `gst-play-1.0`, `ffplay`, `mpv`, or `vlc` — make sure at least one of these is installed on your system.
 
-</div>
-
-It supports playing remote or local media using `cvlc` which should be installed on your system.
-
-<div align="left">
-
-<figure><img src=".gitbook/assets/image.png" alt="" width="449"><figcaption></figcaption></figure>
-
-</div>
+<div align="left"><figure><img src=".gitbook/assets/image.png" alt="" width="449"><figcaption></figcaption></figure></div>
 
 ### Text To Speech
 

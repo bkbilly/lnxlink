@@ -48,11 +48,6 @@ custom_modules:
 - https://raw.githubusercontent.com/bkbilly/lnxlink/master/lnxlink/modules/cpu.py
 ```
 
-3rd party custom modules:
-
-* [GPU nvidia-settings](https://github.com/PW999/lnxlink_gpu_nvidia_settings)
-* [AM2302 Temperature and Humidity](https://github.com/bkbilly/lnxlink/discussions/81)
-
 ## Exclude Modules
 
 In case you have empty modules config which auto loads all the available modules, you can have this option that excludes modules from auto loading:
