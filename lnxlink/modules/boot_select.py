@@ -13,11 +13,11 @@ class Addon:
         self.name = "Boot Select"
         self.lnxlink = lnxlink
         self.command = None
-        if which("grub-editenv") is None:
+        if which("grub-editenv") is not None:
             self.command = "grub-editenv"
-        elif which("grub-editenv") is None:
+        elif which("grub2-editenv") is not None:
             self.command = "grub2-editenv"
-        if self.command is None:
+        else:
             raise SystemError("System command 'grub-editenv' not found")
         self.options = self._get_grub_entries()
 

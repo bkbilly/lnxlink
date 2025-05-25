@@ -26,11 +26,14 @@ class Addon:
         self.playmedia_thread = None
         self.process = None
         self.volume_system = self._get_volume_system()
+        self.mediavolume = "OFF"
+        if self.volume_system is None:
+            self.mediavolume = "ON"
         self.media_player = self.dbus_mediaplayer.DBusMediaPlayers(self.media_callback)
 
     def _requirements(self):
         self.dbus_mediaplayer = import_install_package(
-            "dbus-mediaplayer", ">=2025.4.0", "dbus_mediaplayer"
+            "dbus-mediaplayer", ">=2025.6.0", "dbus_mediaplayer"
         )
 
     def exposed_controls(self):
@@ -80,6 +83,11 @@ class Addon:
                 "enabled": False,
                 "subtopic": True,
             },
+            "Media Volume": {
+                "type": "switch",
+                "icon": "mdi:volume-source",
+                "value_template": "{{ value_json.mediavolume }}",
+            },
         }
 
     def start_control(self, topic, data):
@@ -104,6 +112,8 @@ class Addon:
             self.play_media(data)
         elif topic[-1] in ["stop_media", "pause"]:
             self.stop_playmedia()
+        elif topic[-1] == "media_volume":
+            self.mediavolume = data
 
     def get_info(self):
         """Gather information from the system"""
@@ -116,6 +126,7 @@ class Addon:
             "playing": False,
             "position": None,
             "duration": None,
+            "mediavolume": self.mediavolume,
         }
         if len(self.players) > 0:
             player = self.players[0]
@@ -126,6 +137,8 @@ class Addon:
             info["position"] = player["position"]
             info["duration"] = player["duration"]
             info["status"] = player["status"].lower()
+            if self.mediavolume == "ON":
+                info["volume"] = player["volume"]
             if self.playmedia_thread is not None:
                 info["status"] = "playing"
             if self.prev_info != info:
@@ -304,7 +317,9 @@ class Addon:
 
     def _set_volume(self, volume):
         """Set system volume"""
-        if self.volume_system == "pactl":
+        if self.mediavolume == "ON":
+            self.media_player.control_volume(volume / 100)
+        elif self.volume_system == "pactl":
             syscommand(f"pactl set-sink-volume @DEFAULT_SINK@ {volume}%")
         elif self.volume_system == "amixer":
             syscommand(f"amixer set Master {volume}%")
