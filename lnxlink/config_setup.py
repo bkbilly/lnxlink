@@ -2,6 +2,7 @@
 """Setup the configuration file"""
 
 import os
+import copy
 import subprocess
 import logging
 import shutil
@@ -29,6 +30,42 @@ def setup_config(config_path):
         userprompt_config(config_path)
     validate_config(config_path)
     return True
+
+
+def add_settings(config, name, settings):
+    """Add missing configuration to yaml file"""
+    sys_conf = copy.deepcopy(config)
+    sys_conf["settings"][name] = settings
+    missing_keys = check_missing(sys_conf, config, [], [])
+
+    if len(missing_keys) > 0:
+        with open(config["config_path"], "r", encoding="utf8") as file:
+            new_config = yaml.load(file, Loader=yaml.FullLoader)
+        for keys, value in missing_keys:
+            new_config = add_nested(new_config, keys, value)
+            config = add_nested(config, keys, value)
+            key_path = ".".join(keys)
+            logger.info("Added missing configuration option: %s", key_path)
+        with open(config["config_path"], "w", encoding="UTF-8") as file:
+            file.write(yaml.dump(new_config, default_flow_style=False, sort_keys=False))
+    return config
+
+
+def validate_config(config_path):
+    """Inform user of missing configuration values"""
+    with open(config_path, "r", encoding="utf8") as file:
+        user_conf = yaml.load(file, Loader=yaml.FullLoader)
+    sys_conf = yaml.safe_load(CONFIGTEMP)
+
+    missing_keys = check_missing(sys_conf, user_conf, [], [])
+    for keys, value in missing_keys:
+        key_path = ".".join(keys)
+        user_conf = add_nested(user_conf, keys, value)
+        logger.info("Added missing configuration option: %s", key_path)
+
+    if len(missing_keys) > 0:
+        with open(config_path, "w", encoding="UTF-8") as file:
+            file.write(yaml.dump(user_conf, default_flow_style=False, sort_keys=False))
 
 
 def check_missing(sys_conf, user_conf, missing, dirpath):
@@ -66,23 +103,6 @@ def add_nested(dct, keys, value):
     if keys[-1] not in current_level:
         current_level[keys[-1]] = value
     return dct
-
-
-def validate_config(config_path):
-    """Inform user of missing configuration values"""
-    with open(config_path, "r", encoding="utf8") as file:
-        user_conf = yaml.load(file, Loader=yaml.FullLoader)
-    sys_conf = yaml.safe_load(CONFIGTEMP)
-
-    missing_keys = check_missing(sys_conf, user_conf, [], [])
-    for keys, value in missing_keys:
-        key_path = ".".join(keys)
-        user_conf = add_nested(user_conf, keys, value)
-        logger.info("Added missing configuration option: %s", key_path)
-
-    if len(missing_keys) > 0:
-        with open(config_path, "w", encoding="UTF-8") as file:
-            file.write(yaml.dump(user_conf, default_flow_style=False, sort_keys=False))
 
 
 def query_true_false(question, default="false"):

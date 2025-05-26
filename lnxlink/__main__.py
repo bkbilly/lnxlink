@@ -78,6 +78,10 @@ class LNXlink:
         threading.Thread(target=self.monitor_queue, daemon=True).start()
         return mqtt_status
 
+    def add_settings(self, name, settings):
+        """Adds missing configuration under settings"""
+        self.config = config_setup.add_settings(self.config, name, settings)
+
     def publish_monitor_data(self, name, pub_data):
         """Publish info data to mqtt in the correct format"""
         subtopic = helpers.text_to_topic(name)
