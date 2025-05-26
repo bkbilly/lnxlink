@@ -59,7 +59,25 @@ class Addon:
 
     def _get_devices(self):
         devices = {}
+        battery_includes = (
+            self.lnxlink.config["settings"]
+            .get("battery", {})
+            .get("include_batteries", [])
+        )
+        battery_excludes = (
+            self.lnxlink.config["settings"]
+            .get("battery", {})
+            .get("exclude_batteries", [])
+        )
+
         for device in self.get_batteries():
+            if len(battery_includes) != 0:
+                if not any(device["Model"].startswith(x) for x in battery_includes):
+                    continue
+            if len(battery_excludes) != 0:
+                if any(device["Model"].startswith(x) for x in battery_excludes):
+                    continue
+
             native_path = device["NativePath"].split("/")[-1]
             name = (
                 " ".join(
