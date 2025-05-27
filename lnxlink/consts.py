@@ -90,6 +90,9 @@ settings:
     inputs:
     outputs:
   hotkeys:
+  battery:
+    include_batteries: []
+    exclude_batteries: []
   disk_usage:
     include_disks: []
     exclude_disks: []
