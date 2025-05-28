@@ -25,9 +25,9 @@ class Addon:
         self.prev_info = {}
         self.playmedia_thread = None
         self.process = None
-        self.volume_system = self._get_volume_system()
+        self.audio_system = self._get_audio_system()
         self.mediavolume = "OFF"
-        if self.volume_system is None:
+        if self.audio_system is None:
             self.mediavolume = "ON"
         self.media_player = self.dbus_mediaplayer.DBusMediaPlayers(self.media_callback)
 
@@ -284,7 +284,7 @@ class Addon:
             stderr=subprocess.PIPE,
         )
 
-    def _get_volume_system(self):
+    def _get_audio_system(self):
         """Get system volume type"""
         _, _, returncode = syscommand(
             "pactl get-sink-volume @DEFAULT_SINK@", ignore_errors=True
@@ -301,14 +301,14 @@ class Addon:
     def _get_volume(self):
         """Get system volume"""
         volume = 100
-        if self.volume_system == "pactl":
+        if self.audio_system == "pactl":
             result, _, _ = syscommand(
                 "pactl get-sink-volume @DEFAULT_SINK@", ignore_errors=True
             )
             match = re.search(r"(\d+)%", result)
             if match:
                 volume = int(match.group(1))
-        elif self.volume_system == "amixer":
+        elif self.audio_system == "amixer":
             result, _, _ = syscommand("amixer get Master", ignore_errors=True)
             match = re.search(r"(\d+)%", result)
             if match:
@@ -319,9 +319,9 @@ class Addon:
         """Set system volume"""
         if self.mediavolume == "ON":
             self.media_player.control_volume(volume / 100)
-        elif self.volume_system == "pactl":
+        elif self.audio_system == "pactl":
             syscommand(f"pactl set-sink-volume @DEFAULT_SINK@ {volume}%")
-        elif self.volume_system == "amixer":
+        elif self.audio_system == "amixer":
             syscommand(f"amixer set Master {volume}%")
         else:
             logger.error("Can't find pactl or amixer commands")

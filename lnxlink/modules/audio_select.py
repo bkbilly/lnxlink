@@ -1,6 +1,7 @@
 """Information and control of pulseaudio devices"""
+import json
 import logging
-from lnxlink.modules.scripts.helpers import import_install_package
+from lnxlink.modules.scripts.helpers import import_install_package, syscommand
 
 logger = logging.getLogger("lnxlink")
 
@@ -12,19 +13,16 @@ class Addon:
         """Setup addon"""
         self.name = "Audio Select"
         self.lnxlink = lnxlink
+        self.audio_system = self._get_audio_system()
+        if self.audio_system is None:
+            raise SystemError("Can't find any supported audio system")
         self.devices = {
             "speaker": {},
             "microphone": {},
             "defaults": {"microphone": "", "speaker": ""},
             "changed": False,
         }
-        self._requirements()
         self._get_devices()
-
-    def _requirements(self):
-        self.lib = {
-            "pulsectl": import_install_package("pulsectl", ">=23.5.2"),
-        }
 
     def exposed_controls(self):
         """Exposes to home assistant"""
@@ -54,14 +52,39 @@ class Addon:
     def start_control(self, topic, data):
         """Control system"""
         if topic[1] == "microphone_select":
-            with self.lib["pulsectl"].Pulse("lnxlink_ctl") as pulse:
-                pulse.default_set(
-                    pulse.get_source_by_name(self.devices["microphone"][data])
+            if self.audio_system == "pactl":
+                syscommand(
+                    f"pactl set-default-source {self.devices['microphone'][data]}"
                 )
+            elif self.audio_system == "pulsectl":
+                with self.pulsectl.Pulse("lnxlink_ctl") as pulse:
+                    pulse.default_set(
+                        pulse.get_source_by_name(self.devices["microphone"][data])
+                    )
         if topic[1] == "speaker_select":
-            with self.lib["pulsectl"].Pulse("lnxlink_ctl") as pulse:
-                pulse.default_set(pulse.get_sink_by_name(self.devices["speaker"][data]))
+            if self.audio_system == "pactl":
+                syscommand(f"pactl set-default-sink {self.devices['speaker'][data]}")
+            elif self.audio_system == "pulsectl":
+                with self.pulsectl.Pulse("lnxlink_ctl") as pulse:
+                    pulse.default_set(
+                        pulse.get_sink_by_name(self.devices["speaker"][data])
+                    )
 
+    def _get_audio_system(self):
+        """Get system volume type"""
+        _, _, returncode = syscommand(
+            "pactl get-sink-volume @DEFAULT_SINK@", ignore_errors=True
+        )
+        if returncode == 0:
+            return "pactl"
+
+        self.pulsectl = import_install_package("pulsectl", ">=23.5.2")
+        if self.pulsectl is not None:
+            return "pulsectl"
+
+        return None
+
+    # pylint: disable=too-many-branches
     def _get_devices(self):
         """Get a list of all audio devices"""
         devices = {
@@ -71,22 +94,38 @@ class Addon:
             "changed": False,
         }
 
-        try:
-            with self.lib["pulsectl"].Pulse("lnxlink") as pulse:
-                for sink in pulse.sink_list():
-                    devices["speaker"][sink.description] = sink.name
-                for source in pulse.source_list():
-                    devices["microphone"][source.description] = source.name
+        if self.audio_system == "pactl":
+            stdout, _, _ = syscommand("pactl -f json list sinks")
+            for sink in json.loads(stdout):
+                devices["speaker"][sink["description"]] = sink["name"]
+            stdout, _, _ = syscommand("pactl -f json list sources")
+            for source in json.loads(stdout):
+                devices["microphone"][source["description"]] = source["name"]
+            stdout, _, _ = syscommand("pactl get-default-sink")
+            for description, name in devices["speaker"].items():
+                if name == stdout:
+                    devices["defaults"]["speaker"] = description
+            stdout, _, _ = syscommand("pactl get-default-source")
+            for description, name in devices["microphone"].items():
+                if name == stdout:
+                    devices["defaults"]["microphone"] = description
+        elif self.audio_system == "pulsectl":
+            try:
+                with self.pulsectl.Pulse("lnxlink") as pulse:
+                    for sink in pulse.sink_list():
+                        devices["speaker"][sink.description] = sink.name
+                    for source in pulse.source_list():
+                        devices["microphone"][source.description] = source.name
 
-                server_info = pulse.server_info()
-                for description, name in devices["speaker"].items():
-                    if name == server_info.default_sink_name:
-                        devices["defaults"]["speaker"] = description
-                for description, name in devices["microphone"].items():
-                    if name == server_info.default_source_name:
-                        devices["defaults"]["microphone"] = description
-        except Exception as err:
-            logger.error("Pulseaudio is not installed on your system: %s", err)
+                    server_info = pulse.server_info()
+                    for description, name in devices["speaker"].items():
+                        if name == server_info.default_sink_name:
+                            devices["defaults"]["speaker"] = description
+                    for description, name in devices["microphone"].items():
+                        if name == server_info.default_source_name:
+                            devices["defaults"]["microphone"] = description
+            except Exception as err:
+                logger.error("Error with Pulseaudio: %s", err)
 
         if len(devices["defaults"]["speaker"]) != len(
             self.devices["defaults"].get("speaker", [])
