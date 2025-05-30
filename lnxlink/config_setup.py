@@ -236,8 +236,13 @@ def setup_systemd(config_path):
         # Install on SystemD
         Path(service_location).mkdir(parents=True, exist_ok=True)
         exec_cmd = f"{shutil.which('lnxlink')} -c {config_path}"
-        with open(f"{service_location}/lnxlink.service", "wb") as config:
-            config.write(systemd_service.format(exec_cmd=exec_cmd).encode())
+        service_text = systemd_service.format(exec_cmd=exec_cmd).encode()
+        try:
+            with open(f"{service_location}/lnxlink.service", "wb") as config:
+                config.write(service_text)
+        except PermissionError:
+            cmd = f'echo "{service_text}" | {sudo} tee "{service_location}/lnxlink.service"'
+            subprocess.call(cmd, shell=True)
 
         cmd = f"{sudo} chmod +x {service_location}/lnxlink.service"
         subprocess.call(cmd, shell=True)
