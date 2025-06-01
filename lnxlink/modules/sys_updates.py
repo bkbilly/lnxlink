@@ -1,5 +1,6 @@
 """Checks for system updates"""
 import time
+import os
 from shutil import which
 from lnxlink.modules.scripts.helpers import syscommand
 
@@ -17,7 +18,12 @@ class Addon:
             "packages": {"updates": []},
         }
         self.package_manager = None
-        if which("apt") is not None:
+        if os.path.exists("/usr/lib/update-notifier/apt-check"):
+            self.package_manager = {
+                "command": "/usr/lib/update-notifier/apt-check --package-names 2>&1",
+                "largerthan": 0,
+            }
+        elif which("apt") is not None:
             self.package_manager = {
                 "command": "apt list --upgradable | grep -v '.*\\.\\.\\.' | awk -F '/' '{print $1}'",
                 "largerthan": 0,
