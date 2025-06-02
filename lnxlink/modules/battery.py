@@ -70,6 +70,16 @@ class Addon:
             .get("exclude_batteries", [])
         )
 
+        u_power_states = {
+            0: "unknown",
+            1: "charging",
+            2: "discharging",
+            3: "empty",
+            4: "fully charged",
+            5: "pending charge",
+            6: "pending discharge",
+        }
+
         for device in self.get_batteries():
             if len(battery_includes) != 0:
                 if not any(device["Model"].startswith(x) for x in battery_includes):
@@ -101,6 +111,9 @@ class Addon:
                         "serial": device["Serial"],
                         "native_path": native_path,
                         "rechargeable": device["IsRechargeable"],
+                        "status": u_power_states[device["State"]],
+                        "time_to_empty": device["TimeToEmpty"],
+                        "time_to_full": device["TimeToFull"],
                     },
                 }
         return devices
@@ -153,6 +166,9 @@ class Addon:
                         path, device_iface, "IsRechargeable"
                     ),
                     "Vendor": self.get_property(path, device_iface, "Vendor"),
+                    "State": self.get_property(path, device_iface, "State"),
+                    "TimeToEmpty": self.get_property(path, device_iface, "TimeToEmpty"),
+                    "TimeToFull": self.get_property(path, device_iface, "TimeToFull"),
                 }
                 if props["Model"] + props["NativePath"] not in ["bb", "b", ""]:
                     if isinstance(props["Percentage"], float):
