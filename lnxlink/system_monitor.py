@@ -1,5 +1,6 @@
 """Monitors for shutdown/sleep events"""
 
+import time
 import threading
 import signal
 import logging
@@ -57,16 +58,22 @@ class MonitorSuspend:
 
     def watch_loop(self):
         """Run the dbus check for new sleep messages"""
+        errors = 0
         while True:
             try:
                 message = self.connection.receive()
                 self.callback(message.body[0])
+                errors = 0
             except Exception as err:
                 logger.error(
                     "DBus Error: %s, %s",
                     err,
                     traceback.format_exc(),
                 )
+                time.sleep(1)
+                errors += 1
+                if errors > 10:
+                    break
 
     def start(self):
         """Start the timer of the thread"""
