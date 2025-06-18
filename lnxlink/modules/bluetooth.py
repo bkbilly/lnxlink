@@ -76,24 +76,30 @@ class Addon:
         stdout, _, returncode = syscommand("bluetoothctl devices Paired")
         if returncode != 0:
             stdout, _, _ = syscommand("bluetoothctl paired-devices")
-        if stdout != "":
-            for device in stdout.split("\n"):
-                _, mac, name = device.split(" ", maxsplit=2)
-                stdoutdevice, _, _ = syscommand(f"bluetoothctl info {mac}")
-                power = "OFF"
-                if re.search(r"Connected:\s*yes", stdoutdevice):
-                    power = "ON"
-                battery = None
-                match = re.search(r"Battery Percentage:.*\((\d+)\)", stdoutdevice)
-                if match:
-                    battery = match.group(1)
-                data["devices"][mac] = {
-                    "name": name,
-                    "power": power,
-                    "attributes": {
-                        "battery": battery,
-                    },
-                }
+        if stdout == "":
+            return data
+        for device in stdout.split("\n"):
+            try:
+                device_type, mac, name = device.split(" ", maxsplit=2)
+                if device_type != "Device":
+                    continue
+            except Exception:
+                continue
+            stdoutdevice, _, _ = syscommand(f"bluetoothctl info {mac}")
+            power = "OFF"
+            if re.search(r"Connected:\s*yes", stdoutdevice):
+                power = "ON"
+            battery = None
+            match = re.search(r"Battery Percentage:.*\((\d+)\)", stdoutdevice)
+            if match:
+                battery = match.group(1)
+            data["devices"][mac] = {
+                "name": name,
+                "power": power,
+                "attributes": {
+                    "battery": battery,
+                },
+            }
 
         return data
 
