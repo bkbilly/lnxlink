@@ -61,6 +61,7 @@ exclude:
   - audio_select
   - bash
   - battery
+  - beacondb
   - boot_select
   - brightness
   - fullscreen

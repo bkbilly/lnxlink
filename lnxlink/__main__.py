@@ -346,6 +346,9 @@ class LNXlink:
                 "command_topic": command_topic,
                 "options": options.get("options", []),
             },
+            "device_tracker": {
+                "json_attributes_topic": state_topic,
+            },
             "media_player": {
                 "name": self.config["mqtt"]["clientId"],
                 "state_state_topic": f"{state_topic}/state",
