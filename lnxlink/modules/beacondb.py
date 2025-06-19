@@ -12,7 +12,7 @@ from lnxlink.modules.scripts.helpers import syscommand
 logger = logging.getLogger("lnxlink")
 
 
-def scan_wifi_nmcli_with_csv():
+def scan_wifi_nmcli():
     """Command to list Wi-Fi access points with their details"""
     command = ["nmcli", "-t", "-f", "BSSID,SSID,SIGNAL", "dev", "wifi", "list"]
     stdout, _, _ = syscommand(command, timeout=7)
@@ -75,15 +75,37 @@ class Addon:
         self.position = None
         if which("nmcli") is None:
             raise SystemError("System command 'nmcli' not found")
+        self.lnxlink.add_settings(
+            "beacondb",
+            {
+                "wifi_positions": [
+                    {
+                        "ssid": "mywifi_example",
+                        "latitude": 40.644400,
+                        "longitude": 21.494300,
+                        "accuracy": 2500,
+                    },
+                ],
+            },
+        )
 
     def get_info(self):
         """Gather information from the system"""
         cur_time = time.time()
         if cur_time - self.last_time > self.update_interval:
             self.last_time = cur_time
-            wifi_data = scan_wifi_nmcli_with_csv()
+            wifi_data = scan_wifi_nmcli()
+            use_localconfig = False
+            for config in self.lnxlink.config["settings"]["beacondb"]["wifi_positions"]:
+                if any(data["ssid"] == config.get("ssid") for data in wifi_data):
+                    use_localconfig = True
+                    self.position = {
+                        "latitude": config.get("latitude"),
+                        "longitude": config.get("longitude"),
+                        "gps_accuracy": config.get("accuracy", 200),
+                    }
             location_result = get_location_from_beacondb(wifi_data, consider_ip=True)
-            if location_result:
+            if location_result and not use_localconfig:
                 self.position = {
                     "latitude": location_result.get("location", {}).get("lat"),
                     "longitude": location_result.get("location", {}).get("lng"),
