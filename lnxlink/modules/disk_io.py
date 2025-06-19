@@ -10,6 +10,7 @@ class Addon:
     def __init__(self, lnxlink):
         """Setup addon"""
         self.name = "DiskIO"
+        self.lnxlink = lnxlink
         self.disks = self._get_disks()
 
         self.stat_items = [
