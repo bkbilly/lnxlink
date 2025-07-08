@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name              = "lnxlink"
-version           = "2025.6.0"
+version           = "2025.7.0"
 description       = "Internet Of Things (IOT) integration with Linux using MQTT"
 readme            = "README.md"
 keywords          = ["lnxlink"]
@@ -23,7 +23,8 @@ dependencies = [
     "paho-mqtt>=2.1.0",
     "requests>=2.31.0",
     "psutil>=7.0.0",
-    "inotify>=0.2.10"
+    "inotify>=0.2.10",
+    "jeepney>=0.9.0"
 ]
 
 [project.urls]

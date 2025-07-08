@@ -1,7 +1,9 @@
 """Shutdown the system"""
 import logging
 from shutil import which
-from lnxlink.modules.scripts.helpers import import_install_package, syscommand
+from jeepney import DBusAddress, new_method_call
+from jeepney.io.blocking import open_dbus_connection
+from lnxlink.modules.scripts.helpers import syscommand
 
 logger = logging.getLogger("lnxlink")
 
@@ -13,19 +15,6 @@ class Addon:
         """Setup addon"""
         self.name = "Shutdown"
         self.lnxlink = lnxlink
-        if which("systemctl") is None and which("shutdown") is None:
-            self.jeepney = import_install_package(
-                "jeepney",
-                ">=0.9.0",
-                (
-                    "jeepney",
-                    [
-                        "DBusAddress",
-                        "new_method_call",
-                        "io.blocking.open_dbus_connection",
-                    ],
-                ),
-            )
 
     def start_control(self, topic, data):
         """Control system"""
@@ -37,10 +26,10 @@ class Addon:
             _, _, returncode = syscommand("shutdown now")
         if returncode != 0:
             try:
-                conn = self.jeepney.io.blocking.open_dbus_connection(bus="SYSTEM")
+                conn = open_dbus_connection(bus="SYSTEM")
                 conn.send(
-                    self.jeepney.new_method_call(
-                        self.jeepney.DBusAddress(
+                    new_method_call(
+                        DBusAddress(
                             object_path="/org/freedesktop/login1",
                             bus_name="org.freedesktop.login1",
                             interface="org.freedesktop.login1.Manager",

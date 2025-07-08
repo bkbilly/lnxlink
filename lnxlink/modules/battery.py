@@ -1,6 +1,7 @@
 """Gets the battery information of connected devices"""
 from xml.etree import ElementTree
-from lnxlink.modules.scripts.helpers import import_install_package
+from jeepney import DBusAddress, new_method_call
+from jeepney.io.blocking import open_dbus_connection
 
 
 class Addon:
@@ -10,23 +11,8 @@ class Addon:
         """Setup addon"""
         self.name = "Battery"
         self.lnxlink = lnxlink
-        self._requirements()
+        self.conn = open_dbus_connection(bus="SYSTEM")
         self.devices = self._get_devices()
-
-    def _requirements(self):
-        self.jeepney = import_install_package(
-            "jeepney",
-            ">=0.9.0",
-            (
-                "jeepney",
-                [
-                    "DBusAddress",
-                    "new_method_call",
-                    "io.blocking.open_dbus_connection",
-                ],
-            ),
-        )
-        self.conn = self.jeepney.io.blocking.open_dbus_connection(bus="SYSTEM")
 
     def exposed_controls(self):
         """Exposes to home assistant"""
@@ -121,10 +107,8 @@ class Addon:
     def dbus_paths(self, service, object_path, paths):
         """Recursively get all child object paths via introspection"""
         introspect_iface = "org.freedesktop.DBus.Introspectable"
-        addr = self.jeepney.DBusAddress(
-            object_path, bus_name=service, interface=introspect_iface
-        )
-        msg = self.jeepney.new_method_call(addr, "Introspect")
+        addr = DBusAddress(object_path, bus_name=service, interface=introspect_iface)
+        msg = new_method_call(addr, "Introspect")
         reply = self.conn.send_and_get_reply(msg)
         xml_string = reply.body[0]
 
@@ -138,12 +122,12 @@ class Addon:
 
     def get_property(self, object_path, interface, prop):
         """Gets the device property"""
-        addr = self.jeepney.DBusAddress(
+        addr = DBusAddress(
             object_path,
             bus_name="org.freedesktop.UPower",
             interface="org.freedesktop.DBus.Properties",
         )
-        msg = self.jeepney.new_method_call(addr, "Get", "ss", (interface, prop))
+        msg = new_method_call(addr, "Get", "ss", (interface, prop))
         reply = self.conn.send_and_get_reply(msg)
         return reply.body[0][1]
 

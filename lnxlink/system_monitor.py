@@ -5,8 +5,9 @@ import threading
 import signal
 import logging
 import traceback
+from jeepney import MatchRule, DBus
+from jeepney.io.blocking import open_dbus_connection, Proxy
 
-from lnxlink.modules.scripts.helpers import import_install_package
 
 logger = logging.getLogger("lnxlink")
 
@@ -17,29 +18,10 @@ class MonitorSuspend:
     def __init__(self, callback):
         self.callback = callback
         self.use = False
-        self.jeepney = import_install_package(
-            "jeepney",
-            ">=0.9.0",
-            (
-                "jeepney",
-                [
-                    "new_method_call",
-                    "DBusAddress",
-                    "MatchRule",
-                    "DBus",
-                    "io.blocking.open_dbus_connection",
-                    "io.blocking.Proxy",
-                ],
-            ),
-        )
         try:
-            self.connection = self.jeepney.io.blocking.open_dbus_connection(
-                bus="SYSTEM"
-            )
-            bus_proxy = self.jeepney.io.blocking.Proxy(
-                self.jeepney.DBus(), self.connection
-            )
-            sleep_match = self.jeepney.MatchRule(
+            self.connection = open_dbus_connection(bus="SYSTEM")
+            bus_proxy = Proxy(DBus(), self.connection)
+            sleep_match = MatchRule(
                 type="signal",
                 interface="org.freedesktop.login1.Manager",
                 member="PrepareForSleep",
