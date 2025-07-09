@@ -1,22 +1,15 @@
 name: Docker Test
 
-# This workflow uses actions that are not certified by GitHub.
-# They are provided by a third-party and are governed by
-# separate terms of service, privacy policy, and support
-# documentation.
-
 on: [push, pull_request]
 
 env:
-  # Use docker.io for Docker Hub if empty
+  # Use docker.io for Docker Hub
   REGISTRY: docker.io
   # github.repository as <account>/<repo>
   IMAGE_NAME: bkbillybk/lnxlink
 
-
 jobs:
   build:
-
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -27,7 +20,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       # Set up BuildKit Docker container builder to be able to build
       # multi-platform images and export cache
@@ -35,11 +28,11 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3.0.0
 
-      # Login against a Docker registry except on PR
+      # Login to Docker Hub only on a 'push' event
       # https://github.com/docker/login-action
       - name: Log into registry ${{ env.REGISTRY }}
+        if: github.event_name == 'push'
         uses: docker/login-action@v3.0.0
-        if: ${{ github.event_name == 'push' }}
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ secrets.HUB_USERNAME }}
@@ -52,15 +45,19 @@ jobs:
         uses: docker/metadata-action@v5.5.0
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            # Hardcode the dev tag for all builds
+            type=raw,value=dev
 
-      # Build and push Docker image with Buildx (don't push on PR)
+      # Build and push the image on a 'push' event
       # https://github.com/docker/build-push-action
       - name: Build and push Docker image
         id: build-and-push
         uses: docker/build-push-action@v5.1.0
         with:
           context: .
-          push: false
+          # Push only when the event is a 'push'
+          push: ${{ github.event_name == 'push' }}
           platforms: linux/amd64,linux/arm64/v8,linux/arm/v7,linux/arm64,linux/386
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
