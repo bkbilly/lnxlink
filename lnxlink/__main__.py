@@ -147,6 +147,7 @@ class LNXlink:
                                 "method": addon.get_info,
                             }
                         )
+                self.mqtt.send_lwt("ON")
                 for method in methods_to_run:
                     self.run_module(method["name"], method["method"])
             if self.stop_event.wait(timeout=self.config["update_interval"]):
@@ -157,7 +158,6 @@ class LNXlink:
         """Loop through the queue list and publish data to MQTT broker"""
         while not self.stop_event.is_set():
             if not self.kill:
-                self.mqtt.send_lwt("ON")
                 time.sleep(0.01)
                 for name, pub_data in self.publ_queue:
                     self.publish_monitor_data(name, pub_data)
