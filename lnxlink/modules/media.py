@@ -128,7 +128,17 @@ class Addon:
             "duration": None,
             "mediavolume": self.mediavolume,
         }
-        if len(self.players) > 0:
+        if self.process is not None and self.process.poll() is None:
+            if self.prev_info != info:
+                self.prev_info = info
+                info["status"] = "playing"
+                info["title"] = "Remote Message"
+                self.lnxlink.run_module(f"{self.name}/volume", info["volume"])
+                self.lnxlink.run_module(f"{self.name}/state", info["status"])
+                self.lnxlink.run_module(f"{self.name}/title", info["title"])
+                self.lnxlink.run_module(f"{self.name}/volume", info["volume"])
+                self.lnxlink.run_module(f"{self.name}/albumart", "")
+        elif len(self.players) > 0:
             player = self.players[0]
             info["playing"] = True
             info["title"] = player["title"]
@@ -139,7 +149,7 @@ class Addon:
             info["status"] = player["status"].lower()
             if self.mediavolume == "ON":
                 info["volume"] = player["volume"]
-            if self.playmedia_thread is not None:
+            if self.process is not None and self.process.poll() is None:
                 info["status"] = "playing"
             if self.prev_info != info:
                 self.prev_info = info
@@ -153,8 +163,6 @@ class Addon:
                 self.lnxlink.run_module(f"{self.name}/albumart", self.get_thumbnail())
         else:
             info["status"] = "off"
-            if self.playmedia_thread is not None:
-                info["status"] = "playing"
             if self.prev_info != info:
                 self.prev_info = info
                 self.lnxlink.run_module(f"{self.name}/state", info["status"])
@@ -184,13 +192,14 @@ class Addon:
 
     def stop_playmedia(self):
         """Stops the background media process if it's running"""
-        if self.playmedia_thread is not None:
+        if self.process is not None and self.process.poll() is None:
             try:
                 self.playmedia_thread.join(0)
                 self.process.kill()
                 self.playmedia_thread = None
             except Exception:
                 self.playmedia_thread = None
+        self.get_info()
 
     # pylint: disable=too-many-branches
     def play_media(self, data):
@@ -231,27 +240,27 @@ class Addon:
         audio_extentions = [".mp3", ".wav", ".ogg", ".wma", ".aac"]
         video_extentions = [".mp4", ".avi", ".mov", ".mkv", ".mpg", ".mpeg"]
         image_extentions = [".jpg", ".jpeg", ".png", ".gif", ".ico"]
+        url = data["media_id"]
+        media_type = "other"
+        if ".m3u" in url:
+            media_type = "playlist"
+        elif any(ext in url for ext in audio_extentions):
+            media_type = "audio"
+        elif any(ext in url for ext in video_extentions):
+            media_type = "video"
+        elif any(ext in url for ext in image_extentions):
+            media_type = "image"
+        elif "audio" in data["media_type"]:
+            media_type = "audio"
+        elif "music" in data["media_type"]:
+            media_type = "audio"
+        elif "video" in data["media_type"]:
+            media_type = "video"
+        elif "image" in data["media_type"]:
+            media_type = "image"
+
         for player, options in players.items():
             if which(player) is not None:
-                url = data["media_id"]
-                media_type = "other"
-                if ".m3u" in url:
-                    media_type = "playlist"
-                elif any(ext in url for ext in audio_extentions):
-                    media_type = "audio"
-                elif any(ext in url for ext in video_extentions):
-                    media_type = "video"
-                elif any(ext in url for ext in image_extentions):
-                    media_type = "image"
-                elif "audio" in data["media_type"]:
-                    media_type = "audio"
-                elif "music" in data["media_type"]:
-                    media_type = "audio"
-                elif "video" in data["media_type"]:
-                    media_type = "video"
-                elif "image" in data["media_type"]:
-                    media_type = "image"
-
                 if media_type not in options["supported_media"]:
                     continue
                 self.playmedia_thread = threading.Thread(
@@ -283,6 +292,8 @@ class Addon:
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
         )
+        self.process.wait()
+        logger.info("Ended playing media...")
 
     def _get_audio_system(self):
         """Get system volume type"""

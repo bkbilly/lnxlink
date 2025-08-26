@@ -1,8 +1,12 @@
 [![license](https://img.shields.io/badge/license-MIT-blue)](LICENSE.md)
 [![OS - Linux](https://img.shields.io/badge/OS-Linux-blue?logo=linux&logoColor=white)]()
 [![Python 3.7](https://img.shields.io/badge/Python-3.7-blue?logo=python&logoColor=white)]()
-[![PyPI](https://img.shields.io/pypi/v/lnxlink?logo=pypi&logoColor=white)](https://pypi.python.org/pypi/lnxlink/)
 [![Last commit](https://img.shields.io/github/last-commit/bkbilly/lnxlink?color=blue&logo=github&logoColor=white)]()
+
+[![PyPI](https://img.shields.io/pypi/v/lnxlink?logo=pypi&logoColor=white)](https://pypi.python.org/pypi/lnxlink/)
+[![Docker](https://img.shields.io/docker/v/bkbillybk/lnxlink?logo=docker&logoColor=white&label=Docker&color=blue)](https://hub.docker.com/r/bkbillybk/lnxlink)
+[![Flathub Version](https://img.shields.io/flathub/v/io.github.bkbilly.lnxlink?logo=flathub)](https://flathub.org/apps/io.github.bkbilly.lnxlink)
+
 
 
 # LNXlink
