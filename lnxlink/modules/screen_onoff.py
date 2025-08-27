@@ -44,7 +44,13 @@ class Addon:
 
     def start_control(self, topic, data):
         """Control system"""
-        if data.lower() == "off":
-            syscommand(f"xset -display {self.lnxlink.display} dpms force off")
-        elif data.lower() == "on":
-            syscommand(f"xset -display {self.lnxlink.display} dpms force on")
+        command = data.lower()
+        if not command in {"on", "off"}:
+            logger.error("Expected `on` or `off`, received: `%s`", command)
+        if self.lnxlink.display is not None:
+            maybe_display = f"-display {self.lnxlink.display}"
+        else:
+            maybe_display = ""
+        syscommand(
+            f"xset {maybe_display} dpms force {command}"
+        )
