@@ -202,9 +202,10 @@ class LNXlink:
         if status:
             logger.info("Power Down detected.")
             self.mqtt.send_lwt("OFF")
-            for topic, message in self.prev_publish.items():
-                message = self.replace_values_with_none(message)
-                self.mqtt.publish(topic, message)
+            if self.config["mqtt"]["clear_on_off"]:
+                for topic, message in self.prev_publish.items():
+                    message = self.replace_values_with_none(message)
+                    self.mqtt.publish(topic, message)
         else:
             logger.info("Power Up detected.")
             if self.kill:

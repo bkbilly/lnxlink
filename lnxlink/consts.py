@@ -50,7 +50,7 @@ mqtt:
   lwt:
     enabled: true
     qos: 1
-    retain: false
+  clear_on_off: true
 update_interval: 5
 update_on_change: false
 hass_url:

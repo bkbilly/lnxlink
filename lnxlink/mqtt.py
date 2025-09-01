@@ -33,7 +33,7 @@ class MQTT:
             topic,
             payload=payload,
             qos=self.config["mqtt"]["lwt"]["qos"],
-            retain=self.config["mqtt"]["lwt"]["retain"],
+            retain=True,
         )
         logger.debug("Message RC Code: %s, MQTT Number: %s", msg_info.rc, msg_info.mid)
         self.publish_rc_code = msg_info.rc
