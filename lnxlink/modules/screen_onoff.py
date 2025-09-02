@@ -45,7 +45,7 @@ class Addon:
     def start_control(self, topic, data):
         """Control system"""
         command = data.lower()
-        if not command in {"on", "off"}:
+        if command not in {"on", "off"}:
             logger.error("Expected `on` or `off`, received: `%s`", command)
         if self.lnxlink.display is not None:
             maybe_display = f"-display {self.lnxlink.display}"
