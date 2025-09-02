@@ -51,6 +51,4 @@ class Addon:
             maybe_display = f"-display {self.lnxlink.display}"
         else:
             maybe_display = ""
-        syscommand(
-            f"xset {maybe_display} dpms force {command}"
-        )
+        syscommand(f"xset {maybe_display} dpms force {command}")
