@@ -44,6 +44,7 @@ class Addon:
                 "icon": "mdi:music",
                 "value_template": "{{ value_json.status }}",
                 "attributes_template": "{{ value_json | tojson }}",
+                "enabled": False,
             },
             "Media Player": {
                 "type": "media_player",
