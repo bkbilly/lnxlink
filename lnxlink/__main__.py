@@ -172,8 +172,7 @@ class LNXlink:
         back to MQTT server"""
         logger.info("MQTT connection: %s", self.mqtt.get_rcode_name(rcode))
         client.subscribe(f"{self.config['pref_topic']}/commands/#")
-        if self.config["mqtt"]["lwt"]["enabled"]:
-            self.mqtt.send_lwt("ON")
+        self.mqtt.send_lwt("ON")
         if self.config["mqtt"]["discovery"]["enabled"]:
             self.setup_discovery()
         if self.kill is None:

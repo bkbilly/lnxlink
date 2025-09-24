@@ -59,11 +59,12 @@ class MQTT:
         """Used when exiting"""
         self.client.disconnect()
         logger.info("Disconnected from MQTT.")
-        if self.config["mqtt"]["lwt"]["enabled"]:
-            self.send_lwt("OFF")
+        self.send_lwt("OFF")
 
     def send_lwt(self, status):
-        """Sends the status of lwt"""
+        """Sends the status of lwt, ON or OFF"""
+        if status == "OFF" and not self.config["mqtt"]["lwt"]["enabled"]:
+            return
         self.client.publish(
             f"{self.config['pref_topic']}/lwt",
             payload=status,
