@@ -99,10 +99,6 @@ def read_config(config_path):
         conf["mqtt"]["user"] = os.environ.get("LNXLINK_MQTT_USER")
     if os.environ.get("LNXLINK_MQTT_PASS") not in [None, ""]:
         conf["mqtt"]["pass"] = os.environ.get("LNXLINK_MQTT_PASS")
-    if os.environ.get("LNXLINK_HASS_URL") not in [None, ""]:
-        conf["hass_url"] = os.environ.get("LNXLINK_HASS_URL")
-    if os.environ.get("LNXLINK_HASS_API") not in [None, ""]:
-        conf["hass_api"] = os.environ.get("LNXLINK_HASS_API")
 
     return conf
 
