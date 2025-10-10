@@ -1,9 +1,7 @@
 """Assign hotkeys to run commands"""
-import json
 import logging
 from datetime import datetime
-from requests import post, get
-from lnxlink.modules.scripts.helpers import import_install_package, syscommand
+from lnxlink.modules.scripts.helpers import import_install_package
 
 
 logger = logging.getLogger("lnxlink")
