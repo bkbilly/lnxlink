@@ -390,7 +390,7 @@ class LNXlink:
         if "value_template" in discovery and options["type"] in ["camera", "image"]:
             del discovery["json_attributes_topic"]
             del discovery["json_attributes_template"]
-        discovery_prefix = self.config["mqtt"]["discovery"]["enabled"]
+        discovery_prefix = self.config["mqtt"]["discovery"]["prefix"]
         self.mqtt.publish(
             f"{discovery_prefix}/{options['type']}/lnxlink/{discovery['unique_id']}/config",
             payload=json.dumps(discovery),

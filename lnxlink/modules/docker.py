@@ -47,6 +47,11 @@ class Addon:
                 "value_template": f"{{{{ value_json.get('{container}', {{}}).get('running') }}}}",
                 "attributes_template": attr_templ,
             }
+            discovery_info[f"Docker Update {container}"] = {
+                "type": "binary_sensor",
+                "icon": "mdi:docker",
+                "value_template": f"{{{{ value_json.get('{container}', {{}}).get('update') }}}}",
+            }
         discovery_info["Docker Prune"] = {
             "type": "button",
             "icon": "mdi:docker",
@@ -88,7 +93,7 @@ class Addon:
                     "images": ",".join(container.image.tags),
                     "ports": list(ports),
                     "status": container.status,
-                    "update_available": None,
+                    "update": None,
                 },
             }
 
@@ -104,9 +109,11 @@ class Addon:
                 for container in containers.values():
                     if remoteimage_info["tag"] in container["attrs"]["images"]:
                         if remoteimage_info["status"] == "update_available":
-                            container["attrs"]["update_available"] = True
+                            container["attrs"]["update"] = True
+                            container["update"] = "ON"
                         elif remoteimage_info["status"] == "up_to_date":
-                            container["attrs"]["update_available"] = False
+                            container["attrs"]["update"] = False
+                            container["update"] = "OFF"
 
         return containers
 
