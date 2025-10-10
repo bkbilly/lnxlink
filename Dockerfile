@@ -1,7 +1,7 @@
 # ---- Stage 1: The Builder ----
 # Use the same base image to ensure compatibility of compiled libraries.
 # We'll install build tools and our Python dependencies here.
-FROM docker.io/python:3.12-slim-bookworm AS builder
+FROM docker.io/python:3.14-slim-bookworm AS builder
 
 # 1. Install build-time system dependencies
 # - Use --no-install-recommends to avoid pulling in unnecessary packages.
@@ -39,7 +39,7 @@ RUN pip --no-cache-dir install \
 
 # ---- Stage 2: The Final Image ----
 # Start from a clean base image. It contains Python but none of the build tools.
-FROM docker.io/python:3.12-slim-bookworm
+FROM docker.io/python:3.14-slim-bookworm
 
 WORKDIR /opt/lnxlink
 
