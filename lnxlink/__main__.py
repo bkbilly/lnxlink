@@ -250,6 +250,7 @@ class LNXlink:
                 traceback.format_exc(),
             )
 
+    # pylint: disable=too-many-locals
     def setup_discovery_entities(self, addon, service, exp_name, options):
         """Send discovery information on Home Assistant for controls"""
         discovery_template = {
@@ -389,8 +390,9 @@ class LNXlink:
         if "value_template" in discovery and options["type"] in ["camera", "image"]:
             del discovery["json_attributes_topic"]
             del discovery["json_attributes_template"]
+        discovery_prefix = self.config["mqtt"]["discovery"]["enabled"]
         self.mqtt.publish(
-            f"homeassistant/{options['type']}/lnxlink/{discovery['unique_id']}/config",
+            f"{discovery_prefix}/{options['type']}/lnxlink/{discovery['unique_id']}/config",
             payload=json.dumps(discovery),
         )
         if options["type"] == "media_player":

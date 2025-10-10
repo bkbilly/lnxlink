@@ -47,6 +47,7 @@ mqtt:
     ca_certs: ""
   discovery:
     enabled: true
+    prefix: "homeassistant"
   lwt:
     enabled: true
     qos: 1

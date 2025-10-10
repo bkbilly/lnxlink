@@ -224,7 +224,6 @@ class DockerUpdateStatus:
         """
         Checks a single image tag and returns a result dictionary.
         """
-        # print(f"🔎 Checking {full_tag}...")
         try:
             registry, repo, tag = RegistryClient.parse_repo_name(full_tag)
             local_digest = ""

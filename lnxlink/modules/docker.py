@@ -10,7 +10,7 @@ logger = logging.getLogger("lnxlink")
 class Addon:
     """Addon module"""
 
-    # pylint: disable=too-many-branches,too-many-instance-attributes
+    # pylint: disable=too-many-branches
     def __init__(self, lnxlink):
         """Setup addon"""
         self.name = "Docker"
@@ -29,7 +29,6 @@ class Addon:
                 "check_update": 24,
             },
         )
-        self.check_update = self.lnxlink.config["settings"]["docker"]["check_update"]
         self.prev_update = 0
         self.images_remoteinfo = []
         self.containers = self._get_containers()
@@ -94,8 +93,9 @@ class Addon:
             }
 
         cur_time = time.time() / 60 / 60
-        if self.check_update is not None:
-            if cur_time - self.prev_update > self.check_update:
+        check_update = self.lnxlink.config["settings"]["docker"]["check_update"]
+        if check_update is not None:
+            if cur_time - self.prev_update > check_update:
                 self.prev_update = cur_time
                 docker_update_status = DockerUpdateStatus()
                 self.images_remoteinfo = docker_update_status.get_updates_sync(images)
