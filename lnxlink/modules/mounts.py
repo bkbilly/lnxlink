@@ -13,6 +13,13 @@ class Addon:
         self.name = "Mounts"
         self.lnxlink = lnxlink
         self.lib = {}
+        self.lnxlink.add_settings(
+            "mounts",
+            {
+                "autocheck": False,
+                "directories": [],
+            },
+        )
         self.mounts = self._get_mounts()
 
     def exposed_controls(self):

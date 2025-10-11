@@ -51,6 +51,13 @@ class Addon:
         self.started = False
         if not self._is_raspberry():
             raise SystemError("Not supported non Raspberry PI devices")
+        self.lnxlink.add_settings(
+            "gpio",
+            {
+                "inputs": [],
+                "outputs": [],
+            },
+        )
         self._requirements()
 
     def get_info(self):

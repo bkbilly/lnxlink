@@ -58,7 +58,6 @@ modules:
 custom_modules:
 exclude:
   - audio_select
-  - bash
   - battery
   - beacondb
   - boot_select
@@ -73,7 +72,6 @@ exclude:
   - keyboard_hotkeys
   - media
   - mouse
-  - network
   - notify
   - power_profile
   - restful
@@ -85,28 +83,5 @@ exclude:
   - webcam
   - xdg_open
 settings:
-  systemd:
-  gpio:
-    inputs:
-    outputs:
-  hotkeys:
-  battery:
-    include_batteries: []
-    exclude_batteries: []
-  disk_usage:
-    include_disks: []
-    exclude_disks: []
   statistics: "https://analyzer.bkbilly.workers.dev"
-  bash:
-    allow_any_command: False
-    expose:
-  mounts:
-    autocheck: false
-    directories: []
-  ir_remote:
-    receiver: null
-    transmitter: null
-    buttons: []
-  restful:
-    port: 8112
 """

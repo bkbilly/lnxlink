@@ -75,19 +75,7 @@ class Addon:
         self.position = None
         if which("nmcli") is None:
             raise SystemError("System command 'nmcli' not found")
-        self.lnxlink.add_settings(
-            "beacondb",
-            {
-                "wifi_positions": [
-                    {
-                        "ssid": "mywifi_example",
-                        "latitude": 40.644400,
-                        "longitude": 21.494300,
-                        "accuracy": 2500,
-                    },
-                ],
-            },
-        )
+        self.lnxlink.add_settings("beacondb", {"wifi_positions": []})
 
     def get_info(self):
         """Gather information from the system"""

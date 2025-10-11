@@ -14,6 +14,7 @@ class Addon:
         """Setup addon"""
         self.name = "SystemD"
         self.lnxlink = lnxlink
+        self.lnxlink.add_settings("systemd", [])
         self.services = self.lnxlink.config["settings"].get("systemd", [])
         self.services = [] if self.services is None else self.services
         if not self.services:

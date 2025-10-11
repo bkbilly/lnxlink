@@ -17,6 +17,11 @@ class Addon:
         self.started = False
         self.lib = {}
         self._requirements()
+        self.lnxlink.add_settings("hotkeys", [])
+        if len(self.lnxlink.config["settings"]["hotkeys"] == 0):
+            logger.warning("No hotkeys configured for Keyboard Hotkeys module")
+            logger.warning("  Please add hotkeys in the settings like so:")
+            logger.warning("  - key: <ctrl>+<alt>+a")
 
     def exposed_controls(self):
         """Exposes to home assistant"""

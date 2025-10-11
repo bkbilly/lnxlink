@@ -12,6 +12,13 @@ class Addon:
         self.name = "Battery"
         self.lnxlink = lnxlink
         self.conn = open_dbus_connection(bus="SYSTEM")
+        self.lnxlink.add_settings(
+            "battery",
+            {
+                "include_batteries": [],
+                "exclude_batteries": [],
+            },
+        )
         self.devices = self._get_devices()
 
     def exposed_controls(self):

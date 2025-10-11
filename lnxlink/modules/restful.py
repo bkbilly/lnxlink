@@ -16,6 +16,7 @@ class Addon:
         """Setup addon"""
         self.name = "RESTful"
         self.lnxlink = lnxlink
+        self.lnxlink.add_settings("restful", {"port": 8112})
         self._requirements()
 
     def _requirements(self):

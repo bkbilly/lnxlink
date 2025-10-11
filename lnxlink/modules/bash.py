@@ -14,6 +14,13 @@ class Addon:
         self.name = "bash"
         self.lnxlink = lnxlink
         self.discovery_info = {}
+        self.lnxlink.add_settings(
+            "bash",
+            {
+                "allow_any_command": False,
+                "expose": [],
+            },
+        )
 
     def get_info(self):
         """Gather information from the system"""
