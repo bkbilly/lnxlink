@@ -17,7 +17,7 @@ settings:
 
 ## Docker
 
-If no configuration is provided, then all the available docker containers will be exposed. This can be configured to only show the ones in the included list or ignore the ones in the exclude list:
+If no configuration is provided, then all the available docker containers will be exposed. This can be configured to only show the ones in the included list or ignore the ones in the exclude list. Also by setting check\_update value it will create binary sensors that check if there is an update available.
 
 ```yaml
 settings:
@@ -25,6 +25,8 @@ settings:
     include:
       - esphome
     exclude: []
+    check_update: 24
+    expose_controls: True
 ```
 
 ## GPIO
@@ -207,5 +209,19 @@ settings:
   mounts:
     autocheck: false
     directories:
-      - /mnt/mymount
+      - /mnt/mymount      
+```
+
+## BeaconDB
+
+Setup custom locations for specific WiFi networks.
+
+```yaml
+beacondb:
+  wifi_positions:
+  - ssid: mywifi_example
+    latitude: 40.644400
+    longitude: 21.494300
+    accuracy: 2500
+
 ```

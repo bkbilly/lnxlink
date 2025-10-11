@@ -68,6 +68,7 @@ mqtt:
   clientId: DESKTOP-Linux
   server: server
   port: 1883
+  clear_on_off: true
   auth:
     user: user
     pass: pass
@@ -77,20 +78,22 @@ mqtt:
     ca_certs: ''
   discovery:
     enabled: true
+    prefix: homeassistant
   lwt:
     enabled: true
     qos: 1
-    retain: false
 update_interval: 5
 update_on_change: false
-hass_url: null
-hass_api: null
+modules: []
+custom_modules: []
+exclude: []
+settings: []
 ```
 
 * **MQTT Topic:** This consists of the prefix and the clientId: `/lnxlink/DESKTOP-Linux`**.**
 * **MQTT Encryption:** To use a secured MQTT broker, you will have to enable the `tls` option and optionally define the `keyfile`, `certfile`, `ca_certs` files.
 * **Discovery Enabled:** It sends the settings for configuring Home Assistant entities.
-* **Retain:** Keeps the values of entities on MQTT broker.
+* **Clear On Off:** Clears mqtt data from broker when stopped.
 * **Update Interval:** Sets the interval in seconds for when the sensors are updated.
 * **Update on change:** Sends an update to the MQTT broker when a change is detected or every 15 minutes.
 
