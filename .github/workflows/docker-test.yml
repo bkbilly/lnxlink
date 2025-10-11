@@ -58,6 +58,6 @@ jobs:
           context: .
           # Push only when the event is a 'push'
           push: ${{ github.event_name == 'push' }}
-          platforms: linux/amd64,linux/arm64/v8,linux/arm/v7,linux/arm64,linux/386
+          platforms: linux/amd64,linux/arm64/v8,linux/arm/v7,linux/arm64
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
