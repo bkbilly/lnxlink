@@ -1,6 +1,5 @@
 """Gets disk usage from all disks"""
 import logging
-
 import psutil
 
 logger = logging.getLogger("lnxlink")
@@ -13,6 +12,14 @@ class Addon:
         """Setup addon"""
         self.name = "Disk Usage"
         self.lnxlink = lnxlink
+        self.lnxlink.add_settings(
+            "disk_usage",
+            {
+                "include_disks": [],
+                "exclude_disks": [],
+                "detailed_info": False,
+            },
+        )
         self.disks = self._get_disks()
 
     def exposed_controls(self):
@@ -62,6 +69,11 @@ class Addon:
             .get("disk_usage", {})
             .get("exclude_disks", [])
         )
+        detailed_info = (
+            self.lnxlink.config["settings"]
+            .get("disk_usage", {})
+            .get("detailed_info", False)
+        )
         for disk in psutil.disk_partitions():
             matches = [
                 "/snap/",
@@ -85,9 +97,18 @@ class Addon:
                 disks[device] = {}
                 disks[device]["percent"] = disk_stats.percent
                 disks[device]["attributes"] = {}
-                disks[device]["attributes"]["total"] = self._bytetogb(disk_stats.total)
                 disks[device]["attributes"]["connected"] = True
                 disks[device]["attributes"]["mountpoint"] = disk.mountpoint
+                disks[device]["attributes"]["total"] = self._bytetogb(disk_stats.total)
+                if detailed_info:
+                    disks[device]["attributes"]["filesystem"] = disk.fstype
+                    disks[device]["attributes"]["device"] = disk.device
+                    disks[device]["attributes"]["used"] = self._bytetogb(
+                        disk_stats.used
+                    )
+                    disks[device]["attributes"]["free"] = self._bytetogb(
+                        disk_stats.free
+                    )
             except Exception as err:
                 logger.error(
                     "Error with disk usage [fstype: %s, device: %s, mountpoint: %s]: %s",
