@@ -27,6 +27,7 @@ class Addon:
                 "include": [],
                 "exclude": [],
                 "check_update": 24,
+                "expose_controls": True,
             },
         )
         self.prev_update = 0
@@ -41,17 +42,19 @@ class Addon:
         discovery_info = {}
         for container in self.containers:
             attr_templ = f"{{{{ value_json.get('{container}', {{}}).get('attrs', {{}}) | tojson }}}}"
-            discovery_info[f"Docker {container}"] = {
-                "type": "switch",
-                "icon": "mdi:docker",
-                "value_template": f"{{{{ value_json.get('{container}', {{}}).get('running') }}}}",
-                "attributes_template": attr_templ,
-            }
-            discovery_info[f"Docker Update {container}"] = {
-                "type": "binary_sensor",
-                "icon": "mdi:docker",
-                "value_template": f"{{{{ value_json.get('{container}', {{}}).get('update') }}}}",
-            }
+            if self.lnxlink.config["settings"]["docker"]["expose_controls"]:
+                discovery_info[f"Docker {container}"] = {
+                    "type": "switch",
+                    "icon": "mdi:docker",
+                    "value_template": f"{{{{ value_json.get('{container}', {{}}).get('running') }}}}",
+                    "attributes_template": attr_templ,
+                }
+            if self.lnxlink.config["settings"]["docker"]["check_update"] is not None:
+                discovery_info[f"Docker Update {container}"] = {
+                    "type": "binary_sensor",
+                    "icon": "mdi:docker",
+                    "value_template": f"{{{{ value_json.get('{container}', {{}}).get('update') }}}}",
+                }
         discovery_info["Docker Prune"] = {
             "type": "button",
             "icon": "mdi:docker",
