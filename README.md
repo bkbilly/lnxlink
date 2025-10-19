@@ -82,6 +82,7 @@ Modules marked in <mark style="color:orange;">Orange</mark> require a graphical 
   * 📮 [<mark style="color:green;">RESTful</mark>](#user-content-fn-52)[^52]
   * 🪟 [<mark style="color:orange;">Display Environment</mark>](#user-content-fn-53)[^53]
 * **📦 Custom modules**
+  * [Lutris Game Launcher](https://github.com/bkbilly/lnxlink/discussions/202)
   * [Active window Wayland](https://github.com/bkbilly/lnxlink/discussions/126)
   * [Screens OnOff KDE](https://github.com/D3SOX/lnxlink-modules/blob/master/kde_screens_onoff.py)
   * [AM2302 Temperature and Humidity](https://github.com/bkbilly/lnxlink/discussions/81)
