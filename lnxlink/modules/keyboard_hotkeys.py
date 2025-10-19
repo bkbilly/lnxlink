@@ -18,7 +18,7 @@ class Addon:
         self.lib = {}
         self._requirements()
         self.lnxlink.add_settings("hotkeys", [])
-        if len(self.lnxlink.config["settings"]["hotkeys"] == 0):
+        if len(self.lnxlink.config["settings"]["hotkeys"]) == 0:
             logger.warning("No hotkeys configured for Keyboard Hotkeys module")
             logger.warning("  Please add hotkeys in the settings like so:")
             logger.warning("  - key: <ctrl>+<alt>+a")
