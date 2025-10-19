@@ -19,75 +19,90 @@ This is a **Home Assistant companion app** for Linux that allows you to monitor 
 
 ## Supported Modules
 
-Modules marked in <mark style="color:orange;">Orange</mark> require a graphical interface, while those in <mark style="color:green;">Green</mark> need require or support manual configuration.
+Modules marked in <mark style="color:orange;">Orange</mark> require a graphical interface, while those in <mark style="color:green;">Green</mark> require or support manual configuration.
 
-* **✅ System Actions**
-  * 🔴 [<mark style="color:blue;">Shutdown</mark>](#user-content-fn-1)[^1]
-  * ⚪ [<mark style="color:blue;">Restart</mark>](#user-content-fn-2)[^2]
-  * 💤 [<mark style="color:blue;">Suspend</mark>](#user-content-fn-3)[^3]
-  * 🚀 [<mark style="color:blue;">Boot Select</mark>](#user-content-fn-4)[^4]
-  * ⚡ [<mark style="color:blue;">Power Profile</mark>](#user-content-fn-5)[^5]
-  * ⚙️ [<mark style="color:green;">SystemD</mark>](#user-content-fn-6)[^6]
-  * 📢 [<mark style="color:orange;">Notify</mark>](#user-content-fn-7)[^7]
-  * 📂 [<mark style="color:orange;">Open URL/File</mark>](#user-content-fn-8)[^8]
-  * 🚥 [<mark style="color:orange;">Keep Alive</mark>](#user-content-fn-9)[^9]
-* **🖥 System Information**
-  * 🧠 [<mark style="color:blue;">CPU</mark>](#user-content-fn-10)[^10]
-  * 💾 [<mark style="color:blue;">RAM</mark>](#user-content-fn-11)[^11]
-  * 🖼️ [<mark style="color:blue;">GPU</mark>](#user-content-fn-12)[^12]
-  * 🔋 [<mark style="color:blue;">Battery</mark>](#user-content-fn-13)[^13]
-  * 🌡️ [<mark style="color:blue;">Temperature</mark>](#user-content-fn-14)[^14]
-  * ⚠️ [<mark style="color:blue;">Restart required</mark>](#user-content-fn-15)[^15]
-  * 🔄 [<mark style="color:blue;">System Updates</mark>](#user-content-fn-16)[^16]
-  * 🗔 [<mark style="color:blue;">Active Window</mark>](#user-content-fn-17)[^17]
-  * 📥 [<mark style="color:blue;">Disk IO</mark>](#user-content-fn-18)[^18]
-  * 📀 [<mark style="color:green;">Disk usage</mark>](#user-content-fn-19)[^19]
-  * 🖴 [<mark style="color:green;">Mounts</mark>](#user-content-fn-20)[^20]
-  * ⌛ [<mark style="color:orange;">Idle time</mark>](#user-content-fn-21)[^21]
-* **📡 Network & Devices**
-  * 📶 [<mark style="color:blue;">Network Speed</mark>](#user-content-fn-22)[^22]
-  * 🌐 [<mark style="color:blue;">Interfaces</mark>](#user-content-fn-23)[^23]
-  * 📱 [<mark style="color:blue;">Bluetooth</mark>](#user-content-fn-24)[^24]
-  * 🛜 [<mark style="color:blue;">WiFi</mark>](#user-content-fn-25)[^25]
-  * 🔌 [<mark style="color:blue;">Wake-on-LAN (WOL)</mark>](#user-content-fn-26)[^26]
-  * 🗺️ [<mark style="color:green;">BeaconDB</mark>](#user-content-fn-27)[^27]
-* 🎚️ **Audio/Video**
-  * 🎤 [<mark style="color:blue;">Microphone Used</mark>](#user-content-fn-28)[^28]
-  * 🔈 [<mark style="color:blue;">Speaker Used</mark>](#user-content-fn-29)[^29]
-  * 🎥 [<mark style="color:blue;">Camera Used</mark>](#user-content-fn-30)[^30]
-  * 📷 [<mark style="color:blue;">Webcam Show</mark>](#user-content-fn-31)[^31]
-  * 🎶 [<mark style="color:orange;">Media</mark>](#user-content-fn-32)[^32]
-  * 🔆 [<mark style="color:orange;">Brightness</mark>](#user-content-fn-33)[^33]
-  * 💡 [<mark style="color:orange;">Screen On/Off</mark>](#user-content-fn-34)[^34]
-  * &#x20;⛶ [<mark style="color:orange;">Fullscreen</mark>](#user-content-fn-35)[^35]
-  * 📸 [<mark style="color:orange;">Screenshot Show</mark>](#user-content-fn-36)[^36]
-  * 🎧 [<mark style="color:orange;">Audio Select</mark>](#user-content-fn-37)[^37]
-* 🧮 **Input/Output**
-  * 🎮 [<mark style="color:blue;">Gamepad Used</mark>](#user-content-fn-38)[^38]
-  * ⌨️ [<mark style="color:orange;">Keyboard Hotkeys</mark>](#user-content-fn-39)[^39]
-  * 🖱️ [<mark style="color:orange;">Mouse control</mark>](#user-content-fn-40)[^40]
-  * 🔑 [<mark style="color:orange;">Send Keys</mark>](#user-content-fn-41)[^41]
-* **🧰 Applications & Tools**
-  * 🌍 [<mark style="color:blue;">LNXlink Update</mark>](#user-content-fn-42)[^42]
-  * 🗣️ [<mark style="color:blue;">Speech Recognition</mark>](#user-content-fn-43)[^43]
-  * 🧲 [<mark style="color:green;">GPIO</mark>](#user-content-fn-44)[^44]
-  * 📺 [<mark style="color:green;">IR Remote</mark>](#user-content-fn-45)[^45]
-  * 🎮 [<mark style="color:orange;">Steam</mark>](#user-content-fn-46)[^46]
-* 🧩 **Advanced/Other**
-  * ⏳ [<mark style="color:blue;">Inference Time</mark>](#user-content-fn-47)[^47]
-  * 📜 [<mark style="color:blue;">Logging Level</mark>](#user-content-fn-48)[^48]
-  * 🐚 [<mark style="color:green;">Bash commands</mark>](#user-content-fn-49)[^49]
-  * 🐳 [<mark style="color:green;">Docker</mark>](#user-content-fn-50)[^50]
-  * 📊 [<mark style="color:green;">Statistics</mark>](#user-content-fn-51)[^51]
-  * 📮 [<mark style="color:green;">RESTful</mark>](#user-content-fn-52)[^52]
-  * 🪟 [<mark style="color:orange;">Display Environment</mark>](#user-content-fn-53)[^53]
-* **📦 Custom modules**
-  * [Lutris Game Launcher](https://github.com/bkbilly/lnxlink/discussions/202)
-  * [Active window Wayland](https://github.com/bkbilly/lnxlink/discussions/126)
-  * [Screens OnOff KDE](https://github.com/D3SOX/lnxlink-modules/blob/master/kde_screens_onoff.py)
-  * [AM2302 Temperature and Humidity](https://github.com/bkbilly/lnxlink/discussions/81)
-  * [Satisfactory Server module](https://github.com/bkbilly/lnxlink/discussions/128)
-  * [GPU nvidia-settings](https://github.com/PW999/lnxlink_gpu_nvidia_settings)
+### **✅ System Actions**
+
+* 🔴 [<mark style="color:blue;">Shutdown</mark>](#user-content-fn-1)[^1]
+* ⚪ [<mark style="color:blue;">Restart</mark>](#user-content-fn-2)[^2]
+* 💤 [<mark style="color:blue;">Suspend</mark>](#user-content-fn-3)[^3]
+* 🚀 [<mark style="color:blue;">Boot Select</mark>](#user-content-fn-4)[^4]
+* ⚡ [<mark style="color:blue;">Power Profile</mark>](#user-content-fn-5)[^5]
+* ⚙️ [<mark style="color:green;">SystemD</mark>](#user-content-fn-6)[^6]
+* 📢 [<mark style="color:orange;">Notify</mark>](#user-content-fn-7)[^7]
+* 📂 [<mark style="color:orange;">Open URL/File</mark>](#user-content-fn-8)[^8]
+* 🚥 [<mark style="color:orange;">Keep Alive</mark>](#user-content-fn-9)[^9]
+
+### **🖥 System Information**
+
+* 🧠 [<mark style="color:blue;">CPU</mark>](#user-content-fn-10)[^10]
+* 💾 [<mark style="color:blue;">RAM</mark>](#user-content-fn-11)[^11]
+* 🖼️ [<mark style="color:blue;">GPU</mark>](#user-content-fn-12)[^12]
+* 🔋 [<mark style="color:blue;">Battery</mark>](#user-content-fn-13)[^13]
+* 🌡️ [<mark style="color:blue;">Temperature</mark>](#user-content-fn-14)[^14]
+* ⚠️ [<mark style="color:blue;">Restart required</mark>](#user-content-fn-15)[^15]
+* 🔄 [<mark style="color:blue;">System Updates</mark>](#user-content-fn-16)[^16]
+* 🗔 [<mark style="color:blue;">Active Window</mark>](#user-content-fn-17)[^17]
+* 📥 [<mark style="color:blue;">Disk IO</mark>](#user-content-fn-18)[^18]
+* 📀 [<mark style="color:green;">Disk usage</mark>](#user-content-fn-19)[^19]
+* 🖴 [<mark style="color:green;">Mounts</mark>](#user-content-fn-20)[^20]
+* ⌛ [<mark style="color:orange;">Idle time</mark>](#user-content-fn-21)[^21]
+
+### **📡 Network & Devices**
+
+* 📶 [<mark style="color:blue;">Network Speed</mark>](#user-content-fn-22)[^22]
+* 🌐 [<mark style="color:blue;">Interfaces</mark>](#user-content-fn-23)[^23]
+* 📱 [<mark style="color:blue;">Bluetooth</mark>](#user-content-fn-24)[^24]
+* 🛜 [<mark style="color:blue;">WiFi</mark>](#user-content-fn-25)[^25]
+* 🔌 [<mark style="color:blue;">Wake-on-LAN (WOL)</mark>](#user-content-fn-26)[^26]
+* 🗺️ [<mark style="color:green;">BeaconDB</mark>](#user-content-fn-27)[^27]
+
+### 🎚️ **Audio/Video**
+
+* 🎤 [<mark style="color:blue;">Microphone Used</mark>](#user-content-fn-28)[^28]
+* 🔈 [<mark style="color:blue;">Speaker Used</mark>](#user-content-fn-29)[^29]
+* 🎥 [<mark style="color:blue;">Camera Used</mark>](#user-content-fn-30)[^30]
+* 📷 [<mark style="color:blue;">Webcam Show</mark>](#user-content-fn-31)[^31]
+* 🎶 [<mark style="color:orange;">Media</mark>](#user-content-fn-32)[^32]
+* 🔆 [<mark style="color:orange;">Brightness</mark>](#user-content-fn-33)[^33]
+* 💡 [<mark style="color:orange;">Screen On/Off</mark>](#user-content-fn-34)[^34]
+* &#x20;⛶ [<mark style="color:orange;">Fullscreen</mark>](#user-content-fn-35)[^35]
+* 📸 [<mark style="color:orange;">Screenshot Show</mark>](#user-content-fn-36)[^36]
+* 🎧 [<mark style="color:orange;">Audio Select</mark>](#user-content-fn-37)[^37]
+
+### 🧮 **Input/Output**
+
+* 🎮 [<mark style="color:blue;">Gamepad Used</mark>](#user-content-fn-38)[^38]
+* ⌨️ [<mark style="color:orange;">Keyboard Hotkeys</mark>](#user-content-fn-39)[^39]
+* 🖱️ [<mark style="color:orange;">Mouse control</mark>](#user-content-fn-40)[^40]
+* 🔑 [<mark style="color:orange;">Send Keys</mark>](#user-content-fn-41)[^41]
+
+### **🧰 Applications & Tools**
+
+* 🌍 [<mark style="color:blue;">LNXlink Update</mark>](#user-content-fn-42)[^42]
+* 🗣️ [<mark style="color:blue;">Speech Recognition</mark>](#user-content-fn-43)[^43]
+* 🧲 [<mark style="color:green;">GPIO</mark>](#user-content-fn-44)[^44]
+* 📺 [<mark style="color:green;">IR Remote</mark>](#user-content-fn-45)[^45]
+* 🎮 [<mark style="color:orange;">Steam</mark>](#user-content-fn-46)[^46]
+
+### 🧩 **Advanced/Other**
+
+* ⏳ [<mark style="color:blue;">Inference Time</mark>](#user-content-fn-47)[^47]
+* 📜 [<mark style="color:blue;">Logging Level</mark>](#user-content-fn-48)[^48]
+* 🐚 [<mark style="color:green;">Bash commands</mark>](#user-content-fn-49)[^49]
+* 🐳 [<mark style="color:green;">Docker</mark>](#user-content-fn-50)[^50]
+* 📊 [<mark style="color:green;">Statistics</mark>](#user-content-fn-51)[^51]
+* 📮 [<mark style="color:green;">RESTful</mark>](#user-content-fn-52)[^52]
+* 🪟 [<mark style="color:orange;">Display Environment</mark>](#user-content-fn-53)[^53]
+
+### **📦 Custom modules**
+
+* [Lutris Game Launcher](https://github.com/bkbilly/lnxlink/discussions/202)
+* [Active window Wayland](https://github.com/bkbilly/lnxlink/discussions/126)
+* [Screens OnOff KDE](https://github.com/D3SOX/lnxlink-modules/blob/master/kde_screens_onoff.py)
+* [AM2302 Temperature and Humidity](https://github.com/bkbilly/lnxlink/discussions/81)
+* [Satisfactory Server module](https://github.com/bkbilly/lnxlink/discussions/128)
+* [GPU nvidia-settings](https://github.com/PW999/lnxlink_gpu_nvidia_settings)
 
 ## Supported OS
 
