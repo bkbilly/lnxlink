@@ -21,7 +21,7 @@ class Addon:
     def _requirements(self):
         self.lib = {
             "notify": import_install_package(
-                "dbus-notification", ">=2025.3.0", "dbus_notification"
+                "dbus-notification", ">=2025.10.1", "dbus_notification"
             ),
         }
 
@@ -84,18 +84,24 @@ class Addon:
             self.notify = self.lib["notify"].DBusNotification(
                 appname="LNXlink", callback=self.callback_action
             )
-        notification_id = self.notify.send(
-            title=data["title"],
-            message=data["message"],
-            logo=f"{self.lnxlink.path}/logo.png",
-            image=icon_path,
-            sound=sound_path,
-            actions=data.get("buttons", []),
-            urgency=urgencies.get(data.get("urgency")),
-            timeout=data.get("timeout", -1),
-        )
-        logger.debug("The notification %s was sent.", notification_id)
-        self.lnxlink.run_module(self.name, {"id": notification_id})
+        if data.get("action") == "close":
+            if data.get("id") is not None:
+                self.notify.close(data.get("id"))
+            else:
+                self.notify.close_all()
+        else:
+            notification_id = self.notify.send(
+                title=data["title"],
+                message=data["message"],
+                logo=f"{self.lnxlink.path}/logo.png",
+                image=icon_path,
+                sound=sound_path,
+                actions=data.get("buttons", []),
+                urgency=urgencies.get(data.get("urgency")),
+                timeout=data.get("timeout", -1),
+            )
+            logger.debug("The notification %s was sent.", notification_id)
+            self.lnxlink.run_module(self.name, {"id": notification_id})
 
     def callback_action(self, notification_type, notification):
         """Gather notification options and send to the MQTT broker"""
