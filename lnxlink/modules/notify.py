@@ -25,9 +25,27 @@ class Addon:
             ),
         }
 
+    def exposed_controls(self):
+        """Exposes to home assistant"""
+        image_url = (
+            "https://raw.githubusercontent.com/bkbilly/lnxlink/6d844af/images/logo.png"
+        )
+        return {
+            "notify": {
+                "type": "notify",
+                "entity_picture": image_url,
+                "icon": "mdi:desktop-classic",
+            },
+        }
+
     # pylint: disable=too-many-locals, too-many-branches
     def start_control(self, topic, data):
         """Control system"""
+        if isinstance(data, str):
+            data = {
+                "title": "LNXlink Notification",
+                "message": data,
+            }
         icon_url = data.get("iconUrl")
         sound_url = data.get("sound")
         icon_path = icon_url
@@ -77,6 +95,7 @@ class Addon:
             timeout=data.get("timeout", -1),
         )
         logger.debug("The notification %s was sent.", notification_id)
+        self.lnxlink.run_module(self.name, {"id": notification_id})
 
     def callback_action(self, notification_type, notification):
         """Gather notification options and send to the MQTT broker"""

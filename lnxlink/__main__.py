@@ -374,6 +374,11 @@ class LNXlink:
                 "command_previous_payload": "Previous",
                 "command_playmedia_topic": f"{command_topic}/play_media",
             },
+            "notify": {
+                "command_topic": command_topic,
+                "json_attributes_topic": state_topic,
+                "name": self.config["mqtt"]["clientId"],
+            },
         }
         discovery = discovery_template.copy()
         discovery["name"] = exp_name
