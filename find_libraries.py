@@ -33,10 +33,10 @@ new_requirements += "# Modules dependencies\n"
 for requirement in modules_dependancies:
     new_requirements += f"{requirement}\n"
 
-with open("requirements_all.txt", encoding="UTF-8") as file:
+with open("requirements.txt", encoding="UTF-8") as file:
     prev_requirements = file.read()
 
-with open("requirements_all.txt", "w", encoding="UTF-8") as file:
+with open("requirements.txt", "w", encoding="UTF-8") as file:
     file.writelines(new_requirements)
 
 if prev_requirements != new_requirements:
