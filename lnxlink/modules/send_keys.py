@@ -2,7 +2,7 @@
 import os
 import logging
 from shutil import which
-from lnxlink.modules.scripts.helpers import syscommand
+from lnxlink.modules.scripts.helpers import syscommand, get_display_variable
 
 logger = logging.getLogger("lnxlink")
 
@@ -13,7 +13,6 @@ class Addon:
     def __init__(self, lnxlink):
         """Setup addon"""
         self.name = "Send Keys"
-        self.lnxlink = lnxlink
         if which("xdotool") is None:
             raise SystemError("System command 'xdotool' not found")
 
@@ -28,8 +27,8 @@ class Addon:
 
     def start_control(self, topic, data):
         """Control system"""
-        if os.environ.get("DISPLAY") is None:
-            if self.lnxlink.display is not None:
-                os.environ["DISPLAY"] = self.lnxlink.display
-                logger.info("Initializing empty DISPLAY environment variable")
+        display_variable = get_display_variable()
+        if display_variable is not None:
+            os.environ["DISPLAY"] = display_variable
+            logger.info("Initializing empty DISPLAY environment variable")
         syscommand(f"xdotool key {data}")

@@ -1,5 +1,6 @@
 """WOL Status control"""
 import re
+from shutil import which
 import psutil
 from lnxlink.modules.scripts.helpers import syscommand, text_to_topic
 
@@ -12,6 +13,8 @@ class Addon:
         self.name = "WOL"
         self.lnxlink = lnxlink
         self.interfaces = {}
+        if which("ethtool") is None:
+            raise SystemError("System command 'ethtool' not found")
         self._get_interfaces()
         if len(self.interfaces) == 0:
             raise SystemError(
@@ -21,7 +24,7 @@ class Addon:
     def get_info(self):
         """Gather information from the system"""
         for interf in self.interfaces:
-            cmd = f"sudo -n /usr/sbin/ethtool {interf}"
+            cmd = f"sudo -n ethtool {interf}"
             stdout, _, _ = syscommand(cmd)
             self.interfaces[interf] = "OFF"
             match_wol = re.search(r"\tWake-on: (\S*)", stdout)
@@ -62,7 +65,7 @@ class Addon:
 
         self.interfaces = {}
         for interf in interfaces:
-            cmd = f"sudo -n /usr/sbin/ethtool {interf}"
+            cmd = f"sudo -n ethtool {interf}"
             stdout, _, errorcode = syscommand(cmd)
             if errorcode == 0:
                 match = re.search(r"\tSupports Wake-on: (\S*)", stdout)

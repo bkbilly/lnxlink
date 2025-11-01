@@ -1,7 +1,7 @@
 """Assign hotkeys to run commands"""
 import logging
 from datetime import datetime
-from lnxlink.modules.scripts.helpers import import_install_package
+from lnxlink.modules.scripts.helpers import import_install_package, get_display_variable
 
 
 logger = logging.getLogger("lnxlink")
@@ -49,10 +49,13 @@ class Addon:
 
     def get_info(self):
         """Gather information from the system"""
-        if not self.started and self.lnxlink.display is not None:
-            hm = self.lib["xlib_hotkeys"].HotKeysManager(self.lnxlink.display)
+        display_variable = get_display_variable()
+        if not self.started and display_variable is not None:
+            hm = self.lib["xlib_hotkeys"].HotKeysManager(display_variable)
             actions = self.lnxlink.config["settings"]["hotkeys"]
             for action in actions:
+                if isinstance(action, str):
+                    action = {"key": action}
                 action_key = action.get("key")
                 hm.hotkeys[action_key] = lambda action=action: self._activate(action)
             hm.start()

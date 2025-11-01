@@ -1,4 +1,5 @@
 """A collection of helper functions"""
+import os
 import sys
 import importlib.metadata
 import logging
@@ -98,6 +99,27 @@ def needs_update(current_version, request_version):
         if req_version < cur_version:
             return False
     return False
+
+
+def get_display_variable():
+    """Get the DISPLAY variable"""
+    display_var = os.environ.get("DISPLAY")
+    if display_var:
+        return display_var
+    display_var, _, _ = syscommand("echo $DISPLAY")
+    if display_var:
+        if display_var == "":
+            display_var = None
+        return display_var
+    other_displays, _, _ = syscommand(
+        "sed -zn 's/^DISPLAY=//p' /proc/*/environ 2> /dev/null | LC_ALL=C sort -zu | tr '\\0' '\\n'"
+    )
+    other_displays = other_displays.split("\n")
+    if len(other_displays) > 0:
+        if other_displays[0] == "":
+            other_displays[0] = None
+        return other_displays[0]
+    return None
 
 
 def text_to_topic(text):

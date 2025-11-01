@@ -2,7 +2,7 @@
 import re
 import logging
 from shutil import which
-from lnxlink.modules.scripts.helpers import syscommand
+from lnxlink.modules.scripts.helpers import syscommand, get_display_variable
 
 logger = logging.getLogger("lnxlink")
 
@@ -14,6 +14,7 @@ class Addon:
         """Setup addon"""
         self.name = "Brightness"
         self.lnxlink = lnxlink
+        self.display_variable = None
         if which("xrandr") is None:
             raise SystemError("System command 'xrandr' not found")
         self.displays = self._get_displays()
@@ -62,8 +63,8 @@ class Addon:
     def start_control(self, topic, data):
         """Control system"""
         disp_env_cmd = ""
-        if self.lnxlink.display is not None:
-            disp_env_cmd = f" --display {self.lnxlink.display}"
+        if self.display_variable is not None:
+            disp_env_cmd = f" --display {self.display_variable}"
 
         if topic[1] == "brightness":
             for values in self.displays.values():
@@ -78,10 +79,11 @@ class Addon:
 
     def _get_displays(self):
         """Get all the displays"""
+        self.display_variable = get_display_variable()
         displays = {}
         disp_env_cmd = ""
-        if self.lnxlink.display is not None:
-            disp_env_cmd = f" --display {self.lnxlink.display}"
+        if self.display_variable is not None:
+            disp_env_cmd = f" --display {self.display_variable}"
 
         stdout, _, _ = syscommand(
             f"xrandr --verbose --current {disp_env_cmd}",

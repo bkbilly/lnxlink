@@ -165,6 +165,7 @@ else
     echo -e "\e[35mInstalling LNXlink...\e[0m"
     if [ "$system" == "nixos" ]; then
         nix-shell -p python311Packages.pipx --run "pipx install lnxlink"
+        nix-shell -p python311Packages.pipx --run "pipx ensurepath"
     else
         pip install -U pipx
         pipx install lnxlink

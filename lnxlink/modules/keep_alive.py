@@ -1,7 +1,7 @@
 """Keeps display on"""
 import re
 from shutil import which
-from lnxlink.modules.scripts.helpers import syscommand
+from lnxlink.modules.scripts.helpers import syscommand, get_display_variable
 
 
 class Addon:
@@ -9,7 +9,6 @@ class Addon:
 
     def __init__(self, lnxlink):
         """Setup addon"""
-        self.lnxlink = lnxlink
         self.name = "Keep Alive"
         self.keepalive = "OFF"
         if which("gsettings") is None or which("xset") is None:
@@ -45,10 +44,9 @@ class Addon:
 
         # Check if DPMS is active
         if which("xset"):
-            if self.lnxlink.display is not None:
-                stdout_xset, _, _ = syscommand(
-                    f"xset -display {self.lnxlink.display} q"
-                )
+            display_variable = get_display_variable()
+            if display_variable is not None:
+                stdout_xset, _, _ = syscommand(f"xset -display {display_variable} q")
                 xset_pattern = re.compile(
                     r"Standby: (\d+)\s+Suspend: (\d+)\s+Off: (\d+)"
                 )

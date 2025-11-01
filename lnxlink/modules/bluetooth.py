@@ -73,9 +73,15 @@ class Addon:
         if "yes" in stdout:
             data["power"] = "ON"
 
-        stdout, _, returncode = syscommand("bluetoothctl devices Paired")
+        stdout, _, returncode = syscommand(
+            "bluetoothctl devices Paired",
+            ignore_errors=True,
+        )
         if returncode != 0:
-            stdout, _, _ = syscommand("bluetoothctl paired-devices")
+            stdout, _, _ = syscommand(
+                "bluetoothctl paired-devices",
+                ignore_errors=True,
+            )
         if stdout == "":
             return data
         for device in stdout.split("\n"):

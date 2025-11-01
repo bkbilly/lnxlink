@@ -19,6 +19,9 @@ class Addon:
             self.command = "grub2-editenv"
         else:
             raise SystemError("System command 'grub-editenv' not found")
+        _, stderr, returncode = syscommand(f"{self.command} list")
+        if returncode != 0:
+            raise SystemError(f"Boot Select issue: {stderr}")
         self.options = self._get_grub_entries()
 
     def get_info(self):

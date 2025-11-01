@@ -1,5 +1,5 @@
 """Checks if a window is in fullscreen"""
-from lnxlink.modules.scripts.helpers import import_install_package
+from lnxlink.modules.scripts.helpers import import_install_package, get_display_variable
 
 
 class Addon:
@@ -8,7 +8,6 @@ class Addon:
     def __init__(self, lnxlink):
         """Setup addon"""
         self.name = "Fullscreen"
-        self.lnxlink = lnxlink
         self._requirements()
 
     def _requirements(self):
@@ -33,9 +32,10 @@ class Addon:
             "is_fullscreen": "OFF",
             "window": "",
         }
-        if self.lnxlink.display is None:
+        display_variable = get_display_variable()
+        if display_variable is None:
             return data
-        display = self.lib["xlib"].display.Display(self.lnxlink.display)
+        display = self.lib["xlib"].display.Display(display_variable)
         ewmh = self.lib["ewmh"].EWMH(_display=display)
         windows = ewmh.getClientList()
         for win in windows:

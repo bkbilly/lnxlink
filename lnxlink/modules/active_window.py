@@ -1,5 +1,5 @@
 """Gets the active window"""
-from lnxlink.modules.scripts.helpers import import_install_package
+from lnxlink.modules.scripts.helpers import import_install_package, get_display_variable
 
 
 class Addon:
@@ -8,7 +8,6 @@ class Addon:
     def __init__(self, lnxlink):
         """Setup addon"""
         self.name = "Active Window"
-        self.lnxlink = lnxlink
         self._requirements()
 
     def _requirements(self):
@@ -28,9 +27,10 @@ class Addon:
 
     def get_info(self):
         """Gather information from the system"""
-        if self.lnxlink.display is None:
+        display_variable = get_display_variable()
+        if display_variable is None:
             return ""
-        display = self.lib["xlib"].display.Display(self.lnxlink.display)
+        display = self.lib["xlib"].display.Display(display_variable)
         ewmh = self.lib["ewmh"].EWMH(_display=display)
         win = ewmh.getActiveWindow()
         window_name = ewmh.getWmName(win)

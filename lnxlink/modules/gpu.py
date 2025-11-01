@@ -3,7 +3,11 @@ import re
 import math
 import logging
 from shutil import which
-from lnxlink.modules.scripts.helpers import import_install_package, syscommand
+from lnxlink.modules.scripts.helpers import (
+    import_install_package,
+    syscommand,
+    get_display_variable,
+)
 
 logger = logging.getLogger("lnxlink")
 
@@ -86,7 +90,7 @@ class Addon:
         """For older GPUs, use nvidia-settings to get gpu usage"""
         if math.isnan(gpu_util):
             gpu_util = None
-            display = self.lnxlink.display
+            display = get_display_variable()
             if display:
                 if which("nvidia-settings") is not None:
                     settings_out, _, _ = syscommand(
