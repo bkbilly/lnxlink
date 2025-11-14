@@ -124,7 +124,7 @@ class Addon:
         """Control system"""
         name_id = topic[1].replace("docker_", "")
         if name_id in self.containers:
-            name = self.containers[name_id]["name"]
+            name = self.containers[name_id]["attrs"]["name"]
             if data == "ON":
                 logger.info("Starting container %s", name)
                 self.client.containers.get(name).start()
