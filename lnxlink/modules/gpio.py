@@ -26,6 +26,8 @@ class GpioHandle:
             deq = deque(maxlen=15)
         elif self.setup == "output":
             deq = deque(maxlen=1)
+        else:
+            return
         while True:
             if self.setup == "input":
                 deq.append(self.gpio.input(self.pin))

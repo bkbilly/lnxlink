@@ -15,7 +15,9 @@ class Addon:
         """Setup addon"""
         self.name = "Docker"
         self.lnxlink = lnxlink
-        self._requirements()
+        self.docker = import_install_package("docker", ">=7.0.0")
+        if self.docker is None:
+            raise SystemError("Docker package not found")
         try:
             # client = docker.from_env()
             self.client = self.docker.DockerClient(base_url="unix://run/docker.sock")
@@ -33,9 +35,6 @@ class Addon:
         self.prev_update = 0
         self.images_remoteinfo = []
         self.containers = self._get_containers()
-
-    def _requirements(self):
-        self.docker = import_install_package("docker", ">=7.0.0")
 
     def exposed_controls(self):
         """Exposes to home assistant"""
