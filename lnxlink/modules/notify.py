@@ -106,5 +106,5 @@ class Addon:
     def callback_action(self, notification_type, notification):
         """Gather notification options and send to the MQTT broker"""
         if notification_type == "button":
-            logger.debug("Pressed notification button: %s", notification)
-            self.lnxlink.run_module(f"{self.name}/button_press", notification)
+            logger.info("Pressed notification button: %s", notification)
+            self.lnxlink.run_module(f"{self.name}/button_press", notification, False)

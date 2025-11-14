@@ -34,7 +34,7 @@ class UniqueQueue:
         while self.queue:
             yield self.queue.popitem(last=False)
 
-    def add_item(self, name, value):
+    def add_item(self, name, value, retain=True):
         """Adds an item to the queue. If the item already exists, it replaces it"""
         # If item exists, remove it so we can re-add at the end
         if name in self.queue:
@@ -42,7 +42,7 @@ class UniqueQueue:
         # If queue is full, remove the oldest item
         elif len(self.queue) >= self.max_size:
             self.queue.popitem(last=False)
-        self.queue[name] = value
+        self.queue[name] = (value, retain)
 
     def get_item(self):
         """Retrieves and removes the next item from the queue (FIFO)"""

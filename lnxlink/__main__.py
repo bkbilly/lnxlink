@@ -82,7 +82,7 @@ class LNXlink:
         """Adds missing configuration under settings"""
         self.config = config_setup.add_settings(self.config, name, settings)
 
-    def publish_monitor_data(self, name, pub_data):
+    def publish_monitor_data(self, name, pub_data, retain=True):
         """Publish info data to mqtt in the correct format"""
         subtopic = helpers.text_to_topic(name)
         topic = f"{self.config['pref_topic']}/monitor_controls/{subtopic}"
@@ -113,9 +113,9 @@ class LNXlink:
 
         self.prev_publish[topic] = pub_data
         self.saved_publish[subtopic.replace("/", "_")] = pub_data
-        self.mqtt.publish(topic, pub_data)
+        self.mqtt.publish(topic, pub_data, retain)
 
-    def run_module(self, name, method):
+    def run_module(self, name, method, retain=True):
         """Runs the method of a module"""
         try:
             start_time = time.time()
@@ -125,7 +125,7 @@ class LNXlink:
                 pub_data = method()
                 diff_time = round(time.time() - start_time, 5)
                 self.inference_times[name] = diff_time
-            self.publ_queue.add_item(name, pub_data)
+            self.publ_queue.add_item(name, pub_data, retain)
         except Exception as err:
             logger.error(
                 "Error with addon %s: %s, %s",
@@ -159,8 +159,9 @@ class LNXlink:
         while not self.stop_event.is_set():
             if not self.kill:
                 time.sleep(0.01)
-                for name, pub_data in self.publ_queue:
-                    self.publish_monitor_data(name, pub_data)
+                for name, queue_data in self.publ_queue:
+                    pub_data, retain = queue_data
+                    self.publish_monitor_data(name, pub_data, retain)
                     time.sleep(0.01)
             if self.stop_event.wait(timeout=0.2):
                 self.mqtt.send_lwt("OFF")

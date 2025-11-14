@@ -27,13 +27,13 @@ class MQTT:
                 client_id=f"LNXlink-{self.config['mqtt']['clientId']}"
             )
 
-    def publish(self, topic, payload):
+    def publish(self, topic, payload, retain=True):
         """Publishes messages to the MQTT broker"""
         msg_info = self.client.publish(
             topic,
             payload=payload,
             qos=self.config["mqtt"]["lwt"]["qos"],
-            retain=True,
+            retain=retain,
         )
         logger.debug("Message RC Code: %s, MQTT Number: %s", msg_info.rc, msg_info.mid)
         self.publish_rc_code = msg_info.rc

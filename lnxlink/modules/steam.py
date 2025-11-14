@@ -6,6 +6,7 @@ import struct
 import binascii
 import logging
 import psutil
+from shutil import which
 from lnxlink.modules.scripts.helpers import import_install_package, syscommand
 
 logger = logging.getLogger("lnxlink")
@@ -18,10 +19,13 @@ class Addon:
         """Setup addon"""
         self.name = "Steam"
         self.lnxlink = lnxlink
+        if which("steam") is None:
+            raise SystemError("Steam not found")
         self._requirements()
         self.steam_config = self._find_libary_config()
         if self.steam_config is None:
-            raise SystemError("Steam not found")
+            raise SystemError("Steam library can't be found")
+        self.lnxlink.add_settings("steam", {"library": self.steam_config})
         self.games = {}
         self.games = self._get_games()
 
@@ -89,9 +93,12 @@ class Addon:
 
         return "Stopped"
 
-    def _find_libary_config(self, level=4):
+    def _find_libary_config(self, level=7):
         """Finds the library folders configuration from home directory
         with a max depth level"""
+        settings_library = self.lnxlink.config["settings"].get("steam", {}).get("library")
+        if settings_library is not None and os.path.exists(settings_library):
+            return settings_library
         home_dir = os.path.expanduser("~")
         num_sep = home_dir.count("/")
         name = "libraryfolders.vdf"
