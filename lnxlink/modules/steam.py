@@ -5,8 +5,8 @@ import glob
 import struct
 import binascii
 import logging
-import psutil
 from shutil import which
+import psutil
 from lnxlink.modules.scripts.helpers import import_install_package, syscommand
 
 logger = logging.getLogger("lnxlink")
@@ -96,7 +96,9 @@ class Addon:
     def _find_libary_config(self, level=7):
         """Finds the library folders configuration from home directory
         with a max depth level"""
-        settings_library = self.lnxlink.config["settings"].get("steam", {}).get("library")
+        settings_library = (
+            self.lnxlink.config["settings"].get("steam", {}).get("library")
+        )
         if settings_library is not None and os.path.exists(settings_library):
             return settings_library
         home_dir = os.path.expanduser("~")
