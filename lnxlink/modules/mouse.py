@@ -1,4 +1,4 @@
-"""Uses xdotool to control mouse"""
+"""Controls mouse"""
 import os
 import time
 import logging
@@ -16,8 +16,34 @@ class Addon:
         """Setup addon"""
         self.name = "Mouse"
         self.movement = [0, 0]
-        if which("xdotool") is None:
-            raise SystemError("System command 'xdotool' not found")
+        commands = {
+            "ydotool": {
+                "left_click": "ydotool click 0xc0",
+                "right_click": "ydotool click 0xc1",
+                "move_rel": "ydotool mousemove -x %s -y %s",
+                "move_abs": "ydotool mousemove -a -x %s -y %s",
+                "run_check": "ydotool mousemove",
+            },
+            "xdotool": {
+                "left_click": "xdotool click 1",
+                "right_click": "xdotool click 3",
+                "move_rel": "xdotool mousemove -- %s %s",
+                "move_abs": "xdotool mousemove %s %s",
+            },
+        }
+        self.commands = None
+        for command, command_options in commands.items():
+            if which(command) is not None:
+                run_check = command_options.get("run_check")
+                if run_check is not None:
+                    _, _, returncode = syscommand(run_check)
+                    if returncode != 0:
+                        continue
+                self.commands = command_options
+                logger.debug("Using '%s' for mouse control", command)
+                break
+        if self.commands is None:
+            raise SystemError("System commands 'ydotool' or 'xdotool' not found")
 
     def exposed_controls(self):
         """Exposes to home assistant"""
@@ -55,7 +81,8 @@ class Addon:
     def start_control(self, topic, data):
         """Control system"""
         display_variable = get_display_variable()
-        if display_variable is not None:
+        print(display_variable)
+        if display_variable is not None and os.environ["DISPLAY"] is None:
             os.environ["DISPLAY"] = display_variable
             logger.info("Initializing empty DISPLAY environment variable")
 
@@ -64,7 +91,9 @@ class Addon:
                 coords = data.replace(" ", "").split(",")
             elif " " in data:
                 coords = data.split(" ")
-            syscommand(f"xdotool mousemove {coords[0]} {coords[1]}")
+            else:
+                return
+            syscommand(self.commands["move_abs"] % (coords[0], coords[1]))
         elif topic[1] == "mouse_left":
             self._move([-1, 0])
         elif topic[1] == "mouse_right":
@@ -73,10 +102,12 @@ class Addon:
             self._move([0, -1])
         elif topic[1] == "mouse_down":
             self._move([0, 1])
-        elif topic[1] == "mouse_click":
-            syscommand("xdotool click 1")
+        elif topic[1] in ["mouse_click", "mouse_click_left"]:
+            self.movement = [0, 0]
+            syscommand(self.commands["left_click"])
         elif topic[1] == "mouse_click_right":
-            syscommand("xdotool click 3")
+            self.movement = [0, 0]
+            syscommand(self.commands["right_click"])
 
     def _move(self, movement):
         if self.movement == movement:
@@ -95,7 +126,7 @@ class Addon:
                 return
             move_x = movement[0] * i
             move_y = movement[1] * i
-            syscommand(f"xdotool mousemove_relative -- {move_x} {move_y}")
+            syscommand(self.commands["move_rel"] % (move_x, move_y))
             time.sleep(0.05)
         # Used if the user wants to run the same movement
         self.movement = [0, 0]
