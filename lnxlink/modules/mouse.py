@@ -20,6 +20,8 @@ class Addon:
             "ydotool": {
                 "left_click": "ydotool click 0xc0",
                 "right_click": "ydotool click 0xc1",
+                "left_mouse_down": "ydotool click 0x40",
+                "left_mouse_up": "ydotool click 0x80",
                 "move_rel": "ydotool mousemove -x %s -y %s",
                 "move_abs": "ydotool mousemove -a -x %s -y %s",
                 "run_check": "ydotool mousemove",
@@ -27,6 +29,8 @@ class Addon:
             "xdotool": {
                 "left_click": "xdotool click 1",
                 "right_click": "xdotool click 3",
+                "left_mouse_down": "ydotool mousedown 1",
+                "left_mouse_up": "ydotool mouseup 1",
                 "move_rel": "xdotool mousemove -- %s %s",
                 "move_abs": "xdotool mousemove %s %s",
             },
@@ -76,8 +80,17 @@ class Addon:
                 "type": "button",
                 "icon": "mdi:mouse-right-click",
             },
+            "Mouse Click Left Up": {
+                "type": "button",
+                "icon": "mdi:mouse-move-up",
+            },
+            "Mouse Click Left Down": {
+                "type": "button",
+                "icon": "mdi:mouse-move-down",
+            },
         }
 
+    # pylint: disable=too-many-branches
     def start_control(self, topic, data):
         """Control system"""
         display_variable = get_display_variable()
@@ -93,7 +106,12 @@ class Addon:
                 coords = data.split(" ")
             else:
                 return
-            syscommand(self.commands["move_abs"] % (coords[0], coords[1]))
+            move_type = "move_abs"
+            if coords[0].startswith("+") or coords[0].startswith("-"):
+                move_type = "move_rel"
+            if coords[1].startswith("+") or coords[1].startswith("-"):
+                move_type = "move_rel"
+            syscommand(self.commands[move_type] % (coords[0], coords[1]))
         elif topic[1] == "mouse_left":
             self._move([-1, 0])
         elif topic[1] == "mouse_right":
@@ -108,6 +126,11 @@ class Addon:
         elif topic[1] == "mouse_click_right":
             self.movement = [0, 0]
             syscommand(self.commands["right_click"])
+        elif topic[1] == "mouse_click_left_down":
+            syscommand(self.commands["left_mouse_down"])
+        elif topic[1] == "mouse_click_left_up":
+            self.movement = [0, 0]
+            syscommand(self.commands["left_mouse_up"])
 
     def _move(self, movement):
         if self.movement == movement:
