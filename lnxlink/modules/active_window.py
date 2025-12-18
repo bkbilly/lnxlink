@@ -1,6 +1,12 @@
 """Gets the active window"""
+# Wayland requires either of the extensions
+# - [flexagoon/focused-window-dbus](https://github.com/flexagoon/focused-window-dbus)
+# - [bkbilly/GnomeShell-WindowQueryTool](https://github.com/bkbilly/GnomeShell-WindowQueryTool)
 from lnxlink.modules.scripts.helpers import import_install_package, get_display_variable
-
+import os
+import subprocess
+import json
+import logging
 
 class Addon:
     """Addon module"""
@@ -28,12 +34,66 @@ class Addon:
     def get_info(self):
         """Gather information from the system"""
         display_variable = get_display_variable()
-        if display_variable is None:
-            return ""
-        display = self.lib["xlib"].display.Display(display_variable)
-        ewmh = self.lib["ewmh"].EWMH(_display=display)
-        win = ewmh.getActiveWindow()
-        window_name = ewmh.getWmName(win)
-        if window_name is None:
-            return None
-        return window_name.decode()
+        # Detect session type
+        session_type = os.environ.get('XDG_SESSION_TYPE', 'unknown').lower()
+
+        logger = logging.getLogger("lnxlink")
+        logger.debug(f"Session type: {session_type}")
+
+        if 'x11' == session_type:
+            # X11
+            if display_variable is None:
+                return ""
+            display = self.lib["xlib"].display.Display(display_variable)
+            ewmh = self.lib["ewmh"].EWMH(_display=display)
+            win = ewmh.getActiveWindow()
+            window_name = ewmh.getWmName(win)
+
+            if window_name is None:
+                return None
+            return window_name.decode()
+
+        elif 'wayland' == session_type:
+            window_name = None
+
+            # Wayland: GNOME WindowQueryTool extension
+            try:
+                method = 'org.gnome.Shell.Extensions.WindowQueryTool.GetWindowInfo'
+                result = subprocess.run([
+                    'gdbus', 'call', '--session',
+                    '--dest', 'org.gnome.Shell',
+                    '--object-path', '/org/gnome/Shell/Extensions/WindowQueryTool',
+                    '--method', method
+                ], capture_output=True, text=True, timeout=5)
+
+                if result.returncode == 0 and result.stdout.strip():
+                    json_str = result.stdout.strip("()',\n")
+                    data = json.loads(json_str)
+                    window_name = data.get('focused_window_title', None)
+                    return window_name
+                else:
+                    logger.debug(f"Method not found: {method}")
+            except (subprocess.TimeoutExpired, FileNotFoundError, json.JSONDecodeError):
+                pass
+
+            # Wayland: GNOME FocusedWindow extension
+            try:
+                method = 'org.gnome.shell.extensions.FocusedWindow.Get'
+                result = subprocess.run([
+                    'gdbus', 'call', '--session',
+                    '--dest', 'org.gnome.Shell',
+                    '--object-path', '/org/gnome/shell/extensions/FocusedWindow',
+                    '--method', method
+                ], capture_output=True, text=True, timeout=5)
+
+                if result.returncode == 0 and result.stdout.strip():
+                    json_str = result.stdout.strip("()',\n")
+                    data = json.loads(json_str)
+                    window_name = data.get('title', None)
+                    return window_name
+                else:
+                    logger.debug(f"Method not found: {method}")
+            except (subprocess.TimeoutExpired, FileNotFoundError, json.JSONDecodeError):
+                pass
+
+        return None
