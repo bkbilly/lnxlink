@@ -2,11 +2,12 @@
 # Wayland requires either of the extensions
 # - [flexagoon/focused-window-dbus](https://github.com/flexagoon/focused-window-dbus)
 # - [bkbilly/GnomeShell-WindowQueryTool](https://github.com/bkbilly/GnomeShell-WindowQueryTool)
-from lnxlink.modules.scripts.helpers import import_install_package, get_display_variable
 import os
 import subprocess
 import json
 import logging
+from lnxlink.modules.scripts.helpers import import_install_package, get_display_variable
+
 
 class Addon:
     """Addon module"""
@@ -35,12 +36,12 @@ class Addon:
         """Gather information from the system"""
         display_variable = get_display_variable()
         # Detect session type
-        session_type = os.environ.get('XDG_SESSION_TYPE', 'unknown').lower()
+        session_type = os.environ.get("XDG_SESSION_TYPE", "unknown").lower()
 
         logger = logging.getLogger("lnxlink")
-        logger.debug(f"Session type: {session_type}")
+        logger.debug("Session type: %s", session_type)
 
-        if 'x11' == session_type:
+        if "x11" == session_type:
             # X11
             if display_variable is None:
                 return ""
@@ -53,46 +54,66 @@ class Addon:
                 return None
             return window_name.decode()
 
-        elif 'wayland' == session_type:
+        if "wayland" == session_type:
             window_name = None
 
             # Wayland: GNOME WindowQueryTool extension
             try:
-                method = 'org.gnome.Shell.Extensions.WindowQueryTool.GetWindowInfo'
-                result = subprocess.run([
-                    'gdbus', 'call', '--session',
-                    '--dest', 'org.gnome.Shell',
-                    '--object-path', '/org/gnome/Shell/Extensions/WindowQueryTool',
-                    '--method', method
-                ], capture_output=True, text=True, timeout=5)
+                method = "org.gnome.Shell.Extensions.WindowQueryTool.GetWindowInfo"
+                result = subprocess.run(
+                    [
+                        "gdbus",
+                        "call",
+                        "--session",
+                        "--dest",
+                        "org.gnome.Shell",
+                        "--object-path",
+                        "/org/gnome/Shell/Extensions/WindowQueryTool",
+                        "--method",
+                        method,
+                    ],
+                    capture_output=True,
+                    text=True,
+                    timeout=5,
+                    check=True,
+                )
 
                 if result.returncode == 0 and result.stdout.strip():
                     json_str = result.stdout.strip("()',\n")
                     data = json.loads(json_str)
-                    window_name = data.get('focused_window_title', None)
+                    window_name = data.get("focused_window_title", None)
                     return window_name
-                else:
-                    logger.debug(f"Method not found: {method}")
+                logger.debug("Method not found: %s", method)
             except (subprocess.TimeoutExpired, FileNotFoundError, json.JSONDecodeError):
                 pass
 
             # Wayland: GNOME FocusedWindow extension
             try:
-                method = 'org.gnome.shell.extensions.FocusedWindow.Get'
-                result = subprocess.run([
-                    'gdbus', 'call', '--session',
-                    '--dest', 'org.gnome.Shell',
-                    '--object-path', '/org/gnome/shell/extensions/FocusedWindow',
-                    '--method', method
-                ], capture_output=True, text=True, timeout=5)
+                method = "org.gnome.shell.extensions.FocusedWindow.Get"
+                result = subprocess.run(
+                    [
+                        "gdbus",
+                        "call",
+                        "--session",
+                        "--dest",
+                        "org.gnome.Shell",
+                        "--object-path",
+                        "/org/gnome/shell/extensions/FocusedWindow",
+                        "--method",
+                        method,
+                    ],
+                    capture_output=True,
+                    text=True,
+                    timeout=5,
+                    check=True,
+                )
 
                 if result.returncode == 0 and result.stdout.strip():
                     json_str = result.stdout.strip("()',\n")
                     data = json.loads(json_str)
-                    window_name = data.get('title', None)
+                    window_name = data.get("title", None)
                     return window_name
-                else:
-                    logger.debug(f"Method not found: {method}")
+                logger.debug("Method not found: %s", method)
             except (subprocess.TimeoutExpired, FileNotFoundError, json.JSONDecodeError):
                 pass
 
