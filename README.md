@@ -9,49 +9,118 @@ metaLinks: {}
 
 ## Welcome
 
-This is a **Home Assistant companion app** for Linux that allows you to monitor and control your PC directly from Home Assistant. It integrates seamlessly using MQTT, enabling automatic discovery of entities and real-time communication between your system and Home Assistant.
+LNXlink is a **Home Assistant companion app** for Linux that bridges the gap between your PC and your smart home ecosystem. By leveraging MQTT and Autodiscovery, it allows you to monitor system stats and trigger remote commands in real-time with zero manual entity configuration.
 
 ## Features
 
-* **Sensors:** Automatically discovers sensors that monitor and control the system.
-* **Home Assistant:** Uses MQTT Autodiscovery to create entities and indicate if an update is required.
-* **Minimal System Requirements:** Requires only basic system packages.
-* **Easily Expanded:** Automatically imports new modules; custom modules can also be added.
+* **Automated Sensors:** Discovers and exposes system metrics and controls automatically.
+* **MQTT Autodiscovery:** Integrates instantly with Home Assistant with update notifications.
+* **Lightweight:** Built to run with minimal system dependencies.
+* **Extensible:** Supports a modular architecture; easily import or create custom modules.
 
 ## Supported Modules
 
 ### 🧮 Graphical Interface
 
-<table><thead><tr><th width="169.73828125">Module</th><th>Description</th></tr></thead><tbody><tr><td>📢 Notify</td><td>Uses <code>notify.send_message</code> to send notifications. <a href="usage.md#notification">Usage</a></td></tr><tr><td>📂 Open URL/File</td><td>Uses xdg_open command to open files or URLs. <a href="usage.md#open-a-url-or-file">Usage</a></td></tr><tr><td>🚥 Keep Alive</td><td>Creates a switch that enables or disables the monitor idle with the system commands <code>xset</code> or <code>gsettings</code>.</td></tr><tr><td>⌛ Idle time</td><td>Creates a sensor that measures how much time the computer is idle.</td></tr><tr><td>🎶 Media</td><td><p>Creates a sensor with the current player status and the media info at it's attributes.</p><p>It also creates buttons for controlling the player which by default are disabled.</p><p><a href="media-player.md">Media Setup/Usage</a></p></td></tr><tr><td>🔆 Brightness</td><td>It creates a number entity for controlling the brightness of all displays, but also entities for each individual display.</td></tr><tr><td>💡 Screen On/Off</td><td>Creates a switch with the monitor status which can also be controlled using the xset command.</td></tr><tr><td>⛶ Fullscreen</td><td>Creates a binary sensor that shows if a window is full screen and it's name.</td></tr><tr><td>📸 Screenshot Show</td><td>Creates a switch that enables a camera entity to show a stream of the desktop.</td></tr><tr><td>🎧 Audio Select</td><td>Creates select entities for selecting the speaker or microphone input device to use.</td></tr><tr><td>⌨️ Keyboard Hotkeys</td><td>Creates a sensor that shows the key pressed based on the configured keys. <a href="modules-settings.md#keyboard-hotkeys">Settings</a></td></tr><tr><td>🖱️ Mouse control</td><td>Creates buttons that can sends the mouse movement using <code>xdotool</code> or <code>ydotool</code> by accelerating each second. This can be combined with the <a href="https://github.com/bkbilly/lnxlink-touchpad-card">LNXlink Touchpad Card</a> for controlling the mouse through the dashboard.</td></tr><tr><td>🔑 Send Keys</td><td>Creates a text entity that can send a series of keys using the <code>xdotool</code>. or <code>ydotool</code> <a href="usage.md#keys-send">Usage</a></td></tr><tr><td>🎮 Steam</td><td>Creates a select entity with a list of all steam or non steam games.</td></tr><tr><td>🪟 Display Environment</td><td>Shows the display environment it is using, eg: <code>:0</code>.</td></tr><tr><td>🗔 Active Window</td><td>Creates a sensor with the name of the focused window.</td></tr></tbody></table>
+| Module | Description |
+| --- | --- |
+| 📢 Notify | **Send** rich desktop notifications via `notify.send_message`. [Usage](https://www.google.com/search?q=usage.md%23notification) |
+| 📂 Open URL/File | **Launch** files or websites remotely using the `xdg-open` command. [Usage](https://www.google.com/search?q=usage.md%23open-a-url-or-file) |
+| 🚥 Keep Alive | **Prevent** monitor sleep or idle states using `xset` or `gsettings`. |
+| ⌛ Idle time | **Monitor** user inactivity duration with a dedicated sensor. |
+| 🎶 Media | **Track** playback status, metadata and media control. [Setup](https://www.google.com/search?q=media-player.md) |
+| 🔆 Brightness | **Adjust** display luminance globally or for individual monitors via number entities. |
+| 💡 Screen On/Off | **Toggle** monitor power states using the `xset` command. |
+| ⛶ Fullscreen | **Detect** if a window is currently in fullscreen mode and view its name. |
+| 📸 Screenshot | **Stream** your desktop directly to Home Assistant via a camera entity. |
+| 🎧 Audio Select | **Switch** between available speaker or microphone input devices. |
+| ⌨️ Keyboard Hotkeys | **Capture** specific keypresses for automation triggers. [Settings](https://www.google.com/search?q=modules-settings.md%23keyboard-hotkeys) |
+| 🖱️ Mouse control | **Simulate** mouse movement and actions. Works with the [LNXlink Touchpad Card](https://github.com/bkbilly/lnxlink-touchpad-card). |
+| 🔑 Send Keys | **Broadcast** keystrokes or complex combinations using `xdotool` or `ydotool`. [Usage](https://www.google.com/search?q=usage.md%23keys-send) |
+| 🎮 Steam | **Launch** Steam or non-Steam games from a dropdown list. |
+| 🪟 Display Env | **Identify** the current display environment (e.g., `:0`). |
+| 🗔 Active Window | **Monitor** the name and title of the currently focused window. |
 
 ### **✅ System Actions**
 
-<table><thead><tr><th width="170.08203125">Module</th><th>Description</th></tr></thead><tbody><tr><td>🔴 Shutdown</td><td>Creates a button that shuts down the computer.</td></tr><tr><td>⚪ Restart</td><td>Creates a button that restarts the computer.</td></tr><tr><td>💤 Suspend</td><td>Creates a button that puts the computer to sleep mode.</td></tr><tr><td>🚀 Boot Select</td><td>Creates a select entity that lets you choose which OS to boot on the next boot.</td></tr><tr><td>⚡ Power Profile</td><td>Creates a select entity with all the available power profiles.</td></tr><tr><td>⚙️ SystemD</td><td>Creates a switch for each systemd service which is configured, allowing for status checks, starting or stopping Linux services. <a href="modules-settings.md#systemd">Settings</a></td></tr></tbody></table>
+| Module | Description |
+| --- | --- |
+| 🔴 Shutdown | **Shut down** the computer instantly from your dashboard. |
+| ⚪ Restart | **Reboot** the system remotely. |
+| 💤 Suspend | **Trigger** sleep mode to save power when not in use. |
+| 🚀 Boot Select | **Choose** which operating system to load on the next boot. |
+| ⚡ Power Profile | **Toggle** between performance, balanced, or power-saver profiles. |
+| ⚙️ SystemD | **Manage** Linux services; check status, start, or stop specific units. [Settings](https://www.google.com/search?q=modules-settings.md%23systemd) |
 
 ### **🖥 System Information**
 
-<table><thead><tr><th width="169.765625">Module</th><th>Description</th></tr></thead><tbody><tr><td>🧠 CPU</td><td>Creates an entity with the current CPU usage.</td></tr><tr><td>💾 RAM</td><td>Creates an entity with the current RAM memory usage.</td></tr><tr><td>🖼️ GPU</td><td>Creates entities for each NVIDIA or AMD GPU load usage.</td></tr><tr><td>🔋 Battery</td><td><p>Creates sensor entities for each device that reports it's battery usage in percentage.</p><p>This supports auto-discovery, so it will create the sensor even if it is connected for the 1st time.</p></td></tr><tr><td>🌡️ Temperature</td><td>Creates sensors for all the temperature sensors that are discovered on the system.</td></tr><tr><td>⚠️ Restart required</td><td>Creates a binary sensor that shows if the system needs to be restarted, most likely due to an update.</td></tr><tr><td>🔄 System Updates</td><td>Creates a binary sensor that shows if an update is waiting to be installed and a sensor that shows the pending updates.</td></tr><tr><td>📥 Disk IO</td><td>Creates sensors for each disk and shows the Input/Output percentage of disk used.</td></tr><tr><td>📀 Disk usage</td><td>Creates a sensor for showing the percentage of used space on each disk. <a href="modules-settings.md#disk-usage">Usage</a></td></tr><tr><td>🖴 Mounts</td><td>Creates a sensor for showing the percentage of used space on each mounted volume. <a href="modules-settings.md#mounts-usage">Usage</a></td></tr></tbody></table>
+| Module | Description |
+| --- | --- |
+| 🧠 CPU | **Monitor** real-time CPU load and performance. |
+| 💾 RAM | **Track** memory usage and availability. |
+| 🖼️ GPU | **Monitor** load and usage for NVIDIA or AMD graphics cards. |
+| 🔋 Battery | **Track** battery levels for all connected devices. |
+| 🌡️ Temperature | **Monitor** thermal data from all discovered system sensors. |
+| ⚠️ Restart Required | **Detect** if a system reboot is needed (usually after kernel updates). |
+| 🔄 System Updates | **Track** pending packages and update availability in real-time. |
+| 📥 Disk IO | **Measure** read/write throughput for each physical disk. |
+| 📀 Disk Usage | **Monitor** storage capacity and percentage used per disk. [Usage](https://www.google.com/search?q=modules-settings.md%23disk-usage) |
+| 🖴 Mounts | **View** space usage for all currently mounted volumes. [Usage](https://www.google.com/search?q=modules-settings.md%23mounts-usage) |
 
 ### **📡 Network & Devices**
 
-<table><thead><tr><th width="170.046875">Module</th><th>Description</th></tr></thead><tbody><tr><td>📶 Network Speed</td><td>Creates a sensor for upload speed and a sensor for download speed.</td></tr><tr><td>🌐 Interfaces</td><td>Creates a sensor for each network interface found on the system with it's IP address.</td></tr><tr><td>📱 Bluetooth</td><td><p>Creates two types of switches:</p><ol><li>A <strong>Bluetooth Power</strong> switch that enables and disables the Bluetooth on the computer</li><li>A <strong>Bluetooth Device</strong> switch for each connected device that disconnects and connects to the device.</li></ol><p>These are auto-discovered even when the app is running.</p></td></tr><tr><td>🛜 WiFi</td><td>Creates a sensor with the WiFi signal and some basic information.</td></tr><tr><td>🔌 WOL</td><td>Creates a switch for all network interfaces that support WOL which allows it to be allowed to be woken using Wake-On-LAN magic packets.</td></tr><tr><td>🗺️ BeaconDB</td><td>Scans the available WiFi networks and finds the location from BeaconDB or manually by configuring a custom position. <a href="modules-settings.md#beacondb">Settings</a></td></tr></tbody></table>
+| Module | Description |
+| --- | --- |
+| 📶 Network Speed | **Monitor** real-time upload and download speeds. |
+| 🌐 Interfaces | **List** active network interfaces and their assigned IP addresses. |
+| 📱 Bluetooth | **Control** global Bluetooth power or connect/disconnect specific devices. |
+| 🛜 WiFi | **Monitor** signal strength and connection metadata. |
+| 🔌 WOL | **Enable** or disable Wake-On-LAN support for compatible network cards. |
+| 🗺️ BeaconDB | **Locate** the device using WiFi triangulation or custom coordinates. [Settings](https://www.google.com/search?q=modules-settings.md%23beacondb) |
 
 ### 🎚️ **Audio/Video/Input**
 
-<table><thead><tr><th width="170.421875">Module</th><th>Description</th></tr></thead><tbody><tr><td>🎤 Microphone Used</td><td>Creates a binary sensor that shows if the microphone is used by any application.</td></tr><tr><td>🔈 Speaker Used</td><td>Creates a binary sensor that shows if the speaker is outputting audio.</td></tr><tr><td>🎥 Camera Used</td><td>Creates a binary sensor that shows if the camera is used by any application.</td></tr><tr><td>🎮 Gamepad Used</td><td>Creates a binary sensor that shows if the gamepad is used in the last 40 seconds.</td></tr></tbody></table>
+| Module | Description |
+| --- | --- |
+| 🎤 Microphone Used | **Monitor** if any application is currently accessing the microphone. |
+| 🔈 Speaker Used | **Detect** active audio output to determine if the system is "in use." |
+| 🎥 Camera Used | **Track** webcam activity for privacy or presence automations. |
+| 🎮 Gamepad Used | **Report** controller activity (active if input detected within 40s). |
 
 ### **🧰 Applications & Tools**
 
-<table><thead><tr><th width="170.14453125">Module</th><th>Description</th></tr></thead><tbody><tr><td>🌍 LNXlink Update</td><td>Creates an update entity to update to the latest version. It supports installations via System or Development. <a href="usage.md#install-update">Usage</a></td></tr><tr><td>🗣️ Speech Recognition</td><td>Listens to the user's input and sends the response as an attribute to the binary sensor of speech recognition entity. <a href="usage.md#voice-assistant">Usage</a></td></tr><tr><td>🧲 GPIO</td><td>Used for Raspberry to create binary_sensors and switches for the configured input and output pins. <a href="modules-settings.md#gpio">Settings</a></td></tr><tr><td>📺 IR Remote</td><td><p>Used to control devices or receive IR signals. It creates the following entities:</p><ul><li>Sensor entity for reading the decoded IR signals.</li><li>Text entity that sends any data provided.</li><li>Button entities that send the pre-configured data.</li></ul><p><a href="modules-settings.md#ir-remote">Settings</a></p></td></tr></tbody></table>
+| Module | Description |
+| --- | --- |
+| 🌍 LNXlink Update | **Update** LNXlink directly from Home Assistant. [Usage](https://www.google.com/search?q=usage.md%23install-update) |
+| 🗣️ Speech | **Process** voice input and return responses via binary sensor attributes. [Usage](https://www.google.com/search?q=usage.md%23voice-assistant) |
+| 🧲 GPIO | **Control** and monitor Raspberry Pi GPIO pins. [Settings](https://www.google.com/search?q=modules-settings.md%23gpio) |
+| 📺 IR Remote | **Control** IR devices or decode incoming signals. [Settings](https://www.google.com/search?q=modules-settings.md%23ir-remote) |
 
 ### 🧩 **Advanced/Other**
 
-<table><thead><tr><th width="170.3203125">Module</th><th>Description</th></tr></thead><tbody><tr><td>⏳ Inference Time</td><td>Creates a sensor to show how much time it took for the sensors to get a result. This is used for debugging purposes.</td></tr><tr><td>📜 Logging Level</td><td>Creates a select entity that lets the user select the debug type while running. Very useful for debugging an issue.</td></tr><tr><td>🐚 Bash commands</td><td><p>One of the most powerful modules that lets you easily create any type of sensor:</p><ul><li>sensors</li><li>binary_sensors</li><li>buttons</li><li>switches</li></ul><p><a href="modules-settings.md#bash">Settings</a></p></td></tr><tr><td>🐳 Docker</td><td>Creates a switch for each discovered docker container, a binary sensor for checking for updates and a button that can prune all the unused images/containers/etc... <a href="modules-settings.md#docker">Settings</a></td></tr><tr><td>📊 Statistics</td><td>Used to send anonymous data for measuring how many installations are used each day. <a href="usage.md#statistics">Usage</a></td></tr><tr><td>📮 RESTful</td><td>Used to get information or control the system using HTTP requests. <a href="usage.md#restful">Usage</a></td></tr></tbody></table>
+| Module | Description |
+| --- | --- |
+| ⏳ Inference Time | **Debug** performance by measuring sensor data collection latency. |
+| 📜 Logging Level | **Change** debug verbosity on-the-fly for troubleshooting. |
+| 🐚 Bash Commands | **Create** custom sensors, binary_sensors, buttons, or switches using shell scripts. [Settings](https://www.google.com/search?q=modules-settings.md%23bash) |
+| 🐳 Docker | **Manage** containers; toggle status, check for updates, or prune images. [Settings](https://www.google.com/search?q=modules-settings.md%23docker) |
+| 📊 Statistics | **Opt-in** to send anonymous usage data to help improve LNXlink. [Usage](https://www.google.com/search?q=usage.md%23statistics) |
+| 📮 RESTful | **Interact** with the system using standard HTTP requests. [Usage](https://www.google.com/search?q=usage.md%23restful) |
 
-### **📦 Custom modules**
+### **📦 Custom Modules**
 
-<table><thead><tr><th width="295.4375">Module</th><th data-type="content-ref">Link</th></tr></thead><tbody><tr><td>Lutris Game Launcher</td><td><a href="https://github.com/bkbilly/lnxlink/discussions/202">https://github.com/bkbilly/lnxlink/discussions/202</a></td></tr><tr><td>Active window Wayland</td><td><a href="https://github.com/bkbilly/lnxlink/discussions/126">https://github.com/bkbilly/lnxlink/discussions/126</a></td></tr><tr><td>Screens OnOff KDE</td><td><a href="https://github.com/D3SOX/lnxlink-modules/blob/master/kde_screens_onoff.py">https://github.com/D3SOX/lnxlink-modules/blob/master/kde_screens_onoff.py</a></td></tr><tr><td>AM2302 Temperature and Humidity</td><td><a href="https://github.com/bkbilly/lnxlink/discussions/81">https://github.com/bkbilly/lnxlink/discussions/81</a></td></tr><tr><td>Satisfactory Server module</td><td><a href="https://github.com/bkbilly/lnxlink/discussions/128">https://github.com/bkbilly/lnxlink/discussions/128</a></td></tr><tr><td>GPU nvidia-settings</td><td><a href="https://github.com/PW999/lnxlink_gpu_nvidia_settings">https://github.com/PW999/lnxlink_gpu_nvidia_settings</a></td></tr></tbody></table>
+| Module | Link |
+| --- | --- |
+| Lutris Game Launcher | [Discussion #202](https://github.com/bkbilly/lnxlink/discussions/202) |
+| Active Window (Wayland) | [Discussion #126](https://github.com/bkbilly/lnxlink/discussions/126) |
+| Screens On/Off (KDE) | [KDE Module Source](https://github.com/D3SOX/lnxlink-modules/blob/master/kde_screens_onoff.py) |
+| AM2302 Temp/Humidity | [Discussion #81](https://github.com/bkbilly/lnxlink/discussions/81) |
+| Satisfactory Server | [Discussion #128](https://github.com/bkbilly/lnxlink/discussions/128) |
+| GPU nvidia-settings | [NVIDIA Settings Source](https://github.com/PW999/lnxlink_gpu_nvidia_settings) |
 
 ## Supported OS
 
-Only Linux is supported. There is no plan on supporting Windows or MacOS due to system dependencies that can't be easily ported. For windows a recommended companion app is [HASS.Agent](https://lab02-research.org/hassagent/). A cross-platform alternative is [IoTuring](https://github.com/richibrics/IoTuring).
+LNXlink is built specifically for **Linux**. There are currently no plans for Windows or macOS support due to deep system dependencies.
+
+* **Windows:** We recommend [HASS.Agent](https://lab02-research.org/hassagent/).
+* **Cross-Platform:** Consider [IoTuring](https://github.com/richibrics/IoTuring).
