@@ -24,19 +24,19 @@ LNXlink is a **Home Assistant companion app** for Linux that bridges the gap bet
 
 | Module | Description |
 | --- | --- |
-| 📢 Notify | **Send** rich desktop notifications via `notify.send_message`. [Usage](https://www.google.com/search?q=usage.md%23notification) |
-| 📂 Open URL/File | **Launch** files or websites remotely using the `xdg-open` command. [Usage](https://www.google.com/search?q=usage.md%23open-a-url-or-file) |
+| 📢 Notify | **Send** rich desktop notifications via `notify.send_message`. [Usage](usage.md%23notification) |
+| 📂 Open URL/File | **Launch** files or websites remotely using the `xdg-open` command. [Usage](usage.md%23open-a-url-or-file) |
 | 🚥 Keep Alive | **Prevent** monitor sleep or idle states using `xset` or `gsettings`. |
 | ⌛ Idle time | **Monitor** user inactivity duration with a dedicated sensor. |
-| 🎶 Media | **Track** playback status, metadata and media control. [Setup](https://www.google.com/search?q=media-player.md) |
+| 🎶 Media | **Track** playback status, metadata and media control. [Setup](media-player.md) |
 | 🔆 Brightness | **Adjust** display luminance globally or for individual monitors via number entities. |
 | 💡 Screen On/Off | **Toggle** monitor power states using the `xset` command. |
 | ⛶ Fullscreen | **Detect** if a window is currently in fullscreen mode and view its name. |
 | 📸 Screenshot | **Stream** your desktop directly to Home Assistant via a camera entity. |
 | 🎧 Audio Select | **Switch** between available speaker or microphone input devices. |
-| ⌨️ Keyboard Hotkeys | **Capture** specific keypresses for automation triggers. [Settings](https://www.google.com/search?q=modules-settings.md%23keyboard-hotkeys) |
+| ⌨️ Keyboard Hotkeys | **Capture** specific keypresses for automation triggers. [Settings](modules-settings.md%23keyboard-hotkeys) |
 | 🖱️ Mouse control | **Simulate** mouse movement and actions. Works with the [LNXlink Touchpad Card](https://github.com/bkbilly/lnxlink-touchpad-card). |
-| 🔑 Send Keys | **Broadcast** keystrokes or complex combinations using `xdotool` or `ydotool`. [Usage](https://www.google.com/search?q=usage.md%23keys-send) |
+| 🔑 Send Keys | **Broadcast** keystrokes or complex combinations using `xdotool` or `ydotool`. [Usage](usage.md%23keys-send) |
 | 🎮 Steam | **Launch** Steam or non-Steam games from a dropdown list. |
 | 🪟 Display Env | **Identify** the current display environment (e.g., `:0`). |
 | 🗔 Active Window | **Monitor** the name and title of the currently focused window. |
@@ -50,7 +50,7 @@ LNXlink is a **Home Assistant companion app** for Linux that bridges the gap bet
 | 💤 Suspend | **Trigger** sleep mode to save power when not in use. |
 | 🚀 Boot Select | **Choose** which operating system to load on the next boot. |
 | ⚡ Power Profile | **Toggle** between performance, balanced, or power-saver profiles. |
-| ⚙️ SystemD | **Manage** Linux services; check status, start, or stop specific units. [Settings](https://www.google.com/search?q=modules-settings.md%23systemd) |
+| ⚙️ SystemD | **Manage** Linux services; check status, start, or stop specific units. [Settings](modules-settings.md%23systemd) |
 
 ### **🖥 System Information**
 
@@ -64,8 +64,8 @@ LNXlink is a **Home Assistant companion app** for Linux that bridges the gap bet
 | ⚠️ Restart Required | **Detect** if a system reboot is needed (usually after kernel updates). |
 | 🔄 System Updates | **Track** pending packages and update availability in real-time. |
 | 📥 Disk IO | **Measure** read/write throughput for each physical disk. |
-| 📀 Disk Usage | **Monitor** storage capacity and percentage used per disk. [Usage](https://www.google.com/search?q=modules-settings.md%23disk-usage) |
-| 🖴 Mounts | **View** space usage for all currently mounted volumes. [Usage](https://www.google.com/search?q=modules-settings.md%23mounts-usage) |
+| 📀 Disk Usage | **Monitor** storage capacity and percentage used per disk. [Usage](modules-settings.md%23disk-usage) |
+| 🖴 Mounts | **View** space usage for all currently mounted volumes. [Usage](modules-settings.md%23mounts-usage) |
 
 ### **📡 Network & Devices**
 
@@ -76,7 +76,7 @@ LNXlink is a **Home Assistant companion app** for Linux that bridges the gap bet
 | 📱 Bluetooth | **Control** global Bluetooth power or connect/disconnect specific devices. |
 | 🛜 WiFi | **Monitor** signal strength and connection metadata. |
 | 🔌 WOL | **Enable** or disable Wake-On-LAN support for compatible network cards. |
-| 🗺️ BeaconDB | **Locate** the device using WiFi triangulation or custom coordinates. [Settings](https://www.google.com/search?q=modules-settings.md%23beacondb) |
+| 🗺️ BeaconDB | **Locate** the device using WiFi triangulation or custom coordinates. [Settings](modules-settings.md%23beacondb) |
 
 ### 🎚️ **Audio/Video/Input**
 
@@ -91,10 +91,10 @@ LNXlink is a **Home Assistant companion app** for Linux that bridges the gap bet
 
 | Module | Description |
 | --- | --- |
-| 🌍 LNXlink Update | **Update** LNXlink directly from Home Assistant. [Usage](https://www.google.com/search?q=usage.md%23install-update) |
-| 🗣️ Speech | **Process** voice input and return responses via binary sensor attributes. [Usage](https://www.google.com/search?q=usage.md%23voice-assistant) |
-| 🧲 GPIO | **Control** and monitor Raspberry Pi GPIO pins. [Settings](https://www.google.com/search?q=modules-settings.md%23gpio) |
-| 📺 IR Remote | **Control** IR devices or decode incoming signals. [Settings](https://www.google.com/search?q=modules-settings.md%23ir-remote) |
+| 🌍 LNXlink Update | **Update** LNXlink directly from Home Assistant. [Usage](usage.md%23install-update) |
+| 🗣️ Speech | **Process** voice input and return responses via binary sensor attributes. [Usage](usage.md%23voice-assistant) |
+| 🧲 GPIO | **Control** and monitor Raspberry Pi GPIO pins. [Settings](modules-settings.md%23gpio) |
+| 📺 IR Remote | **Control** IR devices or decode incoming signals. [Settings](modules-settings.md%23ir-remote) |
 
 ### 🧩 **Advanced/Other**
 
@@ -102,10 +102,10 @@ LNXlink is a **Home Assistant companion app** for Linux that bridges the gap bet
 | --- | --- |
 | ⏳ Inference Time | **Debug** performance by measuring sensor data collection latency. |
 | 📜 Logging Level | **Change** debug verbosity on-the-fly for troubleshooting. |
-| 🐚 Bash Commands | **Create** custom sensors, binary_sensors, buttons, or switches using shell scripts. [Settings](https://www.google.com/search?q=modules-settings.md%23bash) |
-| 🐳 Docker | **Manage** containers; toggle status, check for updates, or prune images. [Settings](https://www.google.com/search?q=modules-settings.md%23docker) |
-| 📊 Statistics | **Opt-in** to send anonymous usage data to help improve LNXlink. [Usage](https://www.google.com/search?q=usage.md%23statistics) |
-| 📮 RESTful | **Interact** with the system using standard HTTP requests. [Usage](https://www.google.com/search?q=usage.md%23restful) |
+| 🐚 Bash Commands | **Create** custom sensors, binary_sensors, buttons, or switches using shell scripts. [Settings](modules-settings.md%23bash) |
+| 🐳 Docker | **Manage** containers; toggle status, check for updates, or prune images. [Settings](modules-settings.md%23docker) |
+| 📊 Statistics | **Opt-in** to send anonymous usage data to help improve LNXlink. [Usage](usage.md%23statistics) |
+| 📮 RESTful | **Interact** with the system using standard HTTP requests. [Usage](usage.md%23restful) |
 
 ### **📦 Custom Modules**
 
