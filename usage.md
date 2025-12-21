@@ -8,6 +8,8 @@ description: >-
 
 ## Notification
 
+### Send Notification
+
 Sends a notification with a `title` and `message`. The other options are optional:
 
 * `iconUrl`: It can be a URL or a local icon.
@@ -17,10 +19,11 @@ Sends a notification with a `title` and `message`. The other options are optiona
 * `buttons`: A list of buttons that should appear on the notification.
 
 ```yaml
-service: mqtt.publish
+service: notify.send_message
+target:
+  entity_id: notify.desktop_linux_desktop_linux
 data:
-  topic: lnxlink/desktop-linux/commands/notify
-  payload: >-
+  message: >-
     { "title": "Notification Title",
       "message": "Testing notification",
       "iconUrl": "http://hass.local:8123/local/myimage.jpg",
@@ -29,6 +32,24 @@ data:
       "timeout": 1000,
       "buttons": ["Open Image"] }
 ```
+
+### Close notification
+
+Since some distributions do not support automatic timeouts, an option is available to manually close notifications. Providing an ID is optional; if specified, only that particular notification will be dismissed. If no ID is provided, all notifications sent by LNXlink will be closed.
+
+```yaml
+action: notify.send_message
+target:
+  entity_id: notify.desktop_linux_desktop_linux
+data:
+  message: >-
+    {
+      "action": "close",
+      "id": 10
+    }
+```
+
+### Button Action
 
 You can create an automation that is triggered when the button is pressed. In this example, it will use the `xdg_open` module to open the image.
 
