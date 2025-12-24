@@ -1,4 +1,4 @@
-"""Gets the battery information of connected devices"""
+"""Track battery levels for all connected devices"""
 from xml.etree import ElementTree
 from jeepney import DBusAddress, new_method_call
 from jeepney.io.blocking import open_dbus_connection

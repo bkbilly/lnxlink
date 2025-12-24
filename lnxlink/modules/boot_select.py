@@ -1,4 +1,4 @@
-"""Selects the OS to boot from on GRUB at the next restart"""
+"""Choose which operating system to load on the next boot"""
 import os
 import re
 from shutil import which

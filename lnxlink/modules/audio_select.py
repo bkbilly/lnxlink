@@ -1,4 +1,4 @@
-"""Information and control of pulseaudio devices"""
+"""Switch between available speaker or microphone input devices"""
 import json
 import logging
 from lnxlink.modules.scripts.helpers import import_install_package, syscommand

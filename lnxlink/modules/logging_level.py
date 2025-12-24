@@ -1,4 +1,4 @@
-"""Information and control of logging level"""
+"""Change debug verbosity on-the-fly for troubleshooting"""
 import logging
 
 logger = logging.getLogger("lnxlink")

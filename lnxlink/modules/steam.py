@@ -1,4 +1,4 @@
-"""List all steam games and start them when selected"""
+"""Launch Steam or non-Steam games from a dropdown list"""
 import os
 import re
 import glob

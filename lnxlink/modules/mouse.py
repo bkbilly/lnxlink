@@ -1,4 +1,4 @@
-"""Controls mouse"""
+"""Simulate mouse movement and actions"""
 import os
 import time
 import logging

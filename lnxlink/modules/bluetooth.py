@@ -1,4 +1,4 @@
-"""Controls Paired Bluetooth Devices"""
+"""Control global Bluetooth power or connect/disconnect specific devices"""
 import re
 import logging
 from lnxlink.modules.scripts.helpers import syscommand

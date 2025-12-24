@@ -1,4 +1,4 @@
-"""Checks for LNXlink updates"""
+"""Update LNXlink directly remotely"""
 import re
 import sys
 import logging

@@ -1,4 +1,4 @@
-"""Controls and decodes IR signals on a raspberry"""
+"""Control IR devices or decode incoming signals on a Raspberry PI"""
 import os
 import json
 import time

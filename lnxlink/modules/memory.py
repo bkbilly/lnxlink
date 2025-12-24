@@ -1,4 +1,4 @@
-"""Gets memory usage information"""
+"""Track memory usage and availability"""
 import psutil
 
 

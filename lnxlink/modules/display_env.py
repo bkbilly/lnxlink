@@ -1,4 +1,4 @@
-"""Gets Display Environment"""
+"""Identify the current display environment"""
 from lnxlink.modules.scripts.helpers import get_display_variable
 
 

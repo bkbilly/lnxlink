@@ -1,4 +1,4 @@
-"""Gets disk usage from all disks"""
+"""Monitor storage capacity and percentage used per disk"""
 import logging
 import psutil
 

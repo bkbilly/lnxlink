@@ -1,4 +1,4 @@
-"""Controls systemd services"""
+"""Manage Linux services; check status, start, or stop specific units"""
 import logging
 from jeepney import DBusAddress, new_method_call
 from jeepney.io.blocking import open_dbus_connection

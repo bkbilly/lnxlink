@@ -1,4 +1,4 @@
-"""Get Disk IO usage"""
+"""Measure read/write throughput for each physical disk"""
 import glob
 import asyncio
 from timeit import default_timer as timer

@@ -1,4 +1,4 @@
-"""Assign hotkeys to run commands"""
+"""Capture specific keypresses for automation triggers"""
 import logging
 from datetime import datetime
 from lnxlink.modules.scripts.helpers import import_install_package, get_display_variable

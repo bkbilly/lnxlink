@@ -1,4 +1,4 @@
-"""Uses xdotool to press keyboard keys"""
+"""Broadcast keystrokes or complex combinations"""
 import os
 import re
 import logging

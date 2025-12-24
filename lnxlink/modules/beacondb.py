@@ -1,4 +1,4 @@
-"""Gets the coordinates of the maching using WiFi Networks"""
+"""Locate the device using WiFi triangulation or custom coordinates"""
 import io
 import csv
 import time

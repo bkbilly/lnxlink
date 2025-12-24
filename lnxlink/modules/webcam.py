@@ -1,4 +1,4 @@
-"""Shows an image from the webcamera"""
+"""Track webcam activity for privacy or presence automations"""
 import base64
 from threading import Thread
 from lnxlink.modules.scripts.helpers import import_install_package

@@ -1,4 +1,4 @@
-"""Checks if the microphone is used"""
+"""Monitor if any application is currently accessing the microphone"""
 import glob
 import json
 import re

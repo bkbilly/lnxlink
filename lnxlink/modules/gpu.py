@@ -1,4 +1,4 @@
-"""Gets GPU information"""
+"""Monitor load and usage for NVIDIA or AMD graphics cards"""
 import re
 import math
 import logging

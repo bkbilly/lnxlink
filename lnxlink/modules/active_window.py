@@ -1,4 +1,4 @@
-"""Gets the active window"""
+"""Monitor the name and title of the currently focused window"""
 # Wayland requires either of the extensions
 # - [flexagoon/focused-window-dbus](https://github.com/flexagoon/focused-window-dbus)
 # - [bkbilly/GnomeShell-WindowQueryTool](https://github.com/bkbilly/GnomeShell-WindowQueryTool)

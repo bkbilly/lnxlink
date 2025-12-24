@@ -1,4 +1,4 @@
-"""Sends statistics information"""
+"""Opt-in to send anonymous usage data to help improve LNXlink"""
 import os
 import uuid
 import json

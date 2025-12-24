@@ -1,4 +1,4 @@
-"""Checks for system updates"""
+"""Track pending packages and update availability in real-time"""
 import time
 from shutil import which
 from lnxlink.modules.scripts.helpers import syscommand

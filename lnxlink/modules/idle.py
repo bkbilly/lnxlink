@@ -1,4 +1,4 @@
-"""Gets the idle time of the system"""
+"""Monitor user inactivity duration"""
 import logging
 from lnxlink.modules.scripts.helpers import import_install_package
 

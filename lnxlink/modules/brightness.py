@@ -1,4 +1,4 @@
-"""Controls the brightness of the displays"""
+"""Adjust display luminance globally or for individual monitors via number entities"""
 import re
 import logging
 from shutil import which

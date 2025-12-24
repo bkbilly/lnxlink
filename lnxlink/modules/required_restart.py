@@ -1,4 +1,4 @@
-"""Checks if restart is needed"""
+"""Detect if a system reboot is needed"""
 import os
 
 

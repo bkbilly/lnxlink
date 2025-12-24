@@ -1,4 +1,4 @@
-"""WOL Status control"""
+"""Enable or disable Wake-On-LAN support for compatible network cards"""
 import re
 from shutil import which
 import psutil

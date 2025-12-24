@@ -1,4 +1,4 @@
-"""Keeps display on"""
+"""Prevent monitor sleep or idle states"""
 import re
 from shutil import which
 from lnxlink.modules.scripts.helpers import syscommand, get_display_variable

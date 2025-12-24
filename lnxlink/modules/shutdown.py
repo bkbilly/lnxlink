@@ -1,4 +1,4 @@
-"""Shutdown the system"""
+"""Shut down the computer instantly"""
 import logging
 from shutil import which
 from jeepney import DBusAddress, new_method_call

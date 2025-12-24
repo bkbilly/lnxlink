@@ -1,4 +1,4 @@
-"""Checks GPIO pins from a raspberry"""
+"""Control and monitor Raspberry Pi GPIO pins"""
 import os
 import time
 from collections import deque

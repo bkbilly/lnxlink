@@ -1,4 +1,4 @@
-"""Checks if the webcam is used"""
+"""Track webcam activity for privacy or presence automations"""
 import glob
 from threading import Thread
 from inotify.adapters import Inotify

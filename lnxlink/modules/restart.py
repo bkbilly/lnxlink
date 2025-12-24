@@ -1,4 +1,4 @@
-"""Restarts the system"""
+"""Reboot the system"""
 import logging
 from shutil import which
 from jeepney import DBusAddress, new_method_call

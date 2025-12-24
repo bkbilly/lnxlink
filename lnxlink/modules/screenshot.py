@@ -1,4 +1,4 @@
-"""Shows an image of the desktop as a camera entity"""
+"""Stream your desktop directly to Home Assistant via a camera entity"""
 import base64
 from threading import Thread
 from lnxlink.modules.scripts.helpers import import_install_package

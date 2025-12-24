@@ -1,4 +1,4 @@
-"""Gets temperatures"""
+"""Monitor thermal data from all discovered system sensors"""
 import logging
 
 import psutil

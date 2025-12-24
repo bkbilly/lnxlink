@@ -1,4 +1,4 @@
-"""Shows notifications"""
+"""Send rich desktop notifications via notify.send_message"""
 import os
 import logging
 import tempfile

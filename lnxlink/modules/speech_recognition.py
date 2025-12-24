@@ -1,4 +1,4 @@
-"""Checks if the microphone is used"""
+"""Process voice input and return responses via binary sensor attributes"""
 from importlib import import_module
 from threading import Thread
 import logging

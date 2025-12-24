@@ -1,4 +1,4 @@
-"""Gets Inference Time information"""
+"""Debug performance by measuring sensor data collection latency"""
 
 
 class Addon:

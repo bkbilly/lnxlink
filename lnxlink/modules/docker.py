@@ -1,4 +1,4 @@
-"""Controls Docker instance"""
+"""Manage containers; toggle status, check for updates, or prune images"""
 import time
 import logging
 from lnxlink.modules.scripts.docker_update_status import DockerUpdateStatus

@@ -1,4 +1,4 @@
-"""Gets mount usage from all mounted directories"""
+"""View space usage for all currently mounted volumes"""
 import logging
 from lnxlink.modules.scripts.helpers import syscommand, import_install_package
 

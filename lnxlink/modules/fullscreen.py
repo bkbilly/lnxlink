@@ -1,4 +1,4 @@
-"""Checks if a window is in fullscreen"""
+"""Detect if a window is currently in fullscreen mode and view its name"""
 from lnxlink.modules.scripts.helpers import import_install_package, get_display_variable
 
 

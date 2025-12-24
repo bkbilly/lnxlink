@@ -1,4 +1,4 @@
-"""Gets Interface names with their IP information"""
+"""List active network interfaces and their assigned IP addresses"""
 import logging
 import psutil
 

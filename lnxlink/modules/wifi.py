@@ -1,4 +1,4 @@
-"""Gets WiFi information"""
+"""Monitor signal strength and connection metadata"""
 import os
 import re
 import logging
