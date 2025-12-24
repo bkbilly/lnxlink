@@ -9,7 +9,9 @@ import shutil
 from pathlib import Path
 
 import yaml
+import beaupy
 from lnxlink.consts import SERVICEHEADLESS, SERVICEUSER, CONFIGTEMP
+from lnxlink.modules import get_modules_info
 
 logger = logging.getLogger("lnxlink")
 
@@ -250,6 +252,35 @@ def setup_systemd(config_path):
         subprocess.call(cmd, shell=True)
         cmd = f"{sudo} systemctl {cmd_user} daemon-reload"
         subprocess.call(cmd, shell=True)
+
+
+def setup_modules(config_path):
+    """Asks user which modules to include in the configuration"""
+    with open(config_path, encoding="UTF-8") as file:
+        config = yaml.safe_load(file)
+
+    modules = get_modules_info(config["modules"], config["exclude"])
+    options = [
+        f"[bold]{module['name']}[/bold] - [dim]{module['description']}[/dim]"
+        for module in modules
+    ]
+    initial_ticked = [num for num, module in enumerate(modules) if module["is_enabled"]]
+    selected_formatted = beaupy.select_multiple(
+        options, ticked_indices=initial_ticked, pagination=True, page_size=18
+    )
+    selected_names = [
+        opt.split(" - ")[0].replace("[bold]", "").replace("[/bold]", "")
+        for opt in selected_formatted
+    ]
+
+    if len(selected_names) == 0:
+        return
+    print("You selected:", selected_names)
+    config["exclude"] = None
+    config["modules"] = selected_names
+
+    with open(config_path, "w", encoding="UTF-8") as file:
+        file.write(yaml.dump(config, default_flow_style=False, sort_keys=False))
 
 
 if __name__ == "__main__":

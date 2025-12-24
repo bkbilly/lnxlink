@@ -436,6 +436,7 @@ def main():
     parser.add_argument(
         "-c",
         "--config",
+        default="lnxlink_config/lnxlink.yaml",
         help="Configuration file",
     )
     parser.add_argument(
@@ -465,6 +466,12 @@ def main():
         action="store_true",
     )
     parser.add_argument(
+        "-m",
+        "--moduleselector",
+        help="Runs the module selection wizard",
+        action="store_true",
+    )
+    parser.add_argument(
         "-v",
         "--version",
         help="Shows current version of LNXlink",
@@ -483,6 +490,10 @@ def main():
     config_setup.setup_config(config_path)
     if args.setup:
         logger.info("The configuration exists under the file: %s", config_path)
+        sys.exit()
+    if args.moduleselector:
+        logger.info("The configuration exists under the file: %s", config_path)
+        config_setup.setup_modules(config_path)
         sys.exit()
     if not args.ignore_systemd:
         config_setup.setup_systemd(config_path)

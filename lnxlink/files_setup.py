@@ -5,6 +5,7 @@ import logging
 import importlib.metadata
 from logging.handlers import RotatingFileHandler
 from collections import OrderedDict
+from pathlib import Path
 
 import yaml
 from lnxlink.modules.scripts.helpers import syscommand
@@ -57,6 +58,7 @@ class UniqueQueue:
 
 def setup_logger(config_path, log_level):
     """Save logs on the same directory as the config file"""
+    Path(config_path).parent.mkdir(parents=True, exist_ok=True)
     config_dir = os.path.dirname(os.path.realpath(config_path))
     start_sec = str(int(time.time()))[-4:]
     log_formatter = logging.Formatter(
