@@ -101,6 +101,18 @@ class Addon:
         msg = new_method_call(addr, method)
         conn.send_and_get_reply(msg)
 
+    @staticmethod
+    def _battery_sensor(value_template):
+        """Return common battery sensor configuration"""
+        return {
+            "type": "sensor",
+            "icon": "mdi:battery-bluetooth",
+            "unit": "%",
+            "device_class": "battery",
+            "state_class": "measurement",
+            "value_template": value_template,
+        }
+
     def exposed_controls(self):
         """Exposes to home assistant"""
         discovery_info = {
@@ -114,14 +126,37 @@ class Addon:
             attr_templ = (
                 f"{{{{ value_json.devices.get('{mac}', {{}}).get('attributes') | tojson }}}}"
             )
-            discovery_info[
-                f"Bluetooth Device {blinfo['name'].replace('+', '')} {mac.replace(':', '')}"
-            ] = {
+            device_name = blinfo["name"].replace("+", "")
+            mac_clean = mac.replace(":", "")
+            discovery_info[f"Bluetooth Device {device_name} {mac_clean}"] = {
                 "type": "switch",
                 "icon": "mdi:bluetooth",
                 "value_template": f"{{{{ value_json.devices.get('{mac}', {{}}).get('power') }}}}",
                 "attributes_template": attr_templ,
             }
+            # Expose battery sensors - prefer GATT batteries, fallback to Battery1
+            batteries = blinfo.get("batteries")
+            if batteries:
+                for battery_key in batteries:
+                    battery_num = battery_key.replace("battery_", "")
+                    value_template = (
+                        f"{{{{ value_json.devices.get('{mac}', {{}})"
+                        f".get('batteries', {{}}).get('{battery_key}') }}}}"
+                    )
+                    discovery_info[
+                        f"Bluetooth Device {device_name} {mac_clean} Battery {battery_num}"
+                    ] = self._battery_sensor(value_template)
+            else:
+                # Fallback to single battery from Battery1 interface
+                battery = blinfo.get("attributes", {}).get("battery")
+                if battery is not None:
+                    value_template = (
+                        f"{{{{ value_json.devices.get('{mac}', {{}})"
+                        f".get('attributes', {{}}).get('battery') }}}}"
+                    )
+                    discovery_info[f"Bluetooth Device {device_name} {mac_clean} Battery"] = (
+                        self._battery_sensor(value_template)
+                    )
         return discovery_info
 
     def get_info(self):
@@ -141,6 +176,56 @@ class Addon:
         if len(loaded) > 0:
             self.lnxlink.setup_discovery("bluetooth")
         return self.bluetoothdata
+
+    def _get_gatt_batteries(self, device_path, conn=None):
+        """Get battery levels from GATT characteristics.
+
+        Useful for multi-battery devices like split keyboards.
+        """
+        if conn is None:
+            conn = self._get_connection()
+
+        battery_uuid = "00002a19-0000-1000-8000-00805f9b34fb"
+        batteries = {}
+
+        # Find all child paths under the device
+        paths = self._dbus_paths("org.bluez", device_path, [], conn)
+
+        battery_index = 0
+        for path in paths:
+            if not self._has_interface(path, "org.bluez.GattCharacteristic1", conn):
+                continue
+
+            try:
+                uuid = self._get_property(
+                    object_path=path,
+                    interface="org.bluez.GattCharacteristic1",
+                    prop="UUID",
+                    conn=conn,
+                )
+                if uuid.lower() != battery_uuid:
+                    continue
+
+                # Read the battery value
+                addr = DBusAddress(
+                    path,
+                    bus_name="org.bluez",
+                    interface="org.bluez.GattCharacteristic1",
+                )
+
+                # Prevents reading cached value
+                msg = new_method_call(addr, "ReadValue", "a{sv}", ({},))
+                reply = conn.send_and_get_reply(msg)
+                value = reply.body[0]
+                if value and len(value) > 0:
+                    battery_level = value[0]
+                    batteries[f"battery_{battery_index}"] = battery_level
+                    battery_index += 1
+            except (OSError, DBusErrorResponse) as err:
+                logger.debug("Failed to read GATT battery from %s: %s", path, err)
+                continue
+
+        return batteries
 
     def _get_bluetoothdata(self):
         """Get a list of all bluetooth devices using BlueZ D-Bus API"""
@@ -209,9 +294,13 @@ class Addon:
                     except (OSError, DBusErrorResponse):
                         pass
 
+                # Get battery levels from GATT characteristics (for multi-battery devices)
+                batteries = self._get_gatt_batteries(path, conn)
+
                 data["devices"][mac] = {
                     "name": name,
                     "power": power,
+                    "batteries": batteries if batteries else None,
                     "attributes": {
                         "battery": battery,
                     },
