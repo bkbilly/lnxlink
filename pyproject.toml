@@ -39,6 +39,3 @@ include = ["lnxlink*"]
 
 [project.scripts]
 lnxlink = "lnxlink.__main__:main"
-
-[tool.black]
-line-length = 100

@@ -60,7 +60,9 @@ class Addon:
         if conn is None:
             conn = self._get_connection()
         introspect_iface = "org.freedesktop.DBus.Introspectable"
-        addr = DBusAddress(object_path, bus_name="org.bluez", interface=introspect_iface)
+        addr = DBusAddress(
+            object_path, bus_name="org.bluez", interface=introspect_iface
+        )
         msg = new_method_call(addr, "Introspect")
         try:
             reply = conn.send_and_get_reply(msg)
@@ -123,9 +125,7 @@ class Addon:
             }
         }
         for mac, blinfo in self.bluetoothdata["devices"].items():
-            attr_templ = (
-                f"{{{{ value_json.devices.get('{mac}', {{}}).get('attributes') | tojson }}}}"
-            )
+            attr_templ = f"{{{{ value_json.devices.get('{mac}', {{}}).get('attributes') | tojson }}}}"
             device_name = blinfo["name"].replace("+", "")
             mac_clean = mac.replace(":", "")
             discovery_info[f"Bluetooth Device {device_name} {mac_clean}"] = {
@@ -154,9 +154,9 @@ class Addon:
                         f"{{{{ value_json.devices.get('{mac}', {{}})"
                         f".get('attributes', {{}}).get('battery') }}}}"
                     )
-                    discovery_info[f"Bluetooth Device {device_name} {mac_clean} Battery"] = (
-                        self._battery_sensor(value_template)
-                    )
+                    discovery_info[
+                        f"Bluetooth Device {device_name} {mac_clean} Battery"
+                    ] = self._battery_sensor(value_template)
         return discovery_info
 
     def get_info(self):
@@ -261,20 +261,32 @@ class Addon:
             try:
                 # Check if device is paired
                 paired = self._get_property(
-                    object_path=path, interface="org.bluez.Device1", prop="Paired", conn=conn
+                    object_path=path,
+                    interface="org.bluez.Device1",
+                    prop="Paired",
+                    conn=conn,
                 )
                 if not paired:
                     continue
 
                 # Get device properties
                 mac = self._get_property(
-                    object_path=path, interface="org.bluez.Device1", prop="Address", conn=conn
+                    object_path=path,
+                    interface="org.bluez.Device1",
+                    prop="Address",
+                    conn=conn,
                 )
                 name = self._get_property(
-                    object_path=path, interface="org.bluez.Device1", prop="Name", conn=conn
+                    object_path=path,
+                    interface="org.bluez.Device1",
+                    prop="Name",
+                    conn=conn,
                 )
                 connected = self._get_property(
-                    object_path=path, interface="org.bluez.Device1", prop="Connected", conn=conn
+                    object_path=path,
+                    interface="org.bluez.Device1",
+                    prop="Connected",
+                    conn=conn,
                 )
 
                 # Get device name
