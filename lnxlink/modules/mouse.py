@@ -25,6 +25,8 @@ class Addon:
                 "move_rel": "ydotool mousemove -x %s -y %s",
                 "move_abs": "ydotool mousemove -a -x %s -y %s",
                 "run_check": "ydotool mousemove",
+                "wheel_up": "ydotool mousemove -w -x 0 -y +1",
+                "wheel_down": "ydotool mousemove -w -x 0 -y -1",
             },
             "xdotool": {
                 "left_click": "xdotool click 1",
@@ -33,6 +35,8 @@ class Addon:
                 "left_mouse_up": "ydotool mouseup 1",
                 "move_rel": "xdotool mousemove -- %s %s",
                 "move_abs": "xdotool mousemove %s %s",
+                "wheel_up": "xdotool click 4",
+                "wheel_down": "xdotool click 5",
             },
         }
         self.commands = None
@@ -88,6 +92,14 @@ class Addon:
                 "type": "button",
                 "icon": "mdi:mouse-move-down",
             },
+            "Mouse Wheel Up": {
+                "type": "button",
+                "icon": "mdi:arrow-vertical-lock",
+            },
+            "Mouse Wheel Down": {
+                "type": "button",
+                "icon": "mdi:arrow-vertical-lock",
+            },
         }
 
     # pylint: disable=too-many-branches
@@ -131,6 +143,12 @@ class Addon:
         elif topic[1] == "mouse_click_left_up":
             self.movement = [0, 0]
             syscommand(self.commands["left_mouse_up"])
+        elif topic[1] == "mouse_wheel_up":
+            self.movement = [0, 0]
+            syscommand(self.commands["wheel_up"])
+        elif topic[1] == "mouse_wheel_down":
+            self.movement = [0, 0]
+            syscommand(self.commands["wheel_down"])
 
     def _move(self, movement):
         if self.movement == movement:
