@@ -18,6 +18,7 @@ class Addon:
         self.name = "Active Window"
         display_variable = get_display_variable()
         session_type = os.environ.get("XDG_SESSION_TYPE", "unknown").lower()
+        desktop_env = os.environ.get("XDG_CURRENT_DESKTOP", "unknown").lower()
 
         if session_type == "x11":
             self._requirements()
@@ -27,7 +28,7 @@ class Addon:
             self.ewmh = self.lib["ewmh"].EWMH(_display=display)
             self.get_window = self._get_x11_window
 
-        elif session_type == "wayland":
+        elif session_type == "wayland" and "gnome" in desktop_env:
             self.bus = open_dbus_connection(bus="SESSION")
             self.wqt_addr = DBusAddress(
                 bus_name="org.gnome.Shell",
@@ -49,7 +50,7 @@ class Addon:
                     "Please install: https://extensions.gnome.org/extension/8763/window-query-tool"
                 ) from err
 
-            self.get_window = self._get_wayland_window
+            self.get_window = self._get_wayland_gnome
 
         else:
             raise SystemError(f"Session type '{session_type}' not supported")
@@ -84,7 +85,7 @@ class Addon:
             logger.debug("Error getting X11 window: %s", err)
         return None
 
-    def _get_wayland_window(self):
+    def _get_wayland_gnome(self):
         try:
             msg = new_method_call(self.wqt_addr, "GetWindowInfo")
             reply = self.bus.send_and_get_reply(msg, timeout=2.0)
