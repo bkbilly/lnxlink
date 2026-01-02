@@ -1,8 +1,6 @@
 """Adjust display luminance globally or for individual monitors via number entities"""
-import re
 import logging
-from shutil import which
-from lnxlink.modules.scripts.helpers import syscommand, get_display_variable
+from lnxlink.modules.scripts.monitor_brightness import MonitorBrightness
 
 logger = logging.getLogger("lnxlink")
 
@@ -14,88 +12,54 @@ class Addon:
         """Setup addon"""
         self.name = "Brightness"
         self.lnxlink = lnxlink
-        self.display_variable = None
-        if which("xrandr") is None:
-            raise SystemError("System command 'xrandr' not found")
-        self.displays = self._get_displays()
+        self.monitors, issues = MonitorBrightness.list_displays()
+        for issue in issues:
+            logger.warning("Brightness Monitor Issue: %s", issue)
 
     def get_info(self):
         """Gather information from the system"""
-        displays = self._get_displays()
-        if displays != self.displays:
-            self.displays = displays
+        monitors, _ = MonitorBrightness.list_displays()
+        if monitors != self.monitors:
+            self.monitors = monitors
             self.lnxlink.setup_discovery("brightness")
-        values = [disp["brightness"] for disp in displays.values()]
-        avg_brightness = sum(values) / max(1, len(values))
-        avg_brightness = max(0.1, avg_brightness)
 
-        info = {"status": avg_brightness}
-        for display, values in displays.items():
-            info[display] = max(0.1, values["brightness"])
+        info = {}
+        for monitor in self.monitors:
+            monitor.get_brightness()
+            info[monitor.unique_name] = monitor.last_successful_read
+
         return info
 
     def exposed_controls(self):
         """Exposes to home assistant"""
         controls = {}
-        if len(self.displays) > 0:
-            controls = {
-                "Brightness": {
-                    "type": "number",
-                    "icon": "mdi:brightness-7",
-                    "min": 0.1,
-                    "max": 1,
-                    "step": 0.1,
-                    "value_template": "{{ value_json.status }}",
-                }
-            }
-        for display, values in self.displays.items():
-            controls[f"Brightness {values['name']}"] = {
+        for monitor in self.monitors:
+            controls[f"Brightness {monitor.unique_name}"] = {
                 "type": "number",
                 "icon": "mdi:brightness-7",
-                "min": 0.1,
-                "max": 1,
-                "step": 0.1,
-                "value_template": f"{{{{ value_json.{display} }}}}",
-                "enabled": False,
+                "min": 0,
+                "max": 100,
+                "step": 1,
+                "value_template": f"{{{{ value_json.get('{monitor.unique_name}') }}}}",
             }
         return controls
 
     def start_control(self, topic, data):
         """Control system"""
-        disp_env_cmd = ""
-        if self.display_variable is not None:
-            disp_env_cmd = f" --display {self.display_variable}"
-
         if topic[1] == "brightness":
-            for values in self.displays.values():
-                syscommand(
-                    f"xrandr --output {values['name']} --brightness {data} {disp_env_cmd}"
-                )
+            for monitor in self.monitors:
+                monitor.set_brightness(int(data))
         else:
-            display = self.displays[
-                topic[1].replace("brightness_", "").replace("-", "_")
-            ]["name"]
-            syscommand(f"xrandr --output {display} --brightness {data} {disp_env_cmd}")
-
-    def _get_displays(self):
-        """Get all the displays"""
-        self.display_variable = get_display_variable()
-        displays = {}
-        disp_env_cmd = ""
-        if self.display_variable is not None:
-            disp_env_cmd = f" --display {self.display_variable}"
-
-        stdout, _, _ = syscommand(
-            f"xrandr --verbose --current {disp_env_cmd}",
-        )
-        pattern = re.compile(
-            r"(\S+) \bconnected\b.*[\s\S]*?(?=Brightness)Brightness: ([\d\.\d]+)"
-        )
-
-        for match in pattern.findall(stdout):
-            displays[match[0].replace("-", "_").lower()] = {
-                "name": match[0],
-                "brightness": float(match[1]),
-            }
-
-        return displays
+            for monitor in self.monitors:
+                name_query = topic[1].replace("brightness_", "").replace("-", "_")
+                monitor_unique_name = (
+                    monitor.unique_name.lower().replace("-", "_").replace(" ", "_")
+                )
+                if monitor_unique_name == name_query:
+                    logger.info(
+                        "Changing Brightness to %d for %s",
+                        int(data),
+                        monitor.unique_name,
+                    )
+                    monitor.set_brightness(int(data))
+                    break
