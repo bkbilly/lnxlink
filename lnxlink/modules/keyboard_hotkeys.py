@@ -1,4 +1,5 @@
 """Capture specific keypresses for automation triggers"""
+import os
 import logging
 from datetime import datetime
 from lnxlink.modules.scripts.helpers import import_install_package, get_display_variable
@@ -14,6 +15,9 @@ class Addon:
         """Setup addon"""
         self.name = "Keyboard Hotkeys"
         self.lnxlink = lnxlink
+        session_type = os.environ.get("XDG_SESSION_TYPE", "unknown").lower()
+        if session_type != "x11":
+            raise SystemError("Keyboard Hotkeys module only supports X11 sessions")
         self.started = False
         self.lib = {}
         self._requirements()

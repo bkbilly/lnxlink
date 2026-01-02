@@ -104,6 +104,11 @@ class Addon:
             reply = self.bus.send_and_get_reply(msg, timeout=2.0)
             if reply and reply.body:
                 json_str = reply.body[0]
+                if "Object does not exist" in str(reply.body[0]):
+                    logger.debug(
+                        "WindowQueryTool D-Bus path not found. Is the extension enabled?"
+                    )
+                    return data
                 info = json.loads(json_str)
 
                 is_fullscreen = info.get("is_any_window_fullscreen", False)
