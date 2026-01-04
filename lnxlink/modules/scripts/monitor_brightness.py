@@ -22,7 +22,7 @@ class MonitorBrightness:
         self.manufacturer = manufacturer
         self.name = name
         self.unique_name = f"{manufacturer} {name}"
-        self.last_successful_read = None
+        self.last_successful_read = 50
 
     def get_brightness(self, timeout: float = 2.0) -> Optional[int]:
         """Polls for brightness until timeout. Returns None if max_val is 0."""
@@ -128,6 +128,7 @@ class DDCIPMonitor(MonitorBrightness):
     DDC_ADDR = 0x37
     HOST_ADDR_W = 0x51
     DEST_ADDR_W = 0x6E
+    HOST_ADDR_R = 0x50
     GET_VCP_CMD = 0x01
     SET_VCP_CMD = 0x03
     VCP_BRIGHTNESS = 0x10
@@ -182,7 +183,10 @@ class DDCIPMonitor(MonitorBrightness):
             time.sleep(0.05)
 
             if read_length > 0:
-                return os.read(fd, read_length)
+                data = os.read(fd, read_length)
+                checksum = functools.reduce(operator.xor, data[:-1], self.HOST_ADDR_R)
+                if checksum == data[-1]:
+                    return data
             return None
         except (OSError, IOError):
             return None
@@ -190,7 +194,7 @@ class DDCIPMonitor(MonitorBrightness):
             if fd is not None:
                 os.close(fd)
 
-    def get_brightness(self, timeout: float = 2.0) -> Optional[int]:
+    def get_brightness(self, timeout: float = 1.0) -> Optional[int]:
         """Polls for external brightness via VCP."""
         start_time = time.monotonic()
         while (time.monotonic() - start_time) < timeout:
@@ -207,9 +211,10 @@ class DDCIPMonitor(MonitorBrightness):
             time.sleep(0.1)  # Retry interval
         return None
 
-    def set_brightness(self, value: int, retries: int = 2) -> None:
+    def set_brightness(self, value: int, retries: int = 10) -> None:
         """Sets brightness and verifies the hardware change."""
         target = max(0, min(100, int(value)))
+        self.last_successful_read = target
         # Send set command
         for _attempt in range(retries):
             self._ddc_command([self.SET_VCP_CMD, self.VCP_BRIGHTNESS, 0x00, target])

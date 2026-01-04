@@ -1,4 +1,4 @@
-"""Adjust display luminance globally or for individual monitors via number entities"""
+"""Adjust display luminance for External and Laptop monitors"""
 import logging
 from lnxlink.modules.scripts.monitor_brightness import MonitorBrightness
 
@@ -19,7 +19,8 @@ class Addon:
     def get_info(self):
         """Gather information from the system"""
         monitors, _ = MonitorBrightness.list_displays()
-        if monitors != self.monitors:
+        if len(monitors) != len(self.monitors):
+            print("Detected change in connected monitors, updating discovery.")
             self.monitors = monitors
             self.lnxlink.setup_discovery("brightness")
 
