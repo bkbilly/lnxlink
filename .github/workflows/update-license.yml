@@ -16,6 +16,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Get current year
+        id: date
+        run: echo "YEAR=$(date +%Y)" >> $GITHUB_ENV
+
       - name: Update License Year
         run: |
           # Get current year
@@ -28,8 +32,8 @@ jobs:
         uses: peter-evans/create-pull-request@v6
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: "docs: update copyright year to $(date +%Y)"
-          title: "Update License Year to $(date +%Y)"
+          commit-message: "docs: update copyright year to ${{ env.YEAR }}"
+          title: "Update License Year to ${{ env.YEAR }}"
           body: "Happy New Year! This PR updates the copyright year in the license file."
           branch: "chore/update-license-year"
           # This variable automatically detects 'main', 'master', or whatever you use:
