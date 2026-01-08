@@ -1,0 +1,36 @@
+name: Update License Year
+
+on:
+  schedule:
+    - cron: '0 0 1 1 *' # Runs Jan 1st
+  workflow_dispatch: # Allows manual run
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update-license:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Update License Year
+        run: |
+          # Get current year
+          YEAR=$(date +%Y)
+
+          # Find any license file (LICENSE, LICENSE.md, License.txt) and update the year range
+          find . -maxdepth 1 -iname "LICENSE*" -type f -exec sed -i -E "/Copyright/s/([0-9]{4})([ -]+[0-9]{4})?/\1-$YEAR/" {} +
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "docs: update copyright year to $(date +%Y)"
+          title: "Update License Year to $(date +%Y)"
+          body: "Happy New Year! This PR updates the copyright year in the license file."
+          branch: "chore/update-license-year"
+          # This variable automatically detects 'main', 'master', or whatever you use:
+          base: "${{ github.event.repository.default_branch }}"
