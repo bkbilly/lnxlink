@@ -30,6 +30,52 @@ class Addon:
         if self.audio_system is None:
             self.mediavolume = "ON"
         self.media_player = self.dbus_mediaplayer.DBusMediaPlayers(self.media_callback)
+        self.local_players = {
+            "gst-play-1.0": {
+                "supported_media": ["audio", "video", "image"],
+                "opt_static": "--wait-on-eos",
+                "opt_foreground": "",
+                "opt_background": "",
+            },
+            "ffplay": {
+                "supported_media": ["audio", "video", "image"],
+                "opt_static": "",
+                "opt_foreground": "-autoexit",
+                "opt_background": "-nodisp -autoexit",
+            },
+            "mpv": {
+                "supported_media": ["audio", "video", "image", "playlist", "other"],
+                "opt_static": "--pause",
+                "opt_foreground": "--force-window",
+                "opt_background": "",
+            },
+            "cvlc": {
+                "supported_media": ["audio"],
+                "opt_static": "--play-and-exit",
+                "opt_foreground": "--play-and-exit",
+                "opt_background": "--play-and-exit",
+            },
+            "vlc": {
+                "supported_media": ["audio", "video", "playlist", "other"],
+                "opt_static": "--play-and-exit",
+                "opt_foreground": "--play-and-exit",
+                "opt_background": "--play-and-exit",
+            },
+        }
+        self.lnxlink.add_settings(
+            "media",
+            {
+                "order": list(self.local_players.keys()),
+            },
+        )
+        order = self.lnxlink.config["settings"]["media"]["order"]
+        self.local_players = dict(
+            sorted(
+                self.local_players.items(),
+                key=lambda x: order.index(x[0]) if x[0] in order else len(order),
+            )
+        )
+        print(self.local_players.keys())
 
     def _requirements(self):
         self.dbus_mediaplayer = import_install_package(
@@ -206,44 +252,14 @@ class Addon:
     def play_media(self, data):
         """Finds an plays media using one of the supported players"""
         self.stop_playmedia()
-        players = {
-            "gst-play-1.0": {
-                "supported_media": ["audio", "video", "image"],
-                "opt_static": "--wait-on-eos",
-                "opt_foreground": "",
-                "opt_background": "",
-            },
-            "ffplay": {
-                "supported_media": ["audio", "video", "image"],
-                "opt_static": "",
-                "opt_foreground": "-autoexit",
-                "opt_background": "-nodisp -autoexit",
-            },
-            "mpv": {
-                "supported_media": ["audio", "video", "image", "playlist", "other"],
-                "opt_static": "--pause",
-                "opt_foreground": "--force-window",
-                "opt_background": "",
-            },
-            "cvlc": {
-                "supported_media": ["audio"],
-                "opt_static": "--play-and-exit",
-                "opt_foreground": "--play-and-exit",
-                "opt_background": "--play-and-exit",
-            },
-            "vlc": {
-                "supported_media": ["audio", "video", "playlist", "other"],
-                "opt_static": "--play-and-exit",
-                "opt_foreground": "--play-and-exit",
-                "opt_background": "--play-and-exit",
-            },
-        }
         audio_extentions = [".mp3", ".wav", ".ogg", ".wma", ".aac"]
         video_extentions = [".mp4", ".avi", ".mov", ".mkv", ".mpg", ".mpeg"]
         image_extentions = [".jpg", ".jpeg", ".png", ".gif", ".ico"]
         url = data["media_id"]
         media_type = "other"
-        if ".m3u" in url:
+        if ".mpegurl" in data["media_type"]:
+            media_type = "video"
+        elif ".m3u" in url:
             media_type = "playlist"
         elif any(ext in url for ext in audio_extentions):
             media_type = "audio"
@@ -260,7 +276,7 @@ class Addon:
         elif "image" in data["media_type"]:
             media_type = "image"
 
-        for player, options in players.items():
+        for player, options in self.local_players.items():
             if which(player) is not None:
                 if media_type not in options["supported_media"]:
                     continue
@@ -272,7 +288,8 @@ class Addon:
                 self.playmedia_thread.start()
                 return
         logger.error(
-            "You don't have any player installed on your system: %s", players.keys()
+            "You don't have any player installed on your system: %s",
+            self.local_players.keys(),
         )
 
     def run_playmedia_thread(self, player, options, url, media_type):
