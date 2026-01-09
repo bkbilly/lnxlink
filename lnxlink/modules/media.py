@@ -142,7 +142,7 @@ class Addon:
         if topic[-1] in ["set_volume", "volume_set"]:
             if data <= 1:
                 data *= 100
-            data = min(data, 100)
+            data = int(min(data, 100))
             self._set_volume(data)
         elif len(self.players) > 0 and topic[-1] == "playpause":
             self.media_player.control_media("PlayPause")
