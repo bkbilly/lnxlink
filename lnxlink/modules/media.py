@@ -290,8 +290,8 @@ class Addon:
         self.process = subprocess.Popen(
             " ".join(commands),
             shell=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.STDOUT,
         )
         self.process.wait()
         logger.info("Ended playing media...")
