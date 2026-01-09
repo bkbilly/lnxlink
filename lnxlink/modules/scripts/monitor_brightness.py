@@ -11,7 +11,7 @@ import fcntl
 import struct
 import functools
 import operator
-from typing import Optional, List, Set
+from typing import Optional, List, Set, BinaryIO
 
 
 class MonitorBrightness:
@@ -40,7 +40,7 @@ class MonitorBrightness:
 
         # 1. Internal Laptop Displays (Sysfs)
         for path in glob.glob("/sys/class/backlight/*"):
-            found_displays.append(SysfsMonitor(path))
+            # Check permissions
             if not os.access(os.path.join(path, "brightness"), os.W_OK):
                 issues.add(
                     "Backlight Permission Error: Create a udev rule.\n"
@@ -54,21 +54,23 @@ class MonitorBrightness:
         # 2. External Monitors (I2C/DDC)
         for i2c_path in sorted(glob.glob("/dev/i2c-*")):
             try:
-                fd = os.open(i2c_path, os.O_RDWR)
-                # Use EDID address to identify the monitor
-                fcntl.ioctl(fd, 0x0703, 0x50)
-                data = os.read(fd, 256)
-                os.close(fd)
+                # Use 'rb+' for binary read/write, buffering=0 for unbuffered I/O
+                with open(i2c_path, "r+b", buffering=0) as f:
+                    # Use EDID address to identify the monitor
+                    # 0x0703 is I2C_SLAVE
+                    fcntl.ioctl(f.fileno(), 0x0703, 0x50)
+                    data = f.read(256)
 
                 if data.startswith(bytes.fromhex("00 FF FF FF FF FF FF 00")):
                     mfg, name, _ = DDCIPMonitor.parse_edid(data)
                     found_displays.append(DDCIPMonitor(i2c_path, mfg, name))
+
             except PermissionError:
                 issues.add(
                     f"I2C Permission Error: User '{os.getlogin()}' needs 'i2c' group access.\n"
                     f"Run: sudo usermod -aG i2c {os.getlogin()} && reboot"
                 )
-            except Exception:
+            except (OSError, IOError, Exception):
                 continue
 
         return found_displays, issues
@@ -85,34 +87,36 @@ class SysfsMonitor(MonitorBrightness):
     def __init__(self, path: str):
         name = os.path.basename(path)
         super().__init__(path, "Internal", name)
+        # Cache max_brightness on init so we don't read it every time
+        self.max_brightness = self._read_value("max_brightness")
+
+    def _read_value(self, filename: str) -> int:
+        """Helper to read a single integer from a sysfs file."""
+        try:
+            with open(
+                os.path.join(self.identifier, filename), "r", encoding="UTF-8"
+            ) as f:
+                return int(f.read().strip())
+        except (OSError, ValueError):
+            return 0
 
     def get_brightness(self, timeout: float = 1.0) -> Optional[int]:
-        try:
-            with open(
-                os.path.join(self.identifier, "brightness"), "r", encoding="UTF-8"
-            ) as f:
-                cur_val = int(f.read().strip())
-            with open(
-                os.path.join(self.identifier, "max_brightness"), "r", encoding="UTF-8"
-            ) as f:
-                max_val = int(f.read().strip())
-
-            if max_val == 0:
-                return None
-            self.last_successful_read = int((cur_val / max_val) * 100)
-            return self.last_successful_read
-        except (OSError, ValueError):
+        # If max is 0, device is invalid or unreadable
+        if not self.max_brightness:
             return None
 
+        cur_val = self._read_value("brightness")
+        self.last_successful_read = int((cur_val / self.max_brightness) * 100)
+        return self.last_successful_read
+
     def set_brightness(self, value: int) -> None:
+        if not self.max_brightness:
+            return
+
         try:
             target_pct = max(0, min(100, int(value)))
-            with open(
-                os.path.join(self.identifier, "max_brightness"), "r", encoding="UTF-8"
-            ) as f:
-                max_val = int(f.read().strip())
+            actual_value = int((target_pct / 100) * self.max_brightness)
 
-            actual_value = int((target_pct / 100) * max_val)
             with open(
                 os.path.join(self.identifier, "brightness"), "w", encoding="UTF-8"
             ) as f:
@@ -167,57 +171,76 @@ class DDCIPMonitor(MonitorBrightness):
         except Exception:
             return "Unknown", "Unknown", "Unknown"
 
-    def _ddc_command(self, payload: list, read_length: int = 0) -> Optional[bytes]:
-        """Low-level I2C write/read transaction."""
-        fd = None
+    def _ddc_command(
+        self, file_obj: BinaryIO, payload: list, read_length: int = 0
+    ) -> Optional[bytes]:
+        """
+        Low-level I2C write/read transaction.
+        Expects an already open binary file object.
+        """
         try:
-            fd = os.open(self.identifier, os.O_RDWR)
-            fcntl.ioctl(fd, self.I2C_SLAVE, self.DDC_ADDR)
-
             # Construct DDC packet with checksum
             packet = bytearray([self.HOST_ADDR_W, len(payload) | 0x80] + payload)
             checksum = functools.reduce(operator.xor, packet, self.DEST_ADDR_W)
             packet.append(checksum)
 
-            os.write(fd, packet)
+            file_obj.write(packet)
             time.sleep(0.05)
 
             if read_length > 0:
-                data = os.read(fd, read_length)
+                data = file_obj.read(read_length)
                 checksum = functools.reduce(operator.xor, data[:-1], self.HOST_ADDR_R)
                 if checksum == data[-1]:
                     return data
             return None
         except (OSError, IOError):
             return None
-        finally:
-            if fd is not None:
-                os.close(fd)
 
     def get_brightness(self, timeout: float = 1.0) -> Optional[int]:
         """Polls for external brightness via VCP."""
         start_time = time.monotonic()
-        while (time.monotonic() - start_time) < timeout:
-            data = self._ddc_command([self.GET_VCP_CMD, self.VCP_BRIGHTNESS], 11)
-            # DDC reply: [source, length, result, code, max_h, max_l, cur_h, cur_l, checksum]
-            if data and len(data) >= 10:
-                max_val = int.from_bytes(data[6:8], "big")
-                cur_val = int.from_bytes(data[8:10], "big")
 
-                if max_val != 0:
-                    self.last_successful_read = int((cur_val / max_val) * 100)
-                    return self.last_successful_read
+        try:
+            # Open the I2C file ONCE here to avoid overhead in the loop
+            with open(self.identifier, "r+b", buffering=0) as f:
+                fcntl.ioctl(f.fileno(), self.I2C_SLAVE, self.DDC_ADDR)
 
-            time.sleep(0.1)  # Retry interval
+                while (time.monotonic() - start_time) < timeout:
+                    # Pass the open file handle to the command
+                    data = self._ddc_command(
+                        f, [self.GET_VCP_CMD, self.VCP_BRIGHTNESS], 11
+                    )
+
+                    if data and len(data) >= 10:
+                        max_val = int.from_bytes(data[6:8], "big")
+                        cur_val = int.from_bytes(data[8:10], "big")
+
+                        if max_val != 0:
+                            self.last_successful_read = int((cur_val / max_val) * 100)
+                            return self.last_successful_read
+
+                    time.sleep(0.1)  # Retry interval
+        except (OSError, IOError):
+            pass
+
         return None
 
     def set_brightness(self, value: int, retries: int = 10) -> None:
         """Sets brightness and verifies the hardware change."""
         target = max(0, min(100, int(value)))
         self.last_successful_read = target
-        # Send set command
-        for _attempt in range(retries):
-            self._ddc_command([self.SET_VCP_CMD, self.VCP_BRIGHTNESS, 0x00, target])
+
+        try:
+            with open(self.identifier, "r+b", buffering=0) as f:
+                fcntl.ioctl(f.fileno(), self.I2C_SLAVE, self.DDC_ADDR)
+
+                for _attempt in range(retries):
+                    self._ddc_command(
+                        f, [self.SET_VCP_CMD, self.VCP_BRIGHTNESS, 0x00, target]
+                    )
+                    time.sleep(0.02)  # Slight delay between retries if needed
+        except (OSError, IOError):
+            pass
 
 
 if __name__ == "__main__":
