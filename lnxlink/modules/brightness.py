@@ -15,14 +15,16 @@ class Addon:
         self.monitors, issues = MonitorBrightness.list_displays()
         for issue in issues:
             logger.warning("Brightness Monitor Issue: %s", issue)
+        self.lnxlink.add_settings("brightness", {"autodiscovery": False})
 
     def get_info(self):
         """Gather information from the system"""
-        monitors, _ = MonitorBrightness.list_displays()
-        if len(monitors) != len(self.monitors):
-            print("Detected change in connected monitors, updating discovery.")
-            self.monitors = monitors
-            self.lnxlink.setup_discovery("brightness")
+        if self.lnxlink.config["settings"].get("brightness", {}).get("autodiscovery"):
+            monitors, _ = MonitorBrightness.list_displays()
+            if len(monitors) != len(self.monitors):
+                print("Detected change in connected monitors, updating discovery.")
+                self.monitors = monitors
+                self.lnxlink.setup_discovery("brightness")
 
         info = {}
         for monitor in self.monitors:
