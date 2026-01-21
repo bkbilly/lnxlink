@@ -11,7 +11,7 @@ class Addon:
 
     def __init__(self, lnxlink):
         """Setup addon"""
-        self.name = "LNXlink update"
+        self.name = "Watch Changes"
         self.lnxlink = lnxlink
         self.last_time = 0
         self.last_updated = os.path.getmtime(self.lnxlink.config_path)
