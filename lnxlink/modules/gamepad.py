@@ -56,9 +56,18 @@ class Addon:
     def watch_input(self, event):
         """Thread that watches gamepad inputs"""
         decode_str = "llHHI"
-        with open(f"/dev/input/{event}", "rb") as file:
-            while game_data := file.read(struct.calcsize(decode_str)):
-                _, _, ev_type, code, value = struct.unpack(decode_str, game_data)
-                if ev_type != 0 or code != 0 or value != 0:
-                    self.last_used = int(time.time())
-                    logger.debug(code, value)
+        try:
+            with open(f"/dev/input/{event}", "rb") as file:
+                while game_data := file.read(struct.calcsize(decode_str)):
+                    _, _, ev_type, code, value = struct.unpack(decode_str, game_data)
+                    if ev_type != 0 or code != 0 or value != 0:
+                        self.last_used = int(time.time())
+                        logger.debug(code, value)
+        except OSError as err:
+            # Errno 19: "No such device" happens when the gamepad is disconnected
+            if err.errno == 19:
+                logger.info("Gamepad disconnected: %s", event)
+            else:
+                logger.error("Gamepad error for %s: %s", event, err)
+        except Exception as err:
+            logger.error("Unexpected error for %s: %s", event, err)
