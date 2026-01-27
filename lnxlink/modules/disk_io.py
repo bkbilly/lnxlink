@@ -11,6 +11,13 @@ class Addon:
         """Setup addon"""
         self.name = "DiskIO"
         self.lnxlink = lnxlink
+        self.lnxlink.add_settings(
+            "disk_io",
+            {
+                "include_disks": [],
+                "exclude_disks": [],
+            },
+        )
         self.disks = self._get_disks()
 
         self.stat_items = [
@@ -67,12 +74,33 @@ class Addon:
         return results
 
     def _get_disks(self):
+        """Get a list of all disks"""
         disks = []
+        disk_includes = (
+            self.lnxlink.config["settings"].get("disk_io", {}).get("include_disks", [])
+        )
+        disk_excludes = (
+            self.lnxlink.config["settings"].get("disk_io", {}).get("exclude_disks", [])
+        )
+
         for disk in glob.glob("/sys/block/*", recursive=False):
             disk_name = disk.removeprefix("/sys/block/")
+
+            # Built-in excludes for virtual/pseudo devices
             excludes = ["loop", "ram", "zram"]
             if any(disk_name.startswith(x) for x in excludes):
                 continue
+
+            # User-defined include filter
+            if len(disk_includes) != 0:
+                if not any(disk_name.startswith(x) for x in disk_includes):
+                    continue
+
+            # User-defined exclude filter
+            if len(disk_excludes) != 0:
+                if any(disk_name.startswith(x) for x in disk_excludes):
+                    continue
+
             disks.append(disk_name)
         return disks
 
