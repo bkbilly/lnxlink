@@ -33,6 +33,9 @@ class Addon:
 
     def start_control(self, topic, data):
         """Control system"""
+        if data == "":
+            logger.debug("No key data provided to send.")
+            return
         display_variable = get_display_variable()
         if display_variable is not None and os.environ["DISPLAY"] is None:
             os.environ["DISPLAY"] = display_variable
@@ -49,24 +52,22 @@ class Addon:
         Converts a string like "<ctrl>+<alt>+a+b" into a list of press/release tuples.
         """
         special_keys = ["ctrl", "alt", "shift", "cmd", "super"]
-        cleaned_string = key_string.lower().replace(" ", "")
-        keys = cleaned_string.split("+")
-
         sequence = []
-        modifiers_pressed_in_order = []
+        for keys in key_string.lower().split(" "):
+            modifiers_pressed_in_order = []
 
-        for key in keys:
-            if key in special_keys or (key.startswith("<") and key.endswith(">")):
-                key = key.replace("<", "").replace(">", "")
-                sequence.append((key, 1))
-                modifiers_pressed_in_order.append(key)
-            else:
-                sequence.append((key, 1))
+            for key in keys.split("+"):
+                if key in special_keys or (key.startswith("<") and key.endswith(">")):
+                    key = key.replace("<", "").replace(">", "")
+                    sequence.append((key, 1))
+                    modifiers_pressed_in_order.append(key)
+                else:
+                    sequence.append((key, 1))
+                    sequence.append((key, 0))
+            for key in reversed(modifiers_pressed_in_order):
                 sequence.append((key, 0))
-        for key in reversed(modifiers_pressed_in_order):
-            sequence.append((key, 0))
 
-        logger.debug("press sequence for ydotool: %s", sequence)
+        logger.info("press sequence for ydotool: %s", sequence)
         formatted_parts = []
         for key_name, action in sequence:
             if key_name in key_map:
