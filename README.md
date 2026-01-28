@@ -22,24 +22,25 @@ LNXlink is a **Home Assistant companion app** for Linux that bridges the gap bet
 
 ### 🧮 Graphical Interface
 
-| Module              | Description                                                                                                                        |
-| ------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| 📢 Notify           | **Send** rich desktop notifications via `notify.send_message`. [Usage](usage.md#notification)                                      |
-| 📂 Open URL/File    | **Launch** files or websites remotely using the `xdg-open` command. [Usage](usage.md#open-a-url-or-file)                           |
-| 🚥 Keep Alive       | **Prevent** monitor sleep or idle states using `xset` or `gsettings`.                                                              |
-| ⌛ Idle time         | **Monitor** user inactivity duration with a dedicated sensor.                                                                      |
-| 🎶 Media            | **Track** playback status, metadata and media control. [Setup](media-player.md)                                                    |
-| 🔆 Brightness       | **Adjust** display luminance globally or for individual monitors via number entities.                                              |
-| 💡 Screen On/Off    | **Toggle** monitor power states using the `xset` command.                                                                          |
-| ⛶ Fullscreen        | **Detect** if a window is currently in fullscreen mode and view its name.                                                          |
-| 📸 Screenshot       | **Stream** your desktop directly to Home Assistant via a camera entity.                                                            |
-| 🎧 Audio Select     | **Switch** between available speaker or microphone input devices.                                                                  |
-| ⌨️ Keyboard Hotkeys | **Capture** specific keypresses for automation triggers. [Settings](modules-settings.md#keyboard-hotkeys)                          |
-| 🖱️ Mouse control   | **Simulate** mouse movement and actions. Works with the [LNXlink Touchpad Card](https://github.com/bkbilly/lnxlink-touchpad-card). |
-| 🔑 Send Keys        | **Broadcast** keystrokes or complex combinations using `xdotool` or `ydotool`. [Usage](usage.md#keys-send)                         |
-| 🎮 Steam            | **Launch** Steam or non-Steam games from a dropdown list.                                                                          |
-| 🪟 Display Env      | **Identify** the current display environment (e.g., `:0`).                                                                         |
-| 🗔 Active Window    | **Monitor** the name and title of the currently focused window.                                                                    |
+| Module              | Description                                                                                                                       |
+| ------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| 📢 Notify           | **Send** rich desktop notifications via `notify.send_message`. [Usage](usage.md#notification)                                     |
+| 📂 Open URL/File    | **Remotely** l**aunch** websites, files, or folders. [Usage](usage.md#open-a-url-or-file)                                         |
+| 🚥 Keep Alive       | **Prevent** monitor sleep or idle states.                                                                                         |
+| ⌛ Idle time         | **Monitor** user inactivity duration with a dedicated sensor.                                                                     |
+| 🎶 Media            | **Control** playback and track metadata for active media. [Setup](media-player.md)                                                |
+| 🔆 Brightness       | **Adjust** display luminance globally or for individual monitors via number entities.                                             |
+| 💡 Screen On/Off    | **Toggle** monitor power states using the `xset` command.                                                                         |
+| ⛶ Fullscreen        | **Detect** if a window is currently in fullscreen mode and view its name.                                                         |
+| 📸 Screenshot       | **Stream** your desktop directly to Home Assistant via a camera entity.                                                           |
+| 🎧 Audio Select     | **Switch** between available speaker or microphone input devices.                                                                 |
+| ⌨️ Keyboard Hotkeys | **Capture** specific keypresses for automation triggers. [Settings](modules-settings.md#keyboard-hotkeys)                         |
+| 🖱️ Mouse control   | **Simulate** mouse movement and clicks. Works with the [LNXlink Touchpad Card](https://github.com/bkbilly/lnxlink-touchpad-card). |
+| 🔑 Send Keys        | **Broadcast** keystrokes or complex combinations. [Usage](usage.md#keys-send)                                                     |
+| 🎮 Steam            | **Launch** Steam or non-Steam games from a dropdown list.                                                                         |
+| 🪟 Display Env      | **Identify** the current display environment (e.g., `:0`).                                                                        |
+| 🗔 Active Window    | **Monitor** the name and title of the currently focused window.                                                                   |
+| 📋 Clipboard        | **View or update** the system clipboard content.                                                                                  |
 
 ### **✅ System Actions**
 
@@ -98,14 +99,15 @@ LNXlink is a **Home Assistant companion app** for Linux that bridges the gap bet
 
 ### 🧩 **Advanced/Other**
 
-| Module           | Description                                                                                                                |
-| ---------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| ⏳ Inference Time | **Debug** performance by measuring sensor data collection latency.                                                         |
-| 📜 Logging Level | **Change** debug verbosity on-the-fly for troubleshooting.                                                                 |
-| 🐚 Bash Commands | **Create** custom sensors, binary\_sensors, buttons, or switches using shell scripts. [Settings](modules-settings.md#bash) |
-| 🐳 Docker        | **Manage** containers; toggle status, check for updates, or prune images. [Settings](modules-settings.md#docker)           |
-| 📊 Statistics    | **Opt-in** to send anonymous usage data to help improve LNXlink. [Usage](usage.md#statistics)                              |
-| 📮 RESTful       | **Interact** with the system using standard HTTP requests. [Usage](usage.md#restful)                                       |
+| Module            | Description                                                                                                                |
+| ----------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| ⏳ Inference Time  | **Debug** performance by measuring sensor data collection latency.                                                         |
+| 📜 Logging Level  | **Change** debug verbosity on-the-fly for troubleshooting.                                                                 |
+| 🐚 Bash Commands  | **Create** custom sensors, binary\_sensors, buttons, or switches using shell scripts. [Settings](modules-settings.md#bash) |
+| 🐳 Docker         | **Manage** containers; toggle status, check for updates, or prune images. [Settings](modules-settings.md#docker)           |
+| 📊 Statistics     | **Opt-in** to send anonymous usage data to help improve LNXlink. [Usage](usage.md#statistics)                              |
+| 📮 RESTful        | **Interact** with the system using standard HTTP requests. [Usage](usage.md#restful)                                       |
+| 👁️ Watch Changes | **Restart** when the configuration changes                                                                                 |
 
 ### **📦 Custom Modules**
 
@@ -120,7 +122,7 @@ LNXlink is a **Home Assistant companion app** for Linux that bridges the gap bet
 
 ## Supported OS
 
-LNXlink is built specifically for **Linux**. There are currently no plans for Windows or macOS support due to deep system dependencies.
+LNXlink is built specifically for **Linux**. There are currently no plans for Windows or macOS support due to deep system dependencies. Here are some alternatives:
 
-* **Windows:** We recommend [HASS.Agent](https://lab02-research.org/hassagent/).
-* **Cross-Platform:** Consider [IoTuring](https://github.com/richibrics/IoTuring).
+<table><thead><tr><th width="178.2578125">Application</th><th>Platform</th><th>Protocol</th></tr></thead><tbody><tr><td>Go Hass Agent</td><td>Linux, Windows macOS</td><td>Native HA Mobile App API + MQTT</td></tr><tr><td>HASS.Agent</td><td>Windows</td><td>HA API + MQTT</td></tr><tr><td>System Bridge</td><td>Windows, Linux</td><td>HA API (WebSocket)</td></tr><tr><td>Glances</td><td>Cross-platform (Linux, Windows, macOS, BSD)</td><td>REST API (HTTP polling)</td></tr><tr><td>IoTuring</td><td>Cross-platform (Windows, Linux, macOS, BSD)</td><td>MQTT</td></tr></tbody></table>
+
