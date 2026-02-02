@@ -21,7 +21,8 @@ class MonitorBrightness:
         self.identifier = identifier  # Bus path or sysfs path
         self.manufacturer = manufacturer
         self.name = name
-        self.unique_name = f"{manufacturer} {name}"
+        short_identifier = identifier.split("/")[-1]
+        self.unique_name = f"{manufacturer} {name} {short_identifier}"
         self.last_successful_read = 50
 
     def get_brightness(self, timeout: float = 2.0) -> Optional[int]:
