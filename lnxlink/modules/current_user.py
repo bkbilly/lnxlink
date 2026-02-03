@@ -1,8 +1,4 @@
-"""Monitor the current interactive graphical user. This module handles if
-   multiple users are logged in by ignoring locked sessions and also sessions
-   like SSH. If no users are logged in, the sensor reads as 'No user'.
-
-   Requires `loginctl` command to be available."""
+"""Monitor the currently active, interactive graphical user."""
 import json
 import logging
 
@@ -12,12 +8,17 @@ logger = logging.getLogger("lnxlink")
 
 
 class Addon:
+    """Monitor the current interactive graphical user. This module handles if
+       multiple users are logged in by ignoring locked sessions and also sessions
+       like SSH. If no users are logged in, the sensor reads as 'No user'.
+
+       Requires `loginctl` command to be available."""
 
     def __init__(self, lnxlink):
         self.name = "Current User"
         self.lnxlink = lnxlink
 
-        _, _, returncode = syscommand("which loginctl && loginctl --json=short list-sessions")
+        _, _, returncode = syscommand("loginctl --json=short list-sessions")
         if returncode != 0:
             raise SystemError("Could not find loginctl command")
 
@@ -29,6 +30,18 @@ class Addon:
             return min(active_users)
 
 
+    def exposed_controls(self):
+        """Exposes to home assistant"""
+        update_interval = self.lnxlink.config.get("update_interval", 5)
+        return {
+            "Current User": {
+                "type": "sensor",
+                "icon": "mdi:account",
+                "expire_after": update_interval * 5,
+            },
+        }
+
+
     @staticmethod
     def _get_sessions() -> list:
         """Returns all the current sessions"""
@@ -38,6 +51,7 @@ class Addon:
             return []
 
         return json.loads(stdout)
+
 
     @staticmethod
     def _get_users() -> set[str]:
@@ -68,15 +82,3 @@ class Addon:
                     active_users.add(username)
 
         return active_users
-
-
-    def exposed_controls(self):
-        """Exposes to home assistant"""
-        update_interval = self.lnxlink.config.get("update_interval", 5)
-        return {
-            "Current User": {
-                "type": "sensor",
-                "icon": "mdi:account",
-                "expire_after": update_interval * 5,
-            },
-        }
