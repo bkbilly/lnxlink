@@ -9,11 +9,11 @@ logger = logging.getLogger("lnxlink")
 
 class Addon:
     """Monitor the currently active interactive graphical users. This module
-       ignores users with locked sessions and non-graphical sessions like SSH.
-       If multiple users are logged in, they are separated by ', '. If no users
-       are logged in, the sensor reads as 'No user'.
+    ignores users with locked sessions and non-graphical sessions like SSH.
+    If multiple users are logged in, they are separated by ', '. If no users
+    are logged in, the sensor reads as 'No user'.
 
-       Requires `loginctl` command to be available."""
+    Requires `loginctl` command to be available."""
 
     def __init__(self, lnxlink):
         self.name = "Current Users"
@@ -24,12 +24,11 @@ class Addon:
             raise SystemError("Could not find loginctl command")
 
     def get_info(self) -> str:
+        """Gather information from the system"""
         active_users = self._get_users()
         if not active_users:
             return "No user"
-        else:
-            return ", ".join(active_users)
-
+        return ", ".join(active_users)
 
     def exposed_controls(self):
         """Exposes to home assistant"""
@@ -42,7 +41,6 @@ class Addon:
             },
         }
 
-
     def _get_sessions(self) -> list:
         """Returns all the current sessions"""
         stdout, _, returncode = syscommand("loginctl --json=short list-sessions")
@@ -52,11 +50,10 @@ class Addon:
 
         return json.loads(stdout)
 
-
     def _get_users(self) -> set[str]:
         """Returns the set of users with active, unlocked, graphical sessions.
-           Normally computers only have 1 seat, so unlikely we'll get more than
-           one."""
+        Normally computers only have 1 seat, so unlikely we'll get more than
+        one."""
         sessions = self._get_sessions()
 
         active_users = set()
