@@ -272,12 +272,18 @@ def setup_modules(config_path):
         opt.split(" - ")[0].replace("[bold]", "").replace("[/bold]", "")
         for opt in selected_formatted
     ]
+    all_module_names = [module["name"] for module in modules]
+    unselected_names = [name for name in all_module_names if name not in selected_names]
 
     if len(selected_names) == 0:
         return
     print("You selected:", selected_names)
-    config["exclude"] = None
-    config["modules"] = selected_names
+    if len(selected_names) < len(unselected_names):
+        config["exclude"] = None
+        config["modules"] = selected_names
+    else:
+        config["exclude"] = unselected_names
+        config["modules"] = None
 
     with open(config_path, "w", encoding="UTF-8") as file:
         file.write(yaml.dump(config, default_flow_style=False, sort_keys=False))
@@ -286,4 +292,5 @@ def setup_modules(config_path):
 if __name__ == "__main__":
     # config_path = sys.argv[1]
     # download_template(config_path)
-    setup_systemd("lnxlink.yaml")
+    # setup_systemd("lnxlink.yaml")
+    setup_modules("config.yaml")
