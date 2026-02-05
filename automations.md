@@ -12,7 +12,7 @@ When my phone is ringing or I am in a call, the media will be paused. This works
 alias: Incoming call billy
 description: ""
 mode: single
-trigger:
+triggers:
   - platform: state
     entity_id:
       - sensor.redmi_note_8_pro_audio_mode
@@ -25,13 +25,13 @@ trigger:
     entity_id:
       - sensor.redmi_note_8_pro_audio_mode
     to: in_communication
-condition:
+conditions:
   - condition: or
     conditions:
       - condition: state
         entity_id: media_player.desktop_linux
         state: playing
-action:
+actions:
   - service: media_player.media_pause
     data: {}
     target:
@@ -47,14 +47,14 @@ When I need to use the web camera, the light at my room turns on automatically s
 alias: Webcam started
 description: ""
 mode: single
-trigger:
+triggers:
   - type: turned_on
     platform: device
     device_id: c5538068d8ae2f59ea0a46d9953b03ae
     entity_id: binary_sensor.desktop_linux_camera_used
     domain: binary_sensor
-condition: []
-action:
+conditions: []
+actions:
   - service: scene.turn_on
     target:
       entity_id: scene.bright
@@ -79,11 +79,11 @@ My Logitech speakers can be controlled via infrared, so when my PC turns on or o
 alias: MyPC state change
 description: "Turns on or off the speakers of my 🖥 "
 mode: single
-trigger:
+triggers:
   - platform: state
     entity_id: switch.my_pc
-condition: []
-action:
+conditions: []
+actions:
   - choose:
       - conditions:
           - condition: state
@@ -109,12 +109,12 @@ My hikvision camera can recognize when someone has crossed a line that I’ve co
 alias: Hikvision - Linecrossing
 description: ""
 mode: single
-trigger:
+triggers:
   - platform: state
     to: "on"
     entity_id:
       - binary_sensor.line_crossing
-action:
+actions:
   - service: camera.snapshot
     data:
       entity_id: camera.out_person
@@ -137,11 +137,11 @@ This is used when you share a video link like youtube. It checks if the media pl
 ```yaml
 alias: Mobile App Shared
 mode: single
-trigger:
+triggers:
   - platform: event
     event_type: mobile_app.share
-condition: []
-action:
+conditions: []
+actions:
   - if:
       - condition: not
         conditions:
@@ -176,3 +176,36 @@ action:
           entity_id: text.desktop_linux_send_keys
 ```
 
+## Gamepad Controller battery notification
+
+Once the controller battery is below 30%, it will flash the lights and send a notification to the computer and on the mobile application.
+
+```yaml
+alias: Controller Low Battery
+mode: single
+triggers:
+  - entity_id: sensor.desktop_linux_battery_xbox_wireless_controller
+    below: 30
+    trigger: numeric_state
+actions:
+  - action: light.turn_on
+    data:
+      effect: Flash
+    target:
+      entity_id: light.myroom
+  - action: notify.send_message
+    data:
+      message: >-
+        { "title": "Controller", "message": "Battery is at {{
+        trigger.to_state.state }}%", "urgency": "critical"}
+    target:
+      entity_id: notify.desktop_linux_desktop_linux
+  - action: notify.mobile_app_samsung
+    data:
+      title: Controller
+      message: Battery is at {{ trigger.to_state.state }}%
+      data:
+        channel: Gamepad Battery
+        notification_icon: mdi:microsoft-xbox-controller-battery-alert
+        clickAction: entityId:{{ trigger.entity_id }}
+```

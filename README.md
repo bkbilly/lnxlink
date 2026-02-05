@@ -29,12 +29,12 @@ LNXlink is a **Home Assistant companion app** for Linux that bridges the gap bet
 | 🚥 Keep Alive       | **Prevent** monitor sleep or idle states.                                                                                         |
 | ⌛ Idle time         | **Monitor** user inactivity duration with a dedicated sensor.                                                                     |
 | 🎶 Media            | **Control** playback and track metadata for active media. [Setup](media-player.md)                                                |
-| 🔆 Brightness       | **Adjust** display luminance globally or for individual monitors via number entities.                                             |
-| 💡 Screen On/Off    | **Toggle** monitor power states using the `xset` command.                                                                         |
+| 🔆 Brightness       | **Adjust** hardware display luminance for monitors via number entities.                                                           |
+| 💡 Screen On/Off    | **Toggle** monitor power states                                                                                                   |
 | ⛶ Fullscreen        | **Detect** if a window is currently in fullscreen mode and view its name.                                                         |
-| 📸 Screenshot       | **Stream** your desktop directly to Home Assistant via a camera entity.                                                           |
+| 📸 Screenshot       | **Stream** your desktop directly to Home Assistant via an image entity.                                                           |
 | 🎧 Audio Select     | **Switch** between available speaker or microphone input devices.                                                                 |
-| ⌨️ Keyboard Hotkeys | **Capture** specific keypresses for automation triggers. [Settings](modules-settings.md#keyboard-hotkeys)                         |
+| ⌨️ Keyboard Hotkeys | **Capture** specific keypresses for automation triggers (Not for Wayland). [Settings](modules-settings.md#keyboard-hotkeys)       |
 | 🖱️ Mouse control   | **Simulate** mouse movement and clicks. Works with the [LNXlink Touchpad Card](https://github.com/bkbilly/lnxlink-touchpad-card). |
 | 🔑 Send Keys        | **Broadcast** keystrokes or complex combinations. [Usage](usage.md#keys-send)                                                     |
 | 🎮 Steam            | **Launch** Steam or non-Steam games from a dropdown list.                                                                         |
@@ -63,7 +63,7 @@ LNXlink is a **Home Assistant companion app** for Linux that bridges the gap bet
 | 🔋 Battery          | **Track** battery levels for all connected devices.                                                |
 | 🌡️ Temperature     | **Monitor** thermal data from all discovered system sensors.                                       |
 | ⚠️ Restart Required | **Detect** if a system reboot is needed (usually after kernel updates).                            |
-| 🔄 System Updates   | **Track** pending packages and update availability in real-time.                                   |
+| 🔄 System Updates   | **Track** pending updates in real-time.                                                            |
 | 📥 Disk IO          | **Measure** read/write throughput for each physical disk.                                          |
 | 📀 Disk Usage       | **Monitor** storage capacity and percentage used per disk. [Usage](modules-settings.md#disk-usage) |
 | 🖴 Mounts           | **View** space usage for all currently mounted volumes. [Usage](modules-settings.md#mounts-usage)  |
@@ -74,7 +74,7 @@ LNXlink is a **Home Assistant companion app** for Linux that bridges the gap bet
 | ---------------- | -------------------------------------------------------------------------------------------------------------- |
 | 📶 Network Speed | **Monitor** real-time upload and download speeds.                                                              |
 | 🌐 Interfaces    | **List** active network interfaces and their assigned IP addresses.                                            |
-| 📱 Bluetooth     | **Control** global Bluetooth power or connect/disconnect specific devices.                                     |
+| 📱 Bluetooth     | **Control** global Bluetooth power, connect/disconnect specific devices and their battery.                     |
 | 🛜 WiFi          | **Monitor** signal strength and connection metadata.                                                           |
 | 🔌 WOL           | **Enable** or disable Wake-On-LAN support for compatible network cards.                                        |
 | 🗺️ BeaconDB     | **Locate** the device using WiFi triangulation or custom coordinates. [Settings](modules-settings.md#beacondb) |
@@ -101,10 +101,10 @@ LNXlink is a **Home Assistant companion app** for Linux that bridges the gap bet
 
 | Module            | Description                                                                                                                |
 | ----------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| ⏳ Inference Time  | **Debug** performance by measuring sensor data collection latency.                                                         |
-| 📜 Logging Level  | **Change** debug verbosity on-the-fly for troubleshooting.                                                                 |
 | 🐚 Bash Commands  | **Create** custom sensors, binary\_sensors, buttons, or switches using shell scripts. [Settings](modules-settings.md#bash) |
 | 🐳 Docker         | **Manage** containers; toggle status, check for updates, or prune images. [Settings](modules-settings.md#docker)           |
+| ⏳ Inference Time  | **Debug** performance by measuring sensor data collection latency.                                                         |
+| 📜 Logging Level  | **Change** debug verbosity on-the-fly for troubleshooting.                                                                 |
 | 📊 Statistics     | **Opt-in** to send anonymous usage data to help improve LNXlink. [Usage](usage.md#statistics)                              |
 | 📮 RESTful        | **Interact** with the system using standard HTTP requests. [Usage](usage.md#restful)                                       |
 | 👁️ Watch Changes | **Restart** when the configuration changes                                                                                 |
@@ -124,5 +124,5 @@ LNXlink is a **Home Assistant companion app** for Linux that bridges the gap bet
 
 LNXlink is built specifically for **Linux**. There are currently no plans for Windows or macOS support due to deep system dependencies. Here are some alternatives:
 
-<table><thead><tr><th width="178.2578125">Application</th><th>Platform</th><th>Protocol</th></tr></thead><tbody><tr><td>Go Hass Agent</td><td>Linux, Windows macOS</td><td>Native HA Mobile App API + MQTT</td></tr><tr><td>HASS.Agent</td><td>Windows</td><td>HA API + MQTT</td></tr><tr><td>System Bridge</td><td>Windows, Linux</td><td>HA API (WebSocket)</td></tr><tr><td>Glances</td><td>Cross-platform (Linux, Windows, macOS, BSD)</td><td>REST API (HTTP polling)</td></tr><tr><td>IoTuring</td><td>Cross-platform (Windows, Linux, macOS, BSD)</td><td>MQTT</td></tr></tbody></table>
+<table><thead><tr><th width="178.2578125">Application</th><th>Platform</th><th>Protocol</th></tr></thead><tbody><tr><td>Go Hass Agent</td><td>Linux, Windows, macOS</td><td>Native HA Mobile App API + MQTT</td></tr><tr><td>HASS.Agent</td><td>Windows</td><td>HA API + MQTT</td></tr><tr><td>System Bridge</td><td>Windows, Linux</td><td>HA API (WebSocket)</td></tr><tr><td>Glances</td><td>Cross-platform (Linux, Windows, macOS, BSD)</td><td>REST API (HTTP polling)</td></tr><tr><td>IoTuring</td><td>Cross-platform (Windows, Linux, macOS, BSD)</td><td>MQTT</td></tr></tbody></table>
 

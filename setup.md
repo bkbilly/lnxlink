@@ -27,7 +27,11 @@ sudo systemctl restart lnxlink.service  # For root installations
 ```
 {% endcode %}
 
+There is a CLI interface to easily select which modules to activate:
 
+```bash
+lnxlink -m -c config.yaml
+```
 {% endtab %}
 
 {% tab title="Docker" %}

@@ -55,13 +55,13 @@ You can create an automation that is triggered when the button is pressed. In th
 
 ```yaml
 alias: LNXlink notification button
-trigger:
+triggers:
   - platform: mqtt
     topic: lnxlink/desktop-linux/monitor_controls/notify/button_press
     payload: Open Image
     value_template: "{{ value_json.button }}"
-condition: []
-action:
+conditions: []
+actions:
   - service: text.set_value
     metadata: {}
     data:
@@ -1027,14 +1027,14 @@ This is an example of the automation which checks events for the idle sensor:
 alias: lnxlink powered down
 description: ""
 mode: single
-trigger:
+triggers:
   - platform: template
     value_template: >-
       {{ (now() | as_timestamp -
       states.sensor.desktop_linux_idle.last_changed | as_timestamp) >
       10 }}
-condition: []
-action:
+conditions: []
+actions:
   - service: mqtt.publish
     data:
       qos: 0
