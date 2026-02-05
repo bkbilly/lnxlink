@@ -60,7 +60,7 @@ class Addon:
             discovery_info["IR Transmitter"] = {
                 "type": "text",
                 "icon": "mdi:square-wave",
-                "max": 1000,
+                "max": 255,
             }
             for button in self.lnxlink.config["settings"]["ir_remote"]["buttons"]:
                 discovery_info[f"IR {button['name']}"] = {
