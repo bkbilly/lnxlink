@@ -17,9 +17,9 @@ class Addon:
             "packages": {"updates": []},
         }
         self.package_manager = None
-        if which("apt") is not None:
+        if which("apt-get") is not None:
             self.package_manager = {
-                "command": "apt list --upgradable | grep -v '.*\\.\\.\\.' | awk -F '/' '{print $1}'",
+                "command": "apt-get upgrade --dry-run | grep '^Inst ' | awk '{print $2}'",
                 "largerthan": 0,
             }
         elif which("yum") is not None:
