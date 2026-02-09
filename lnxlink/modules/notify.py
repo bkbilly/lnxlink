@@ -21,7 +21,7 @@ class Addon:
     def _requirements(self):
         self.lib = {
             "notify": import_install_package(
-                "dbus-notification", ">=2026.2.0", "dbus_notification"
+                "dbus-notification", ">=2026.2.1", "dbus_notification"
             ),
         }
 
@@ -87,6 +87,8 @@ class Addon:
         if data.get("action") == "close":
             if data.get("id") is not None:
                 self.notify.close(data.get("id"))
+            elif data.get("uniqueid") is not None:
+                self.notify.close(data.get("uniqueid"))
             else:
                 self.notify.close_all()
         else:
@@ -99,6 +101,8 @@ class Addon:
                 actions=data.get("buttons", []),
                 urgency=urgencies.get(data.get("urgency")),
                 timeout=data.get("timeout", -1),
+                notifyid=data.get("notifyid", 0),
+                uniqueid=data.get("uniqueid", None),
             )
             logger.info("The notification %s was sent.", notification_id)
             self.lnxlink.run_module(self.name, {"id": notification_id})
