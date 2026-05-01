@@ -44,7 +44,7 @@ class Addon:
         if self.restart_checker is not None:
             logger.info(
                 "Required_Restart command found, using '%s'",
-                self.restart_checker["command"]
+                self.restart_checker["command"],
             )
 
     def exposed_controls(self):
@@ -69,9 +69,7 @@ class Addon:
             self.value["attributes"]["details"] = ""
             if self.restart_checker is not None:
                 stdout, stderr, returncode = syscommand(
-                    self.restart_checker["command"],
-                    ignore_errors=True,
-                    timeout=30
+                    self.restart_checker["command"], ignore_errors=True, timeout=30
                 )
                 if returncode != 0:
                     self.value["needs_restart"] = "ON"
