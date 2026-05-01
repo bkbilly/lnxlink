@@ -1,9 +1,10 @@
 """Detect if a system reboot is needed"""
+import logging
 import os
 import time
 from shutil import which
 from lnxlink.modules.scripts.helpers import syscommand
-import logging
+
 logger = logging.getLogger("lnxlink")
 
 
