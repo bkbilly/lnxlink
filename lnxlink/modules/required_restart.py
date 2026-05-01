@@ -84,5 +84,7 @@ class Addon:
                         with open(
                             "/var/run/reboot-required.pkgs", "r", encoding="utf-8"
                         ) as pkgs_file:
-                            self.value["attributes"]["details"] = pkgs_file.read().strip()
+                            self.value["attributes"][
+                                "details"
+                            ] = pkgs_file.read().strip()
         return self.value
