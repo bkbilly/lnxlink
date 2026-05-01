@@ -81,6 +81,8 @@ class Addon:
                 if os.path.exists("/var/run/reboot-required"):
                     self.value["needs_restart"] = "ON"
                     if os.path.exists("/var/run/reboot-required.pkgs"):
-                        with open("/var/run/reboot-required.pkgs", "r") as f:
-                            self.value["attributes"]["details"] = f.read().strip()
+                        with open(
+                            "/var/run/reboot-required.pkgs", "r", encoding="utf-8"
+                        ) as pkgs_file:
+                            self.value["attributes"]["details"] = pkgs_file.read().strip()
         return self.value
