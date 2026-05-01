@@ -36,11 +36,16 @@ class Addon:
                 "command": "yum needs-restarting -r",
             }
         else:
-            logger.warning("No Required_Restart command detected, consider installing package 'needrestart'.")
+            logger.warning(
+                "No Required_Restart command detected, consider installing package 'needrestart'."
+            )
             logger.warning("Falling back to checking /var/run/reboot-required")
 
         if self.restart_checker is not None:
-            logger.info("Required_Restart command found, using '%s'",self.restart_checker["command"])
+            logger.info(
+                "Required_Restart command found, using '%s'",
+                self.restart_checker["command"]
+            )
 
     def exposed_controls(self):
         """Exposes to home assistant"""
@@ -63,7 +68,11 @@ class Addon:
             self.value["needs_restart"] = "OFF"
             self.value["attributes"]["details"] = ""
             if self.restart_checker is not None:
-                stdout, stderr, returncode = syscommand(self.restart_checker["command"], ignore_errors=True, timeout=30)
+                stdout, stderr, returncode = syscommand(
+                    self.restart_checker["command"],
+                    ignore_errors=True,
+                    timeout=30
+                )
                 if returncode != 0:
                     self.value["needs_restart"] = "ON"
                 self.value["attributes"]["details"] = stdout
