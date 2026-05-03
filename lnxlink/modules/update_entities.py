@@ -3,6 +3,7 @@ import logging
 
 logger = logging.getLogger("lnxlink")
 
+
 class Addon:
     """Addon module"""
 
