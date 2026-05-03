@@ -134,22 +134,34 @@ class LNXlink:
                 traceback.format_exc(),
             )
 
+    def run_modules(self, name=None):
+        """Runs all methods of the modules"""
+        methods_to_run = []
+        for _, addon in self.addons.items():
+            if hasattr(addon, "get_info"):
+                if name is None:
+                    methods_to_run.append(
+                        {
+                            "name": addon.name,
+                            "method": addon.get_info,
+                        }
+                    )
+                elif addon.name == name:
+                    methods_to_run.append(
+                        {
+                            "name": addon.name,
+                            "method": addon.get_info,
+                        }
+                    )
+        self.mqtt.send_lwt("ON")
+        for method in methods_to_run:
+            self.run_module(method["name"], method["method"])
+
     def monitor_run(self):
         """Gets information from each Addon and adds it to the queue"""
         while not self.stop_event.is_set():
-            methods_to_run = []
             if not self.kill:
-                for _, addon in self.addons.items():
-                    if hasattr(addon, "get_info"):
-                        methods_to_run.append(
-                            {
-                                "name": addon.name,
-                                "method": addon.get_info,
-                            }
-                        )
-                self.mqtt.send_lwt("ON")
-                for method in methods_to_run:
-                    self.run_module(method["name"], method["method"])
+                self.run_modules()
             if self.stop_event.wait(timeout=self.config["update_interval"]):
                 break
         logger.info("Stopped monitor_run")

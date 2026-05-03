@@ -1,4 +1,5 @@
-""""""
+"""Creates a binary sensor to check the lnxlink status"""
+
 
 class Addon:
     """Addon module"""
@@ -16,5 +17,6 @@ class Addon:
                 "entity_category": "diagnostic",
                 "use_availability": False,
                 "topic_category": None,
+                "icon": "mdi:power-cycle",
             },
         }
