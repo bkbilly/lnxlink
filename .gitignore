@@ -1,4 +1,5 @@
 __pycache__
+lnxlink_config/
 config.yaml
 *.egg-info
 dist/

@@ -2,9 +2,12 @@
 
 import ssl
 import time
+import json
 import logging
 import traceback
 import paho.mqtt.client as mqtt
+import distro
+from lnxlink.modules.scripts import helpers
 
 logger = logging.getLogger("lnxlink")
 
@@ -153,3 +156,163 @@ class MQTT:
     def get_rcode_name(self, rcode):
         """Returns the rcode message"""
         return mqtt.connack_string(rcode)
+
+    # pylint: disable=too-many-locals
+    def setup_discovery_entities(self, addon, service, exp_name, options):
+        """Send discovery information on Home Assistant for controls"""
+        discovery_template = {
+            "device": {
+                "identifiers": [self.config["mqtt"]["clientId"]],
+                "name": self.config["mqtt"]["clientId"],
+                "model": f"{distro.name()} {distro.version()}",
+                "manufacturer": "LNXlink",
+                "sw_version": self.config["version"],
+            },
+        }
+        if options.get("use_availability", True):
+            discovery_template["availability"] = {
+                "topic": f"{self.config['pref_topic']}/lwt",
+                "payload_available": "ON",
+                "payload_not_available": "OFF",
+            }
+
+        subtopic = helpers.text_to_topic(addon.name)
+        if "method" in options or options.get("subtopic", False):
+            subcontrol = helpers.text_to_topic(exp_name)
+            subtopic = f"{subtopic}/{subcontrol}"
+        topic_category = options.get("topic_category", "monitor_controls")
+        category_path = f"/{topic_category}" if topic_category else ""
+        state_topic = f"{self.config['pref_topic']}{category_path}/{subtopic}"
+        control_name_topic = helpers.text_to_topic(exp_name)
+        command_topic = (
+            f"{self.config['pref_topic']}/commands/{service}/{control_name_topic}"
+        )
+
+        lookup_options = {
+            "value_template": {
+                "value_template": options.get("value_template", ""),
+            },
+            "attributes_template": {
+                "json_attributes_topic": state_topic,
+                "json_attributes_template": options.get(
+                    "attributes_template", "{{ value_json | tojson }}"
+                ),
+            },
+            "icon": {"icon": options.get("icon", "")},
+            "unit": {"unit_of_measurement": options.get("unit", "")},
+            "title": {"title": options.get("title", "")},
+            "entity_picture": {"entity_picture": options.get("entity_picture", "")},
+            "device_class": {"device_class": options.get("device_class", "")},
+            "state_class": {"state_class": options.get("state_class", "")},
+            "entity_category": {"entity_category": options.get("entity_category", "")},
+            "enabled": {"enabled_by_default": options.get("enabled", True)},
+            "expire_after": {"expire_after": options.get("expire_after", "")},
+            "install": {
+                "command_topic": command_topic,
+                "payload_install": options.get("install", ""),
+            },
+        }
+        lookup_entities = {
+            "sensor": {
+                "state_topic": state_topic,
+            },
+            "binary_sensor": {
+                "state_topic": state_topic,
+            },
+            "camera": {
+                "topic": state_topic,
+                "image_encoding": options.get("encoding"),
+            },
+            "image": {
+                "image_topic": state_topic,
+                "image_encoding": options.get("encoding"),
+            },
+            "update": {"state_topic": state_topic},
+            "button": {
+                "command_topic": command_topic,
+                "payload_press": options.get("payload_press", "PRESS"),
+            },
+            "switch": {
+                "state_topic": state_topic,
+                "command_topic": command_topic,
+                "payload_off": options.get("command_off", "OFF"),
+                "payload_on": options.get("command_on", "ON"),
+                "state_off": "OFF",
+                "state_on": "ON",
+            },
+            "text": {
+                "state_topic": state_topic,
+                "command_topic": command_topic,
+                "min": options.get("min", 0),
+                "max": options.get("max", 255),
+            },
+            "number": {
+                "state_topic": state_topic,
+                "command_topic": command_topic,
+                "min": options.get("min", 1),
+                "max": options.get("max", 100),
+                "step": options.get("step", 1),
+            },
+            "select": {
+                "state_topic": state_topic,
+                "command_topic": command_topic,
+                "options": options.get("options", []),
+            },
+            "device_tracker": {
+                "json_attributes_topic": state_topic,
+            },
+            "media_player": {
+                "name": self.config["mqtt"]["clientId"],
+                "state_state_topic": f"{state_topic}/state",
+                "state_title_topic": f"{state_topic}/title",
+                "state_artist_topic": f"{state_topic}/artist",
+                "state_album_topic": f"{state_topic}/album",
+                "state_duration_topic": f"{state_topic}/duration",
+                "state_position_topic": f"{state_topic}/position",
+                "state_volume_topic": f"{state_topic}/volume",
+                "state_albumart_topic": f"{state_topic}/albumart",
+                "state_mediatype_topic": f"{state_topic}/mediatype",
+                "command_volume_topic": f"{command_topic}/set_volume",
+                "command_play_topic": f"{command_topic}/play",
+                "command_play_payload": "Play",
+                "command_pause_topic": f"{command_topic}/pause",
+                "command_pause_payload": "Pause",
+                "command_playpause_topic": f"{command_topic}/playpause",
+                "command_playpause_payload": "PlayPause",
+                "command_next_topic": f"{command_topic}/next",
+                "command_next_payload": "Next",
+                "command_previous_topic": f"{command_topic}/previous",
+                "command_previous_payload": "Previous",
+                "command_playmedia_topic": f"{command_topic}/play_media",
+            },
+            "notify": {
+                "command_topic": command_topic,
+                "json_attributes_topic": state_topic,
+                "name": self.config["mqtt"]["clientId"],
+            },
+        }
+        discovery = discovery_template.copy()
+        discovery["name"] = exp_name
+        discovery[
+            "unique_id"
+        ] = f"{self.config['mqtt']['clientId']}_{control_name_topic}"
+        discovery.update(lookup_entities.get(options["type"], {}))
+        for option in options:
+            discovery.update(lookup_options.get(option, {}))
+
+        if options["type"] not in lookup_entities:
+            logger.error("Not supported: %s", options["type"])
+            return
+        if "value_template" in discovery and options["type"] in ["camera", "image"]:
+            del discovery["json_attributes_topic"]
+            del discovery["json_attributes_template"]
+        discovery_prefix = self.config["mqtt"]["discovery"]["prefix"]
+        self.publish(
+            f"{discovery_prefix}/{options['type']}/lnxlink/{discovery['unique_id']}/config",
+            payload=json.dumps(discovery),
+        )
+        if options["type"] == "media_player":
+            logger.info(
+                "MQTT Media Player configuration name: lnxlink/%s",
+                discovery["unique_id"],
+            )
