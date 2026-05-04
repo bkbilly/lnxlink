@@ -32,6 +32,36 @@ To get started with LNXlink, follow these simple steps:
 
 For detailed installation instructions, please refer to the documentation page: [bkbilly.gitbook.io/lnxlink](https://bkbilly.gitbook.io/lnxlink).
 
+# Remote Home Assistant API transport
+
+By default, LNXlink connects directly to your MQTT broker. Set
+`transport: "auto"` to try the direct broker first and fall back to the Home
+Assistant API when the broker is unavailable, for example when a laptop leaves
+your home network. If your broker is only reachable from Home Assistant, set
+`transport: "homeassistant_api"` to always use the API instead:
+
+```yaml
+mqtt:
+  transport: "auto"
+  prefix: "lnxlink"
+  clientId: "DESKTOP-Linux"
+  discovery:
+    enabled: true
+    prefix: "homeassistant"
+  lwt:
+    enabled: true
+    qos: 1
+  homeassistant:
+    url: "https://example.ui.nabu.casa"
+    token_env: "HOME_ASSISTANT_TOKEN"
+    subscribe_commands: true
+```
+
+This mode calls Home Assistant's `mqtt.publish` service for outbound messages
+and uses the Home Assistant WebSocket `mqtt/subscribe` command for LNXlink
+command topics. It is useful for Nabu Casa remote access because Home Assistant
+Cloud exposes the Home Assistant API, not the raw MQTT broker port.
+
 # Benefits
  - **Cross-Platform Compatibility:** Runs on any Linux distribution, providing flexibility and wide-ranging compatibility.
  - **Enhanced System Insights:** Gain real-time insights into your Linux machine's performance by monitoring essential system metrics.
