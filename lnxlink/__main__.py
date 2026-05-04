@@ -42,6 +42,7 @@ class LNXlink:
         self.prev_publish = {}
         self.saved_publish = {}
         self.update_change_interval = 900
+        self.discovery_registry_lock = threading.Lock()
 
         # Read configuration from yaml file
         self.publ_queue = files_setup.UniqueQueue()
@@ -226,7 +227,12 @@ class LNXlink:
 
     def on_message(self, client, userdata, msg):
         """MQTT message is received with a module command to execute"""
-        topic = msg.topic.replace(f"{self.config['pref_topic']}/commands/", "")
+        command_prefix = f"{self.config['pref_topic']}/commands/"
+        if not msg.topic.startswith(command_prefix):
+            logger.debug("Ignoring MQTT message outside command prefix: %s", msg.topic)
+            return
+
+        topic = msg.topic.replace(command_prefix, "")
         message = msg.payload
         logger.info("Message received %s: %s", topic, message)
         try:
@@ -269,15 +275,97 @@ class LNXlink:
             if filter_name is not None and filter_name != service:
                 continue
             if hasattr(addon, "exposed_controls"):
-                for exp_name, options in addon.exposed_controls().items():
+                try:
+                    exposed_controls = addon.exposed_controls()
+                except Exception as err:
+                    logger.error(
+                        "Could not prepare discovery for %s: %s, %s",
+                        service,
+                        err,
+                        traceback.format_exc(),
+                    )
+                    continue
+
+                current_topics = set()
+                discovery_ok = True
+                for exp_name, options in exposed_controls.items():
                     try:
-                        self.mqtt.setup_discovery_entities(
+                        discovery_topic = self.mqtt.setup_discovery_entities(
                             addon, service, exp_name, options
                         )
+                        if discovery_topic is not None:
+                            current_topics.add(discovery_topic)
                     except Exception as err:
+                        discovery_ok = False
                         logger.error(
                             "%s: %s, %s", exp_name, err, traceback.format_exc()
                         )
+                if discovery_ok:
+                    self._sync_discovery_registry(
+                        service,
+                        current_topics,
+                        getattr(addon, "prune_stale_discovery", False),
+                    )
+
+    def _discovery_registry_path(self):
+        """Path of the locally stored Home Assistant discovery topic registry."""
+        config_dir = os.path.dirname(os.path.realpath(self.config_path))
+        return os.path.join(config_dir, "discovery_registry.json")
+
+    def _load_discovery_registry(self):
+        """Load Home Assistant discovery topics published by this instance."""
+        try:
+            with open(self._discovery_registry_path(), encoding="UTF-8") as registry:
+                data = json.load(registry)
+            if isinstance(data, dict):
+                return data
+        except FileNotFoundError:
+            pass
+        except Exception as err:
+            logger.error("Could not read discovery registry: %s", err)
+        return {}
+
+    def _save_discovery_registry(self, registry):
+        """Persist Home Assistant discovery topics published by this instance."""
+        try:
+            with open(self._discovery_registry_path(), "w", encoding="UTF-8") as file:
+                json.dump(registry, file, indent=2, sort_keys=True)
+                file.write("\n")
+        except Exception as err:
+            logger.error("Could not write discovery registry: %s", err)
+
+    def _discovery_registry_entry(self, registry, service):
+        """Read a registry entry, including the old list-only format."""
+        entry = registry.get(service, {})
+        if isinstance(entry, list):
+            return set(entry), set()
+        if isinstance(entry, dict):
+            return set(entry.get("topics", [])), set(entry.get("stale_topics", []))
+        return set(), set()
+
+    def _sync_discovery_registry(self, service, current_topics, prune_stale):
+        """Track discovery topics and clear stale configs for opt-in modules."""
+        with self.discovery_registry_lock:
+            registry = self._load_discovery_registry()
+            previous_topics, previous_stale_topics = self._discovery_registry_entry(
+                registry, service
+            )
+            missing_topics = previous_topics - current_topics
+            topics_to_clear = set()
+            topics_to_mark_stale = set()
+            if prune_stale:
+                topics_to_clear = previous_stale_topics & missing_topics
+                topics_to_mark_stale = missing_topics - topics_to_clear
+
+            for topic in sorted(topics_to_clear):
+                logger.info("Clearing stale Home Assistant discovery topic: %s", topic)
+                self.mqtt.publish(topic, payload=None, retain=True)
+
+            registry[service] = {
+                "topics": sorted(current_topics | topics_to_mark_stale),
+                "stale_topics": sorted(topics_to_mark_stale),
+            }
+            self._save_discovery_registry(registry)
 
     def restart_script(self):
         """Restarts itself"""

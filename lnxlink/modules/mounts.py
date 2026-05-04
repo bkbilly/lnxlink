@@ -8,6 +8,8 @@ logger = logging.getLogger("lnxlink")
 class Addon:
     """Addon module"""
 
+    prune_stale_discovery = True
+
     def __init__(self, lnxlink):
         """Setup addon"""
         self.name = "Mounts"
