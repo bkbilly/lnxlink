@@ -34,6 +34,10 @@ WantedBy=default.target
 
 CONFIGTEMP = """
 mqtt:
+  # Use "mqtt" for a direct broker connection, "homeassistant_api" to
+  # publish/subscribe through the Home Assistant HTTP/WebSocket API, or "auto"
+  # to try direct MQTT first and fall back to the Home Assistant API.
+  transport: "mqtt"
   prefix: 'lnxlink'
   clientId: 'DESKTOP-Linux'
   server: '192.168.1.1'
@@ -52,6 +56,14 @@ mqtt:
     enabled: true
     qos: 1
   clear_on_off: true
+  homeassistant:
+    url: ""
+    token: ""
+    token_env: ""
+    token_file: ""
+    timeout: 20
+    verify_ssl: true
+    subscribe_commands: true
 update_interval: 5
 update_on_change: false
 modules:

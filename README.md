@@ -32,16 +32,6 @@ To get started with LNXlink, follow these simple steps:
 
 For detailed installation instructions, please refer to the documentation page: [bkbilly.gitbook.io/lnxlink](https://bkbilly.gitbook.io/lnxlink).
 
-# Home Assistant discovery lifecycle
-
-LNXlink stores the Home Assistant MQTT discovery topics it publishes in
-`discovery_registry.json` next to the configuration file. Modules can opt in to
-pruning stale discovery topics when their entities are generated from removable
-resources. A stale topic is marked on the first clean discovery run where it is
-missing, and cleared on a later clean discovery run only if it is still missing.
-This keeps temporarily disconnected resources unavailable without erasing them
-immediately, while eventually removing entities for resources that are gone.
-
 # Benefits
  - **Cross-Platform Compatibility:** Runs on any Linux distribution, providing flexibility and wide-ranging compatibility.
  - **Enhanced System Insights:** Gain real-time insights into your Linux machine's performance by monitoring essential system metrics.
