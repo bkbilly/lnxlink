@@ -3,6 +3,8 @@ from xml.etree import ElementTree
 from jeepney import DBusAddress, new_method_call
 from jeepney.io.blocking import open_dbus_connection
 
+UPOWER_DEVICE_TYPE_LINE_POWER = 1
+
 
 class Addon:
     """Addon module"""
@@ -152,6 +154,7 @@ class Addon:
                     "NativePath": self.get_property(path, device_iface, "NativePath"),
                     "Percentage": self.get_property(path, device_iface, "Percentage"),
                     "Serial": self.get_property(path, device_iface, "Serial"),
+                    "Type": self.get_property(path, device_iface, "Type"),
                     "IconName": self.get_property(path, device_iface, "IconName"),
                     "IsRechargeable": self.get_property(
                         path, device_iface, "IsRechargeable"
@@ -161,6 +164,8 @@ class Addon:
                     "TimeToEmpty": self.get_property(path, device_iface, "TimeToEmpty"),
                     "TimeToFull": self.get_property(path, device_iface, "TimeToFull"),
                 }
+                if props["Type"] == UPOWER_DEVICE_TYPE_LINE_POWER:
+                    continue
                 if props["Model"] + props["NativePath"] not in ["bb", "b", ""]:
                     if isinstance(props["Percentage"], float):
                         batteries.append(props)
