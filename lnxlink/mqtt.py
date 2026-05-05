@@ -302,13 +302,17 @@ class MQTT:
 
         if options["type"] not in lookup_entities:
             logger.error("Not supported: %s", options["type"])
-            return
+            return None
         if "value_template" in discovery and options["type"] in ["camera", "image"]:
             del discovery["json_attributes_topic"]
             del discovery["json_attributes_template"]
         discovery_prefix = self.config["mqtt"]["discovery"]["prefix"]
+        discovery_topic = (
+            f"{discovery_prefix}/{options['type']}/lnxlink/"
+            f"{discovery['unique_id']}/config"
+        )
         self.publish(
-            f"{discovery_prefix}/{options['type']}/lnxlink/{discovery['unique_id']}/config",
+            discovery_topic,
             payload=json.dumps(discovery),
         )
         if options["type"] == "media_player":
@@ -316,3 +320,4 @@ class MQTT:
                 "MQTT Media Player configuration name: lnxlink/%s",
                 discovery["unique_id"],
             )
+        return discovery_topic
