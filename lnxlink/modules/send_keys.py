@@ -37,7 +37,7 @@ class Addon:
             logger.debug("No key data provided to send.")
             return
         display_variable = get_display_variable()
-        if display_variable is not None and os.environ["DISPLAY"] is None:
+        if display_variable is not None and os.environ.get("DISPLAY") is None:
             os.environ["DISPLAY"] = display_variable
             logger.info("Initializing empty DISPLAY environment variable")
         if self.used_tool == "ydotool":

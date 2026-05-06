@@ -110,6 +110,7 @@ class MQTT:
             return
 
         logger.info("Reconnecting to MQTT")
+        self._disconnecting = False
         self.publish_rc_code = 0
         self.client.disconnect()
         time.sleep(2)
@@ -462,7 +463,9 @@ class MQTT:
         """Disconnected from MQTT broker"""
         logger.warning("Lost connection to MQTT Broker...")
         if self.transport == "auto" and not self._disconnecting:
-            self.switch_to_homeassistant_api()
+            threading.Thread(
+                target=self.switch_to_homeassistant_api, daemon=True
+            ).start()
 
     def get_rcode_name(self, rcode):
         """Returns the rcode message"""

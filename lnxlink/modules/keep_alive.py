@@ -11,7 +11,7 @@ class Addon:
         """Setup addon"""
         self.name = "Keep Alive"
         self.keepalive = "OFF"
-        if which("gsettings") is None or which("xset") is None:
+        if which("gsettings") is None and which("xset") is None:
             raise SystemError("System commands 'gsettings' or 'xset' not found")
 
     def exposed_controls(self):

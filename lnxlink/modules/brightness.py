@@ -22,7 +22,7 @@ class Addon:
         if self.lnxlink.config["settings"].get("brightness", {}).get("autodiscovery"):
             monitors, _ = MonitorBrightness.list_displays()
             if len(monitors) != len(self.monitors):
-                print("Detected change in connected monitors, updating discovery.")
+                logger.info("Detected change in connected monitors, updating discovery.")
                 self.monitors = monitors
                 self.lnxlink.setup_discovery("brightness")
 

@@ -16,7 +16,7 @@ class Addon:
         """Setup addon"""
         self.name = "Mouse"
         self.movement = [0, 0]
-        commands = {
+        self._all_commands = {
             "ydotool": {
                 "left_click": "ydotool click 0xc0",
                 "right_click": "ydotool click 0xc1",
@@ -24,7 +24,6 @@ class Addon:
                 "left_mouse_up": "ydotool click 0x80",
                 "move_rel": "ydotool mousemove -x %s -y %s",
                 "move_abs": "ydotool mousemove -a -x %s -y %s",
-                "run_check": "ydotool mousemove",
                 "wheel_up": "ydotool mousemove -w -x 0 -y +1",
                 "wheel_down": "ydotool mousemove -w -x 0 -y -1",
             },
@@ -40,18 +39,16 @@ class Addon:
             },
         }
         self.commands = None
-        for command, command_options in commands.items():
+        self._detect_commands()
+
+    def _detect_commands(self):
+        """Detect available mouse control tool, retried lazily on first use"""
+        for command, command_options in self._all_commands.items():
             if which(command) is not None:
-                run_check = command_options.get("run_check")
-                if run_check is not None:
-                    _, _, returncode = syscommand(run_check)
-                    if returncode != 0:
-                        continue
                 self.commands = command_options
                 logger.debug("Using '%s' for mouse control", command)
-                break
-        if self.commands is None:
-            raise SystemError("System commands 'ydotool' or 'xdotool' not found")
+                return
+        logger.warning("System commands 'ydotool' or 'xdotool' not found")
 
     def exposed_controls(self):
         """Exposes to home assistant"""
@@ -105,9 +102,12 @@ class Addon:
     # pylint: disable=too-many-branches
     def start_control(self, topic, data):
         """Control system"""
+        if self.commands is None:
+            self._detect_commands()
+        if self.commands is None:
+            raise SystemError("System commands 'ydotool' or 'xdotool' not found")
         display_variable = get_display_variable()
-        print(display_variable)
-        if display_variable is not None and os.environ["DISPLAY"] is None:
+        if display_variable is not None and os.environ.get("DISPLAY") is None:
             os.environ["DISPLAY"] = display_variable
             logger.info("Initializing empty DISPLAY environment variable")
 

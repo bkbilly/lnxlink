@@ -75,7 +75,7 @@ class Addon:
                 key=lambda x: order.index(x[0]) if x[0] in order else len(order),
             )
         )
-        print(self.local_players.keys())
+        logger.debug("Media players loaded: %s", list(self.local_players.keys()))
 
     def _requirements(self):
         self.dbus_mediaplayer = import_install_package(
