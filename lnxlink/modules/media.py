@@ -183,7 +183,6 @@ class Addon:
                 self.lnxlink.run_module(f"{self.name}/volume", info["volume"])
                 self.lnxlink.run_module(f"{self.name}/state", info["status"])
                 self.lnxlink.run_module(f"{self.name}/title", info["title"])
-                self.lnxlink.run_module(f"{self.name}/volume", info["volume"])
                 self.lnxlink.run_module(f"{self.name}/albumart", "")
         elif len(self.players) > 0:
             player = self.players[0]

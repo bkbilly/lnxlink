@@ -37,11 +37,10 @@ class Addon:
                 "command": "yum needs-restarting -r",
             }
         else:
-            logger.warning(
+            logger.debug(
                 "No Required_Restart command detected, consider installing package 'needrestart'."
+                " Falling back to checking /var/run/reboot-required"
             )
-            logger.warning("Falling back to checking /var/run/reboot-required")
-
         if self.restart_checker is not None:
             logger.info(
                 "Required_Restart command found, using '%s'",

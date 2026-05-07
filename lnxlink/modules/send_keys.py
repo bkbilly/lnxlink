@@ -15,6 +15,7 @@ class Addon:
         """Setup addon"""
         self.name = "Send Keys"
         self.used_tool = None
+        self._key_map = None
         if which("ydotool") is not None:
             self.used_tool = "ydotool"
         elif which("xdotool") is not None:
@@ -41,8 +42,9 @@ class Addon:
             os.environ["DISPLAY"] = display_variable
             logger.info("Initializing empty DISPLAY environment variable")
         if self.used_tool == "ydotool":
-            event_codes_path = "/usr/include/linux/input-event-codes.h"
-            key_map = self._extract_key_definitions(event_codes_path)
+            key_map = self._extract_key_definitions(
+                "/usr/include/linux/input-event-codes.h"
+            )
             data = self._create_key_representation(data, key_map)
             logger.debug("Sending keys via ydotool: %s", data)
         syscommand(f"{self.used_tool} key {data}")
@@ -85,6 +87,8 @@ class Addon:
         Reads a file, finds lines starting with '#define KEY_', and extracts
         the key name and its integer/hexadecimal value.
         """
+        if self._key_map is not None:
+            return self._key_map
         key_definitions = {}
 
         # Pattern remains the same: capture KEY_name and the value
@@ -130,4 +134,5 @@ class Addon:
             )
             return None
 
-        return key_definitions
+        self._key_map = key_definitions
+        return self._key_map

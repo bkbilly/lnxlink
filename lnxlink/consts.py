@@ -18,7 +18,7 @@ WantedBy=default.target
 
 SERVICEUSER = """[Unit]
 Description=LNXlink
-After=network-online.target multi-user.target graphical.target
+After=network-online.target graphical-session.target
 PartOf=graphical-session.target
 
 [Service]
@@ -29,7 +29,7 @@ RestartSec=5
 ExecStart={exec_cmd}
 
 [Install]
-WantedBy=default.target
+WantedBy=graphical-session.target
 """
 
 CONFIGTEMP = """

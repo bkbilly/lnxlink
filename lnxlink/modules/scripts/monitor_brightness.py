@@ -7,11 +7,14 @@ Copyright (c) 2025 Crozzers (https://github.com/Crozzers)
 import os
 import glob
 import time
+import logging
 import fcntl
 import struct
 import functools
 import operator
 from typing import Optional, List, Set, BinaryIO
+
+logger = logging.getLogger("lnxlink")
 
 
 class MonitorBrightness:
@@ -71,7 +74,7 @@ class MonitorBrightness:
                     f"I2C Permission Error: User '{os.getlogin()}' needs 'i2c' group access.\n"
                     f"Run: sudo usermod -aG i2c {os.getlogin()} && reboot"
                 )
-            except (OSError, IOError, Exception):
+            except Exception:
                 continue
 
         return found_displays, issues
@@ -123,7 +126,7 @@ class SysfsMonitor(MonitorBrightness):
             ) as f:
                 f.write(str(actual_value))
         except (OSError, PermissionError):
-            print("Error setting brightness for", self)
+            logger.error("Error setting brightness for %s", self)
 
 
 class DDCIPMonitor(MonitorBrightness):
