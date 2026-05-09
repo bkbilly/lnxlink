@@ -465,6 +465,10 @@ def main():
         lnxlink.disconnect()
     else:
         monitor_suspend.stop()
+        logger.error(
+            "LNXlink failed to start because the MQTT transport could not connect."
+        )
+        sys.exit(1)
 
 
 if __name__ == "__main__":
