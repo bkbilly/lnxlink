@@ -18,8 +18,8 @@ def syscommand(command, ignore_errors=False, timeout=3, background=False):
         subprocess.Popen(
             command,
             shell=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
         )
         return "", "", 0
     result = subprocess.run(

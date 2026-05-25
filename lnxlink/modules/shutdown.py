@@ -26,19 +26,19 @@ class Addon:
             _, _, returncode = syscommand("shutdown now")
         if returncode != 0:
             try:
-                conn = open_dbus_connection(bus="SYSTEM")
-                conn.send(
-                    new_method_call(
-                        DBusAddress(
-                            object_path="/org/freedesktop/login1",
-                            bus_name="org.freedesktop.login1",
-                            interface="org.freedesktop.login1.Manager",
-                        ),
-                        method="PowerOff",
-                        signature="b",
-                        body=(True,),
+                with open_dbus_connection(bus="SYSTEM") as conn:
+                    conn.send(
+                        new_method_call(
+                            DBusAddress(
+                                object_path="/org/freedesktop/login1",
+                                bus_name="org.freedesktop.login1",
+                                interface="org.freedesktop.login1.Manager",
+                            ),
+                            method="PowerOff",
+                            signature="b",
+                            body=(True,),
+                        )
                     )
-                )
             except Exception:
                 returncode = -1
         if returncode != 0:

@@ -116,6 +116,10 @@ class Addon:
                 self.discovery_info[expose_name]["entity_category"] = expose[
                     "entity_category"
                 ]
+            if expose.get("device_class"):
+                self.discovery_info[expose_name]["device_class"] = expose["device_class"]
+            if expose.get("state_class"):
+                self.discovery_info[expose_name]["state_class"] = expose["state_class"]
 
         return self.discovery_info
 
