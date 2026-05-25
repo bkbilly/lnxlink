@@ -41,8 +41,14 @@ class Addon:
         temperatures = {}
         for item, values in psutil.sensors_temperatures().items():
             for value in values:
-                name = f"{item} {value.label}"
+                name = f"{item} {value.label}".strip()
                 key = name.replace(" ", "_").lower()
+                counter = 2
+                base_key, base_name = key, name
+                while key in temperatures:
+                    key = f"{base_key}_{counter}"
+                    name = f"{base_name} {counter}"
+                    counter += 1
                 temperatures[key] = {
                     "name": name,
                     "value": value.current,

@@ -111,8 +111,6 @@ def get_display_variable():
         return display_var
     display_var, _, _ = syscommand("echo $DISPLAY")
     if display_var:
-        if display_var == "":
-            display_var = None
         return display_var
     other_displays, _, _ = syscommand(
         "sed -zn 's/^DISPLAY=//p' /proc/*/environ 2> /dev/null | LC_ALL=C sort -zu | tr '\\0' '\\n'"

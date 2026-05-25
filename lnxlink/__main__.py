@@ -38,6 +38,7 @@ class LNXlink:
         self.kill = True
         self.display = None
         self.inference_times = {}
+        self.module_failures = {}
         self.addons = {}
         self.prev_publish = {}
         self.saved_publish = {}
@@ -118,6 +119,9 @@ class LNXlink:
 
     def run_module(self, name, method, retain=True):
         """Runs the method of a module"""
+        max_failures = 5
+        if self.module_failures.get(name, 0) >= max_failures:
+            return
         try:
             start_time = time.time()
             if isinstance(method, (dict, list, bool, bytes, int, str, float)):
@@ -126,14 +130,24 @@ class LNXlink:
                 pub_data = method()
                 diff_time = round(time.time() - start_time, 5)
                 self.inference_times[name] = diff_time
+            self.module_failures[name] = 0
             self.publ_queue.add_item(name, pub_data, retain)
         except Exception as err:
-            logger.error(
-                "Error with addon %s: %s, %s",
-                name,
-                err,
-                traceback.format_exc(),
-            )
+            self.module_failures[name] = self.module_failures.get(name, 0) + 1
+            if self.module_failures[name] >= max_failures:
+                logger.error(
+                    "Module %s disabled after %d consecutive failures. Last error: %s",
+                    name,
+                    max_failures,
+                    err,
+                )
+            else:
+                logger.error(
+                    "Error with addon %s: %s, %s",
+                    name,
+                    err,
+                    traceback.format_exc(),
+                )
 
     def run_modules(self, name=None):
         """Runs all methods of the modules"""

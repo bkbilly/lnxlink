@@ -19,7 +19,11 @@ class Addon:
         self.package_manager = None
         if which("apt") is not None:
             self.package_manager = {
-                "command": "apt list --upgradable | grep -v '.*\\.\\.\\.' | awk -F '/' '{print $1}'",
+                "command": (
+                    "LC_ALL=C apt list --upgradable"
+                    " | grep -v '.*\\.\\.\\.'"
+                    " | awk -F '/' '{print $1}'"
+                ),
                 "largerthan": 0,
             }
         elif which("yum") is not None:
@@ -69,7 +73,7 @@ class Addon:
                 self.updates["needs_update"] = "OFF"
                 self.updates["packages"]["updates"] = []
             else:
-                current_updates = stdout.split("\n")
+                current_updates = sorted(set(filter(None, stdout.split("\n"))))
                 needs_update = len(current_updates) > self.package_manager["largerthan"]
                 self.updates["needs_update"] = "ON" if needs_update else "OFF"
                 self.updates["packages"]["updates"] = current_updates

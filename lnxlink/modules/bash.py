@@ -57,6 +57,16 @@ class Addon:
                 )
                 status = stdout.lower() not in ["false", "no", "0", "off", ""]
                 self.lnxlink.run_module(f"{self.name}/{expose_name}", status)
+            elif discovery.get("type") == "select":
+                cur_time = time.time()
+                if cur_time - discovery["last_time"] > discovery["update_interval"]:
+                    discovery["last_time"] = cur_time
+                    stdout, _, returncode = syscommand(
+                        discovery["local_command"],
+                        timeout=discovery.get("sensor_timeout", 3),
+                    )
+                    if returncode == 0:
+                        self.lnxlink.run_module(f"{self.name}/{expose_name}", stdout)
 
     def exposed_controls(self):
         """Exposes to home assistant"""
@@ -112,6 +122,18 @@ class Addon:
                     "subtopic": True,
                     "sensor_timeout": expose.get("sensor_timeout", 3),
                 }
+            elif expose_type == "select":
+                self.discovery_info[expose_name] = {
+                    "type": expose_type,
+                    "icon": icon,
+                    "options": expose.get("options", []),
+                    "local_command": expose.get("command"),
+                    "command_select": expose.get("command_select"),
+                    "subtopic": True,
+                    "update_interval": expose.get("update_interval", 0),
+                    "last_time": 0,
+                    "sensor_timeout": expose.get("sensor_timeout", 3),
+                }
             if expose.get("entity_category") in ["diagnostic", "config"]:
                 self.discovery_info[expose_name]["entity_category"] = expose[
                     "entity_category"
@@ -138,6 +160,19 @@ class Addon:
         exposed = self.lnxlink.config["settings"]["bash"]["expose"]
         exposed = [] if exposed is None else exposed
         for expose in exposed:
+            expose_name = f"Bash {expose['name']}"
+            expose_topic = expose_name.lower().replace(" ", "_")
+            if expose.get("type") == "select" and topic[1] == expose_topic:
+                options = expose.get("options", [])
+                if data not in options:
+                    logger.error("Invalid option '%s' for %s", data, expose_name)
+                    return None
+                command = expose.get("command_select", "")
+                stdout, _, _ = syscommand(
+                    command.replace("{option}", data),
+                    timeout=expose.get("command_timeout", 120),
+                )
+                return stdout
             command_list = [
                 expose.get("command", "").strip(),
                 expose.get("command_on", "").strip(),
