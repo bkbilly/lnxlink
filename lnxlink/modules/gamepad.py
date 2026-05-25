@@ -62,7 +62,7 @@ class Addon:
                     _, _, ev_type, code, value = struct.unpack(decode_str, game_data)
                     if ev_type != 0 or code != 0 or value != 0:
                         self.last_used = int(time.time())
-                        logger.debug(code, value)
+                        logger.debug("%s %s", code, value)
         except OSError as err:
             # Errno 19: "No such device" happens when the gamepad is disconnected
             if err.errno == 19:

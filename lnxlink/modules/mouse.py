@@ -30,8 +30,8 @@ class Addon:
             "xdotool": {
                 "left_click": "xdotool click 1",
                 "right_click": "xdotool click 3",
-                "left_mouse_down": "ydotool mousedown 1",
-                "left_mouse_up": "ydotool mouseup 1",
+                "left_mouse_down": "xdotool mousedown 1",
+                "left_mouse_up": "xdotool mouseup 1",
                 "move_rel": "xdotool mousemove -- %s %s",
                 "move_abs": "xdotool mousemove %s %s",
                 "wheel_up": "xdotool click 4",

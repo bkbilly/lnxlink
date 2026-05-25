@@ -90,12 +90,12 @@ class Addon:
             images.append(container.image)
             containers[name_id] = {
                 "running": running,
+                "update": None,
                 "attrs": {
                     "name": container.name,
                     "images": ",".join(container.image.tags),
                     "ports": list(ports),
                     "status": container.status,
-                    "update": None,
                 },
             }
 

@@ -21,7 +21,7 @@ class Addon:
         self.lnxlink.temp_connection_callback(True)
         returncode = None
         if which("systemctl") is not None and returncode != 0:
-            _, _, returncode = syscommand("systemctl reboot")
+            _, _, returncode = syscommand("systemctl reboot --ignore-inhibitors")
         if which("shutdown") is not None and returncode != 0:
             _, _, returncode = syscommand("shutdown -r now")
         if returncode != 0:
@@ -39,6 +39,7 @@ class Addon:
                             body=(True,),
                         )
                     )
+                returncode = 0
             except Exception:
                 returncode = -1
         if returncode != 0:

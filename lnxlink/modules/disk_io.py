@@ -60,7 +60,11 @@ class Addon:
         if self.disks != disks:
             self.disks = disks
             self.lnxlink.setup_discovery("disk_io")
-        results = asyncio.run(self._get_info_async())
+        loop = asyncio.new_event_loop()
+        try:
+            results = loop.run_until_complete(self._get_info_async())
+        finally:
+            loop.close()
         return results
 
     async def _get_info_async(self):

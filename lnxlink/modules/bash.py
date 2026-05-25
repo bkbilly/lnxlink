@@ -116,9 +116,15 @@ class Addon:
                 self.discovery_info[expose_name]["entity_category"] = expose[
                     "entity_category"
                 ]
-            if expose.get("device_class"):
-                self.discovery_info[expose_name]["device_class"] = expose["device_class"]
-            if expose.get("state_class"):
+            if expose.get("device_class") and expose_type in (
+                "sensor",
+                "binary_sensor",
+                "switch",
+            ):
+                self.discovery_info[expose_name]["device_class"] = expose[
+                    "device_class"
+                ]
+            if expose.get("state_class") and expose_type in ("sensor", "binary_sensor"):
                 self.discovery_info[expose_name]["state_class"] = expose["state_class"]
 
         return self.discovery_info

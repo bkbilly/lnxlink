@@ -126,9 +126,9 @@ class MQTT:
             logger.info("Disconnected from Home Assistant MQTT API.")
             return
 
+        self.send_lwt("OFF")
         self.client.disconnect()
         logger.info("Disconnected from MQTT.")
-        self.send_lwt("OFF")
 
     def send_lwt(self, status):
         """Sends the status of lwt, ON or OFF"""
@@ -211,11 +211,19 @@ class MQTT:
         except ssl.SSLCertVerificationError:
             logger.info("TLS not verified, using insecure connection instead")
             self.client.tls_insecure_set(True)
-            self.client.connect(
-                host=self.config["mqtt"]["server"],
-                port=self.config["mqtt"]["port"],
-                keepalive=60,
-            )
+            try:
+                self.client.connect(
+                    host=self.config["mqtt"]["server"],
+                    port=self.config["mqtt"]["port"],
+                    keepalive=60,
+                )
+            except Exception as err:
+                logger.error(
+                    "Error establishing connection to MQTT broker: %s, %s",
+                    err,
+                    traceback.format_exc(),
+                )
+                return False
         except Exception as err:
             logger.error(
                 "Error establishing connection to MQTT broker: %s, %s",
@@ -453,9 +461,10 @@ class MQTT:
                 raise RuntimeError(f"websocket closed: {message.type}")
 
     # pylint: disable=too-many-arguments
-    def on_publish(self, client, userdata, mid, reason_code, properties):
+    def on_publish(self, client, userdata, mid, *args):
         """Trying to reconnect if the reason code is not Success"""
-        if reason_code != "Success":
+        reason_code = args[0] if args else None
+        if reason_code is not None and reason_code != "Success":
             logger.error("Publish Error, trying to reconnect...")
             self.reconnect()
 
@@ -620,8 +629,8 @@ class MQTT:
             logger.error("Not supported: %s", options["type"])
             return None
         if "value_template" in discovery and options["type"] in ["camera", "image"]:
-            del discovery["json_attributes_topic"]
-            del discovery["json_attributes_template"]
+            discovery.pop("json_attributes_topic", None)
+            discovery.pop("json_attributes_template", None)
         discovery_prefix = self.config["mqtt"]["discovery"]["prefix"]
         discovery_topic = (
             f"{discovery_prefix}/{options['type']}/lnxlink/"

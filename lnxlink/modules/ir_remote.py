@@ -74,7 +74,7 @@ class Addon:
     def start_control(self, topic, data):
         """Control system"""
         transmitter = self.lnxlink.config["settings"]["ir_remote"]["transmitter"]
-        if transmitter:
+        if transmitter and self.irremote is not None:
             self.irremote.pause = True
             self.irremote.send_signal(transmitter, data)
             self.irremote.pause = False
@@ -132,10 +132,9 @@ class IRRemote:
             while self.fetching_code:
                 time.sleep(0.1)
             time.sleep(0.5)
-            binsignal, decsignal, protocol = SignalDecoder().decode_signal(
-                self.ir_signal
-            )
-            callback(self.ir_signal, binsignal, decsignal, protocol)
+            signal = list(self.ir_signal)
+            binsignal, decsignal, protocol = SignalDecoder().decode_signal(signal)
+            callback(signal, binsignal, decsignal, protocol)
             time.sleep(0.1)
 
     def setup_receiver(self, gpio, callback):
@@ -161,7 +160,7 @@ class IRRemote:
             self.pi.set_watchdog(self.gpio_rx, 0)  # Cancel watchdog.
             self.pi.stop()  # Disconnect from Pi
             if self.read_thr is not None:
-                self.read_thr.join()
+                self.read_thr.join(timeout=5.0)
                 self.read_thr = None
 
     def send_signal(self, gpio, ir_signal):

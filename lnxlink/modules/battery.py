@@ -44,8 +44,8 @@ class Addon:
         new_devices = set(devices) - set(self.devices)
         disconnected_devices = set(self.devices) - set(devices)
         for device_name in disconnected_devices:
-            devices[device_name] = self.devices[device_name]
-            self.devices[device_name]["percent"] = None
+            devices[device_name] = dict(self.devices[device_name])
+            devices[device_name]["percent"] = None
         self.devices = devices
         if len(new_devices) > 0:
             self.lnxlink.setup_discovery("battery")

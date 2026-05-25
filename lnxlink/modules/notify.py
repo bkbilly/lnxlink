@@ -93,8 +93,8 @@ class Addon:
                 self.notify.close_all()
         else:
             notification_id = self.notify.send(
-                title=data["title"],
-                message=data["message"],
+                title=data.get("title", ""),
+                message=data.get("message", ""),
                 logo=f"{self.lnxlink.path}/logo.png",
                 image=icon_path,
                 sound=sound_path,

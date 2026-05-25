@@ -35,7 +35,7 @@ class LNXlink:
         config["version"] = version
         self.config = config
         self.config_path = config["config_path"]
-        self.kill = None
+        self.kill = True
         self.display = None
         self.inference_times = {}
         self.addons = {}
@@ -189,8 +189,7 @@ class LNXlink:
         self.mqtt.send_lwt("ON")
         if self.config["mqtt"]["discovery"]["enabled"]:
             self.setup_discovery()
-        if self.kill is None:
-            self.kill = False
+        self.kill = False
 
     def disconnect(self, *args):
         """Service has stopped"""
@@ -217,6 +216,8 @@ class LNXlink:
             self.mqtt.send_lwt("OFF")
             if self.config["mqtt"]["clear_on_off"]:
                 for topic, message in self.prev_publish.items():
+                    if topic == "last_update":
+                        continue
                     message = self.replace_values_with_none(message)
                     self.mqtt.publish(topic, message)
         else:

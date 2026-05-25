@@ -45,6 +45,9 @@ class Addon:
             key_map = self._extract_key_definitions(
                 "/usr/include/linux/input-event-codes.h"
             )
+            if key_map is None:
+                logger.error("Key definitions not found; cannot send keys via ydotool")
+                return
             data = self._create_key_representation(data, key_map)
             logger.debug("Sending keys via ydotool: %s", data)
         syscommand(f"{self.used_tool} key {data}")

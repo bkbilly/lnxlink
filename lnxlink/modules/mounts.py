@@ -93,7 +93,9 @@ class Addon:
         }
         stdout, _, _ = syscommand(["df", mountpoint])
         if len(stdout.split("\n")) == 2:
-            filesystem, size_str, _, _, used, mounton = stdout.split("\n")[1].split()
+            filesystem, size_str, _, _, used, mounton = stdout.split("\n")[1].split(
+                maxsplit=5
+            )
             data["percent"] = int(used.replace("%", ""))
             data["attributes"]["total"] = round(int(size_str) / 1024 / 1024, 0)
             data["attributes"]["filesystem"] = filesystem

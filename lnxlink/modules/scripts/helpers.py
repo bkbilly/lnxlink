@@ -90,7 +90,10 @@ def needs_update(current_version, request_version):
         current_versions = [0]
     if request_version is None or request_version == "":
         return False
-    request_versions = [int(version) for version in request_version.split(".")]
+    try:
+        request_versions = [int(version) for version in request_version.split(".")]
+    except (TypeError, ValueError):
+        return False
     for num in range(max(len(current_versions), len(request_versions))):
         cur_version = current_versions[num] if num < len(current_versions) else 0
         req_version = request_versions[num] if num < len(request_versions) else 0

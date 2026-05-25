@@ -11,7 +11,7 @@ class Addon:
 
     def start_control(self, topic, data):
         """Control system"""
-        syscommand("systemctl suspend")
+        syscommand("systemctl suspend --ignore-inhibitors")
 
     def exposed_controls(self):
         """Exposes to home assistant"""

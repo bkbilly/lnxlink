@@ -39,7 +39,7 @@ class Addon:
             logger.info("Sending statistics data: %s", data)
             url = self.url.rstrip("/")
             url = f"{url}/api/lnxlink"
-            requests.post(url=url, data=data)
+            requests.post(url=url, data=data, timeout=10)
             self.last_time = cur_time
 
     def _get_uuid(self):

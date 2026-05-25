@@ -127,12 +127,10 @@ class Addon:
             except Exception as err:
                 logger.error("Error with Pulseaudio: %s", err)
 
-        if len(devices["defaults"]["speaker"]) != len(
-            self.devices["defaults"].get("speaker", [])
-        ):
+        if devices["defaults"]["speaker"] != self.devices["defaults"].get("speaker"):
             devices["changed"] = True
-        if len(devices["defaults"]["microphone"]) != len(
-            self.devices["defaults"].get("microphone", [])
+        if devices["defaults"]["microphone"] != self.devices["defaults"].get(
+            "microphone"
         ):
             devices["changed"] = True
         self.devices = devices

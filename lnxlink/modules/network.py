@@ -49,6 +49,9 @@ class Addon:
         self.recv_old = recv_new
         self.sent_old = sent_new
 
+        if time_diff == 0:
+            return {"upload": 0, "download": 0}
+
         recv_speed = max(0, round(recv_diff * 8 / time_diff / 1024 / 1024, 2))
         sent_speed = max(0, round(sent_diff * 8 / time_diff / 1024 / 1024, 2))
 

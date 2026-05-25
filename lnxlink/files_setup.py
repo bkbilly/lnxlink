@@ -7,6 +7,8 @@ from logging.handlers import RotatingFileHandler
 from collections import OrderedDict
 from pathlib import Path
 
+import threading
+
 import yaml
 from lnxlink.modules.scripts.helpers import syscommand
 
@@ -25,6 +27,7 @@ class UniqueQueue:
         """Initializes the UniqueQueue"""
         self.queue = OrderedDict()
         self.max_size = max_size
+        self._lock = threading.Lock()
 
     def __repr__(self):
         """Returns a string representation of the queue."""
@@ -32,28 +35,32 @@ class UniqueQueue:
 
     def __iter__(self):
         """Returns an iterator that yields and removes items from the queue in FIFO order"""
-        while self.queue:
-            yield self.queue.popitem(last=False)
+        while True:
+            with self._lock:
+                if not self.queue:
+                    break
+                yield self.queue.popitem(last=False)
 
     def add_item(self, name, value, retain=True):
         """Adds an item to the queue. If the item already exists, it replaces it"""
-        # If item exists, remove it so we can re-add at the end
-        if name in self.queue:
-            del self.queue[name]
-        # If queue is full, remove the oldest item
-        elif len(self.queue) >= self.max_size:
-            self.queue.popitem(last=False)
-        self.queue[name] = (value, retain)
+        with self._lock:
+            if name in self.queue:
+                del self.queue[name]
+            elif len(self.queue) >= self.max_size:
+                self.queue.popitem(last=False)
+            self.queue[name] = (value, retain)
 
     def get_item(self):
         """Retrieves and removes the next item from the queue (FIFO)"""
-        if self.queue:
-            return self.queue.popitem(last=False)
+        with self._lock:
+            if self.queue:
+                return self.queue.popitem(last=False)
         return None, None
 
     def clear(self):
         """Clears all items from the queue"""
-        self.queue.clear()
+        with self._lock:
+            self.queue.clear()
 
 
 def setup_logger(config_path, log_level):
@@ -82,8 +89,6 @@ def read_config(config_path):
     with open(config_path, "r", encoding="utf8") as file:
         conf = yaml.load(file, Loader=yaml.FullLoader)
 
-    pref_topic = f"{conf['mqtt']['prefix']}/{conf['mqtt']['clientId']}"
-    conf["pref_topic"] = pref_topic.lower()
     conf["config_path"] = config_path
 
     if conf["modules"] is not None:
@@ -96,7 +101,10 @@ def read_config(config_path):
     if os.environ.get("LNXLINK_MQTT_SERVER") not in [None, ""]:
         conf["mqtt"]["server"] = os.environ.get("LNXLINK_MQTT_SERVER")
     if os.environ.get("LNXLINK_MQTT_PORT") not in [None, ""]:
-        conf["mqtt"]["port"] = os.environ.get("LNXLINK_MQTT_PORT")
+        conf["mqtt"]["port"] = int(os.environ.get("LNXLINK_MQTT_PORT"))
+
+    pref_topic = f"{conf['mqtt']['prefix']}/{conf['mqtt']['clientId']}"
+    conf["pref_topic"] = pref_topic.lower()
     if os.environ.get("LNXLINK_MQTT_USER") not in [None, ""]:
         conf["mqtt"]["auth"]["user"] = os.environ.get("LNXLINK_MQTT_USER")
     if os.environ.get("LNXLINK_MQTT_PASS") not in [None, ""]:

@@ -22,12 +22,13 @@ class Addon:
 
     def get_camera_frame(self):
         """Convert camera feed to Base64 text"""
-        if self.vid is not None:
-            while True:
-                _, frame = self.vid.read()
-                _, buffer = self.lib["cv2"].imencode(".jpg", frame)
-                frame = base64.b64encode(buffer)
-                self.lnxlink.run_module(f"{self.name}/Webcam feed", frame)
+        while self.vid is not None:
+            _, frame = self.vid.read()
+            if frame is None:
+                break
+            _, buffer = self.lib["cv2"].imencode(".jpg", frame)
+            frame = base64.b64encode(buffer)
+            self.lnxlink.run_module(f"{self.name}/Webcam feed", frame)
 
     def get_info(self):
         """Gather information from the system"""

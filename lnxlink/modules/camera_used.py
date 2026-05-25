@@ -14,6 +14,7 @@ class Addon:
         self.lnxlink = lnxlink
         self.inotify = Inotify()
         self.cameras = []
+        self.cam_used = False
         Thread(target=self._watch_events, daemon=True).start()
 
     def get_info(self):
@@ -23,12 +24,9 @@ class Addon:
             self.cameras = cameras
             for camera in cameras:
                 self.inotify.add_watch(camera)
-            # Initialize camera
             _, _, returncode = syscommand("fuser /dev/video*", ignore_errors=True)
-            cam_used = False
-            if returncode == 0:
-                cam_used = True
-            self.lnxlink.run_module(self.name, cam_used)
+            self.cam_used = returncode == 0
+        return self.cam_used
 
     def _watch_events(self):
         for _ in self.inotify.event_gen(yield_nones=False):

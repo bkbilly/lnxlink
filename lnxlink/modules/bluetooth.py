@@ -106,7 +106,7 @@ class Addon:
 
         # Preserve data for unloaded devices
         for device in unloaded:
-            if device in self.bluetoothdata:
+            if device in self.bluetoothdata["devices"]:
                 bluetoothdata["devices"][device] = self.bluetoothdata["devices"][device]
 
         self.bluetoothdata = bluetoothdata

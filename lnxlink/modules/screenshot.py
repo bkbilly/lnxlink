@@ -286,7 +286,7 @@ class Addon:
         elif data.lower() == "on":
             logger.info("Received ON command")
             self.run = True
-            if self.read_thr is None:
+            if self.read_thr is None or not self.read_thr.is_alive():
                 self.read_thr = threading.Thread(
                     target=self.get_camera_frame, daemon=True
                 )
