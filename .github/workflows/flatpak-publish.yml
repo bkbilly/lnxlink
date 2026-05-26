@@ -1,0 +1,96 @@
+name: Flatpak Publish
+
+on:
+  workflow_run:
+    workflows: ["Python Publish"]
+    types: [completed]
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-tags: true
+
+      - name: Get version and commit SHA
+        id: release
+        run: |
+          VERSION=$(git tag --points-at "${{ github.event.workflow_run.head_sha }}" | head -n1)
+          VERSION="${VERSION#v}"
+          COMMIT="${{ github.event.workflow_run.head_sha }}"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "commit=$COMMIT" >> "$GITHUB_OUTPUT"
+          echo "Detected version: $VERSION, commit: $COMMIT"
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Install flatpak-pip-generator
+        run: |
+          pip install aiohttp toml
+          wget -q https://raw.githubusercontent.com/flatpak/flatpak-builder-tools/master/pip/flatpak-pip-generator
+          chmod +x flatpak-pip-generator
+
+      - name: Build requirements for flatpak-pip-generator
+        run: |
+          COMMIT="${{ steps.release.outputs.commit }}"
+          # Prepend the lnxlink source pinned to the release commit, then append all deps
+          echo "lnxlink @ git+https://github.com/bkbilly/lnxlink@${COMMIT}" > /tmp/requirements_pinned.txt
+          cat requirements.txt >> /tmp/requirements_pinned.txt
+
+      - name: Regenerate flatpak-modules-lnxlink.yaml
+        run: |
+          python3 flatpak-pip-generator \
+            --yaml \
+            --output /tmp/flatpak-modules-lnxlink \
+            --requirements-file /tmp/requirements_pinned.txt
+
+      - name: Clone Flathub repository
+        run: |
+          git clone \
+            https://x-access-token:${{ secrets.FLATHUB_TOKEN }}@github.com/flathub/io.github.bkbilly.lnxlink.git \
+            /tmp/flathub
+
+      - name: Create pull request
+        run: |
+          VERSION="${{ steps.release.outputs.version }}"
+          BRANCH="update-${VERSION}"
+
+          # Static files maintained in this repo
+          cp packaging/flatpak/io.github.bkbilly.lnxlink.yaml /tmp/flathub/
+          cp packaging/flatpak/flatpak-modules-meson.yaml /tmp/flathub/
+          cp packaging/flatpak/runlnxlink.sh /tmp/flathub/
+
+          # Metadata and icon from the main repo
+          cp io.github.bkbilly.lnxlink.metainfo.xml /tmp/flathub/
+          cp images/logo.png /tmp/flathub/io.github.bkbilly.lnxlink.png
+
+          # Generated files
+          cp /tmp/flatpak-modules-lnxlink.yaml /tmp/flathub/flatpak-modules-lnxlink.yaml
+          cp /tmp/requirements_pinned.txt /tmp/flathub/requirements_all.txt
+
+          cd /tmp/flathub
+          git config user.email "bkbillybk@gmail.com"
+          git config user.name "bkbilly"
+          git checkout -b "$BRANCH"
+          git add .
+          git diff --cached --quiet && echo "No changes to commit" && exit 0
+          git commit -m "Update to version ${VERSION}"
+          git push origin "$BRANCH"
+          gh pr create \
+            --repo flathub/io.github.bkbilly.lnxlink \
+            --head "$BRANCH" \
+            --base master \
+            --title "Update to ${VERSION}" \
+            --body "Automated update to version ${VERSION}."
+        env:
+          GH_TOKEN: ${{ secrets.FLATHUB_TOKEN }}

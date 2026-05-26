@@ -1,0 +1,129 @@
+name: AUR Publish
+
+on:
+  workflow_run:
+    workflows: ["Python Publish"]
+    types: [completed]
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    container:
+      image: archlinux:latest
+
+    steps:
+      - name: Install dependencies
+        run: pacman -Sy --noconfirm git openssh python curl base-devel
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-tags: true
+
+      - name: Get version from release tag
+        id: version
+        run: |
+          VERSION=$(git tag --points-at "${{ github.event.workflow_run.head_sha }}" | head -n1)
+          VERSION="${VERSION#v}"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Detected version: $VERSION"
+
+      - name: Wait for PyPI and get sdist SHA256
+        id: sha256_pypi
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          echo "Waiting for lnxlink $VERSION to appear on PyPI..."
+          for i in $(seq 1 20); do
+            RESPONSE=$(curl -sf "https://pypi.org/pypi/lnxlink/${VERSION}/json" || true)
+            if [ -n "$RESPONSE" ]; then
+              SHA256=$(echo "$RESPONSE" | python3 -c "
+          import sys, json
+          data = json.load(sys.stdin)
+          for f in data['urls']:
+              if f['packagetype'] == 'sdist':
+                  print(f['digests']['sha256'])
+                  break
+          ")
+              if [ -n "$SHA256" ]; then
+                echo "sha256=$SHA256" >> "$GITHUB_OUTPUT"
+                echo "Found SHA256: $SHA256"
+                break
+              fi
+            fi
+            echo "Not available yet, retrying in 30s... ($i/20)"
+            sleep 30
+          done
+          if [ -z "$SHA256" ]; then
+            echo "ERROR: Could not find sdist SHA256 on PyPI after waiting"
+            exit 1
+          fi
+
+      - name: Compute SHA256 for static AUR files
+        id: sha256_static
+        run: |
+          SHA_SERVICE=$(sha256sum packaging/aur/lnxlink.service | awk '{print $1}')
+          SHA_CONFIG=$(sha256sum packaging/aur/config.yaml.example | awk '{print $1}')
+          echo "service=$SHA_SERVICE" >> "$GITHUB_OUTPUT"
+          echo "config=$SHA_CONFIG" >> "$GITHUB_OUTPUT"
+
+      - name: Update PKGBUILD
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          SHA_PYPI="${{ steps.sha256_pypi.outputs.sha256 }}"
+          SHA_SERVICE="${{ steps.sha256_static.outputs.service }}"
+          SHA_CONFIG="${{ steps.sha256_static.outputs.config }}"
+
+          sed -i "s/^pkgver=.*/pkgver=${VERSION}/" packaging/aur/PKGBUILD
+          sed -i "s/^pkgrel=.*/pkgrel=1/" packaging/aur/PKGBUILD
+
+          # Replace the entire sha256sums block (may span multiple lines)
+          python3 - <<EOF
+          import re, pathlib
+          pkgbuild = pathlib.Path("packaging/aur/PKGBUILD").read_text()
+          new_sums = (
+              f"sha256sums=('{SHA_PYPI}'\n"
+              f"            '{SHA_SERVICE}'\n"
+              f"            '{SHA_CONFIG}')"
+          )
+          pkgbuild = re.sub(r"sha256sums=\(.*?\)", new_sums, pkgbuild, flags=re.DOTALL)
+          pathlib.Path("packaging/aur/PKGBUILD").write_text(pkgbuild)
+          EOF
+
+          cat packaging/aur/PKGBUILD
+
+      - name: Generate .SRCINFO
+        run: |
+          useradd -m builduser
+          chown -R builduser:builduser packaging/aur
+          cd packaging/aur
+          su builduser -c "makepkg --printsrcinfo" > .SRCINFO
+          cat .SRCINFO
+
+      - name: Configure SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.AUR_SSH_KEY }}" > ~/.ssh/aur_key
+          chmod 600 ~/.ssh/aur_key
+          ssh-keyscan aur.archlinux.org >> ~/.ssh/known_hosts
+          cat > ~/.ssh/config << 'EOF'
+          Host aur.archlinux.org
+            IdentityFile ~/.ssh/aur_key
+            User aur
+          EOF
+
+      - name: Push to AUR
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          git config --global user.email "bkbillybk@gmail.com"
+          git config --global user.name "bkbilly"
+          git clone ssh://aur@aur.archlinux.org/python-lnxlink.git /tmp/aur-repo
+          cp packaging/aur/PKGBUILD /tmp/aur-repo/PKGBUILD
+          cp packaging/aur/.SRCINFO /tmp/aur-repo/.SRCINFO
+          cd /tmp/aur-repo
+          git add PKGBUILD .SRCINFO
+          git diff --cached --quiet || git commit -m "Update to version ${VERSION}"
+          git push
