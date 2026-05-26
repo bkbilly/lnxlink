@@ -1,0 +1,33 @@
+name: lnxlink
+base: core26
+build-base: devel
+adopt-info: lnxlink
+summary: Linux system integration for Home Assistant via MQTT
+description: |
+  LNXlink bridges your Linux system with Home Assistant through an MQTT
+  broker, exposing system sensors (CPU, memory, temperature, network,
+  battery, etc.) and controls (shutdown, suspend, notifications, media,
+  screenshots, and more) for monitoring and automation.
+
+  Documentation: https://bkbilly.gitbook.io/lnxlink
+
+grade: devel
+confinement: classic
+
+parts:
+  lnxlink:
+    plugin: python
+    source: .
+    build-packages:
+      - gcc
+      - python3-dev
+      - libasound2-dev
+    stage-packages:
+      - python3-venv
+    override-pull: |
+      craftctl default
+      craftctl set version=$(git describe --tags --abbrev=0)
+
+apps:
+  lnxlink:
+    command: bin/lnxlink

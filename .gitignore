@@ -14,3 +14,12 @@ lnxlink_uuid.txt
 # Flatpak
 repo/
 .flatpak-builder
+
+# Snap
+.craft/
+parts/
+prime/
+stage/
+*.snap
+snapcraft.yaml
+snapcraft-*.txt
