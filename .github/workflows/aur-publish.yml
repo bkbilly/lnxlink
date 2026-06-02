@@ -116,21 +116,14 @@ jobs:
           su builduser -c "makepkg --printsrcinfo" > .SRCINFO
           cat .SRCINFO
 
-      - name: Configure SSH
+      - name: Push to AUR
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.AUR_SSH_KEY }}" > ~/.ssh/aur_key
           chmod 600 ~/.ssh/aur_key
-          ssh-keyscan aur.archlinux.org >> ~/.ssh/known_hosts
-          cat > ~/.ssh/config << 'EOF'
-          Host aur.archlinux.org
-            IdentityFile ~/.ssh/aur_key
-            User aur
-            StrictHostKeyChecking accept-new
-          EOF
 
-      - name: Push to AUR
-        run: |
+          export GIT_SSH_COMMAND="ssh -i ~/.ssh/aur_key -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
+
           VERSION="${{ steps.version.outputs.version }}"
           git config --global user.email "bkbillybk@gmail.com"
           git config --global user.name "bkbilly"
