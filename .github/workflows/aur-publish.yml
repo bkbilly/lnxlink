@@ -4,13 +4,18 @@ on:
   workflow_run:
     workflows: ["Python Publish"]
     types: [completed]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to publish (e.g. 2026.2.0)'
+        required: true
 
 permissions:
   contents: read
 
 jobs:
   publish:
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     container:
       image: archlinux:latest
@@ -22,13 +27,18 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
+          fetch-depth: 0
           fetch-tags: true
 
       - name: Get version from release tag
         id: version
         run: |
-          VERSION=$(git tag --points-at "${{ github.event.workflow_run.head_sha }}" | head -n1)
-          VERSION="${VERSION#v}"
+          if [ -n "${{ inputs.version }}" ]; then
+            VERSION="${{ inputs.version }}"
+          else
+            VERSION=$(git tag --points-at "${{ github.event.workflow_run.head_sha }}" | head -n1)
+            VERSION="${VERSION#v}"
+          fi
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "Detected version: $VERSION"
 
@@ -82,15 +92,18 @@ jobs:
 
           # Replace the entire sha256sums block (may span multiple lines)
           python3 - <<EOF
-          import re, pathlib
+          import re, pathlib, sys
           pkgbuild = pathlib.Path("packaging/aur/PKGBUILD").read_text()
           new_sums = (
-              f"sha256sums=('{SHA_PYPI}'\n"
-              f"            '{SHA_SERVICE}'\n"
-              f"            '{SHA_CONFIG}')"
+              "sha256sums=('${SHA_PYPI}'\n"
+              "            '${SHA_SERVICE}'\n"
+              "            '${SHA_CONFIG}')"
           )
-          pkgbuild = re.sub(r"sha256sums=\(.*?\)", new_sums, pkgbuild, flags=re.DOTALL)
-          pathlib.Path("packaging/aur/PKGBUILD").write_text(pkgbuild)
+          result, count = re.subn(r"sha256sums=\(.*?\)", new_sums, pkgbuild, flags=re.DOTALL)
+          if count == 0:
+              print("ERROR: sha256sums block not found in PKGBUILD", file=sys.stderr)
+              sys.exit(1)
+          pathlib.Path("packaging/aur/PKGBUILD").write_text(result)
           EOF
 
           cat packaging/aur/PKGBUILD
@@ -113,6 +126,7 @@ jobs:
           Host aur.archlinux.org
             IdentityFile ~/.ssh/aur_key
             User aur
+            StrictHostKeyChecking accept-new
           EOF
 
       - name: Push to AUR
@@ -123,6 +137,7 @@ jobs:
           git clone ssh://aur@aur.archlinux.org/python-lnxlink.git /tmp/aur-repo
           cp packaging/aur/PKGBUILD /tmp/aur-repo/PKGBUILD
           cp packaging/aur/.SRCINFO /tmp/aur-repo/.SRCINFO
+          cp packaging/aur/lnxlink.install /tmp/aur-repo/lnxlink.install
           cd /tmp/aur-repo
           git add PKGBUILD .SRCINFO
           git diff --cached --quiet || git commit -m "Update to version ${VERSION}"

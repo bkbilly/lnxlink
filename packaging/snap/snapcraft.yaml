@@ -1,6 +1,5 @@
 name: lnxlink
-base: core26
-build-base: devel
+base: core24
 adopt-info: lnxlink
 summary: Linux system integration for Home Assistant via MQTT
 description: |
@@ -11,7 +10,7 @@ description: |
 
   Documentation: https://bkbilly.gitbook.io/lnxlink
 
-grade: devel
+grade: stable
 confinement: classic
 
 parts:
@@ -24,9 +23,11 @@ parts:
       - libasound2-dev
     stage-packages:
       - python3-venv
+      - python3.12
+      - python3.12-minimal
     override-pull: |
       craftctl default
-      craftctl set version=$(git describe --tags --abbrev=0)
+      craftctl set version=$(cat snap_version 2>/dev/null || git describe --tags --abbrev=0)
 
 apps:
   lnxlink:

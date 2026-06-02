@@ -4,33 +4,32 @@ on:
   workflow_run:
     workflows: ["Python Publish"]
     types: [completed]
+  workflow_dispatch:
 
 permissions:
   contents: read
 
 jobs:
   publish:
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
+          fetch-depth: 0
           fetch-tags: true
 
       - name: Copy snapcraft.yaml to root
-        run: cp packaging/snap/snapcraft.yaml snapcraft.yaml
+        run: |
+          cp packaging/snap/snapcraft.yaml snapcraft.yaml
+          git describe --tags --abbrev=0 > snap_version
 
       - name: Build snap
         uses: snapcore/action-build@v1
-        with:
-          snapcraft-args: --destructive-mode
 
       - name: Publish snap
-        uses: snapcore/action-publish@v1
-        with:
-          snap: "*.snap"
-          release: stable
+        run: snapcraft upload --release=stable *.snap
         env:
           SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAPCRAFT_STORE_CREDENTIALS }}

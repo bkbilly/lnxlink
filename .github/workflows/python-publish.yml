@@ -14,6 +14,7 @@ on:
 
 permissions:
   contents: read
+  id-token: write
 
 jobs:
   deploy:
@@ -30,9 +31,9 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install build
+    - name: Set version from release tag
+      run: sed -i "s/^version = .*/version = \"${GITHUB_REF_NAME}\"/" pyproject.toml
     - name: Build package
       run: python -m build
     - name: Publish package
       uses: pypa/gh-action-pypi-publish@release/v1
-      with:
-        password: ${{ secrets.PYPI_API_TOKEN }}
