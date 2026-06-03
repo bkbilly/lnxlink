@@ -19,6 +19,7 @@ from lnxlink.system_monitor import MonitorSuspend, GracefulKiller
 from lnxlink.modules.scripts import helpers
 
 version, path = files_setup.get_version()
+INSTALL_METHOD = files_setup.get_install_method(path)
 logger = logging.getLogger("lnxlink")
 
 
@@ -28,9 +29,15 @@ class LNXlink:
 
     version = version
     path = path
+    install_method = INSTALL_METHOD
 
     def __init__(self, config):
-        logger.info("LNXlink %s, Python %s", self.version, platform.python_version())
+        logger.info(
+            "LNXlink %s, Python %s, Install method: %s",
+            self.version,
+            platform.python_version(),
+            INSTALL_METHOD,
+        )
         logger.debug("Path=%s", self.path)
         config["version"] = version
         self.config = config

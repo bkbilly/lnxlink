@@ -113,6 +113,30 @@ def read_config(config_path):
     return conf
 
 
+def get_install_method(path):
+    """Detect how lnxlink was installed"""
+    if os.path.exists(os.path.join(path, "lnxlink/edit.txt")):
+        method = "edit"
+    elif os.environ.get("FLATPAK_ID"):
+        method = "flatpak"
+    elif os.environ.get("SNAP"):
+        method = "snap"
+    elif os.path.exists("/.dockerenv"):
+        method = "docker"
+    elif "pipx" in path:
+        method = "pipx"
+    elif (
+        path.startswith("/usr/lib")
+        and syscommand("pacman -Qq python-lnxlink", ignore_errors=True)[2] == 0
+    ):
+        method = "aur"
+    elif path.startswith("/usr/lib"):
+        method = "system"
+    else:
+        method = "pip"
+    return method
+
+
 def get_version():
     """Get the current version and the path of the app"""
     version = importlib.metadata.version(__package__ or __name__)

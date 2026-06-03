@@ -19,15 +19,19 @@ class Addon:
         self.run_method = self.command_get_info
         if which("iwgetid") is None:
             self._requirements()
-            self.lib["dbus_nd"].DBUSNetworkDevices().get_network_devices()
+            self._devices = []
+            self.lib["dbus_nd"].DBUSNetworkDevices(self._network_callback)
             self.run_method = self.dbus_get_info
 
     def _requirements(self):
         self.lib = {
             "dbus_nd": import_install_package(
-                "dbus-networkdevices", ">=2024.0.7", "dbus_networkdevices"
+                "dbus-networkdevices", ">=2026.6.0", "dbus_networkdevices"
             ),
         }
+
+    def _network_callback(self, devices):
+        self._devices = devices
 
     def exposed_controls(self):
         """Exposes to home assistant"""
@@ -80,8 +84,7 @@ class Addon:
         ssid = ""
         mac = ""
         signal = None
-        devices = self.lib["dbus_nd"].DBUSNetworkDevices().get_network_devices()
-        for device in devices:
+        for device in self._devices:
             if "wifi" in device:
                 interface = device["interface"]
                 signal = device["wifi"]["strength"]

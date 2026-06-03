@@ -64,11 +64,31 @@ class Addon:
 
     def start_control(self, topic, data):
         """Control system"""
-        if "+edit" in self.lnxlink.version:
+        method = self.lnxlink.install_method
+        if method == "edit":
             syscommand(f"git -C {self.lnxlink.path} pull", timeout=15)
             syscommand(
                 f"{sys.executable} -m pip install -e {self.lnxlink.path}", timeout=120
             )
-        else:
+        elif method == "pipx":
+            syscommand("pipx upgrade lnxlink", timeout=120)
+        elif method == "flatpak":
+            syscommand("flatpak update -y io.github.bkbilly.lnxlink", timeout=120)
+        elif method == "snap":
+            syscommand("snap refresh lnxlink", timeout=120)
+        elif method == "aur":
+            _, _, yay = syscommand("which yay", ignore_errors=True)
+            _, _, paru = syscommand("which paru", ignore_errors=True)
+            if yay == 0:
+                syscommand("yay -Syu --noconfirm python-lnxlink", timeout=120)
+            elif paru == 0:
+                syscommand("paru -Syu --noconfirm python-lnxlink", timeout=120)
+            else:
+                logger.warning("No AUR helper found (yay or paru)")
+                return
+        elif method in ("pip", "system"):
             syscommand(f"{sys.executable} -m pip install -U lnxlink", timeout=120)
+        else:
+            logger.warning("Update not supported for install method: %s", method)
+            return
         self.lnxlink.restart_script()
