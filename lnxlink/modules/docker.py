@@ -60,15 +60,15 @@ class Addon:
         }
         return discovery_info
 
-    def get_info(self):
+    def get_info(self, force_update=False):
         """Gather information from the system"""
-        containers = self._get_containers()
+        containers = self._get_containers(force_update=force_update)
         if len(containers) != len(self.containers):
             self.lnxlink.setup_discovery("docker")
         self.containers = containers
         return self.containers
 
-    def _get_containers(self):
+    def _get_containers(self, force_update=False):
         include = self.lnxlink.config["settings"].get("docker", {}).get("include", [])
         exclude = self.lnxlink.config["settings"].get("docker", {}).get("exclude", [])
         containers = {}
@@ -102,7 +102,7 @@ class Addon:
         cur_time = time.time() / 60 / 60
         check_update = self.lnxlink.config["settings"]["docker"]["check_update"]
         if check_update is not None:
-            if cur_time - self.prev_update > check_update:
+            if force_update or cur_time - self.prev_update > check_update:
                 self.prev_update = cur_time
                 docker_update_status = DockerUpdateStatus()
                 self.images_remoteinfo = docker_update_status.get_updates_sync(images)

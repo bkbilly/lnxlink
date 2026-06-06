@@ -77,10 +77,10 @@ class Addon:
             raise SystemError("System command 'nmcli' not found")
         self.lnxlink.add_settings("beacondb", {"wifi_positions": []})
 
-    def get_info(self):
+    def get_info(self, force_update=False):
         """Gather information from the system"""
         cur_time = time.time()
-        if cur_time - self.last_time > self.update_interval:
+        if force_update or cur_time - self.last_time > self.update_interval:
             self.last_time = cur_time
             wifi_data = scan_wifi_nmcli()
             use_localconfig = False

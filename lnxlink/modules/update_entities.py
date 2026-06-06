@@ -31,6 +31,6 @@ class Addon:
         """Control system"""
         logger.info(data)
         if data == "all":
-            self.lnxlink.run_modules()
+            self.lnxlink.run_modules(force_update=True)
         else:
-            self.lnxlink.run_modules(data)
+            self.lnxlink.run_modules(data, force_update=True)

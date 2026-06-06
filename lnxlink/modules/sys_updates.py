@@ -63,10 +63,10 @@ class Addon:
             },
         }
 
-    def get_info(self):
+    def get_info(self, force_update=False):
         """Gather information from the system"""
         cur_time = time.time()
-        if cur_time - self.last_time > self.update_interval:
+        if force_update or cur_time - self.last_time > self.update_interval:
             self.last_time = cur_time
             stdout, _, _ = syscommand(self.package_manager["command"])
             if len(stdout) == 0:

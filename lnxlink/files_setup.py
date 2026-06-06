@@ -41,14 +41,14 @@ class UniqueQueue:
                     break
                 yield self.queue.popitem(last=False)
 
-    def add_item(self, name, value, retain=True):
+    def add_item(self, name, value, retain=True, force_publish=False):
         """Adds an item to the queue. If the item already exists, it replaces it"""
         with self._lock:
             if name in self.queue:
                 del self.queue[name]
             elif len(self.queue) >= self.max_size:
                 self.queue.popitem(last=False)
-            self.queue[name] = (value, retain)
+            self.queue[name] = (value, retain, force_publish)
 
     def get_item(self):
         """Retrieves and removes the next item from the queue (FIFO)"""

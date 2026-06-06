@@ -22,22 +22,32 @@ class Addon:
             },
         )
 
-    def get_info(self):
+    def get_info(self, force_update=False):
         """Gather information from the system"""
         for expose_name, discovery in self.discovery_info.items():
             if discovery.get("type") == "sensor":
                 cur_time = time.time()
-                if cur_time - discovery["last_time"] > discovery["update_interval"]:
+                if (
+                    force_update
+                    or cur_time - discovery["last_time"] > discovery["update_interval"]
+                ):
                     discovery["last_time"] = cur_time
                     stdout, _, returncode = syscommand(
                         discovery["local_command"],
                         timeout=discovery.get("sensor_timeout", 3),
                     )
                     if returncode == 0:
-                        self.lnxlink.run_module(f"{self.name}/{expose_name}", stdout)
+                        self.lnxlink.run_module(
+                            f"{self.name}/{expose_name}",
+                            stdout,
+                            force_update=force_update,
+                        )
             elif discovery.get("type") == "binary_sensor":
                 cur_time = time.time()
-                if cur_time - discovery["last_time"] > discovery["update_interval"]:
+                if (
+                    force_update
+                    or cur_time - discovery["last_time"] > discovery["update_interval"]
+                ):
                     discovery["last_time"] = cur_time
                     stdout, _, _ = syscommand(
                         discovery["local_command"],
@@ -48,7 +58,11 @@ class Addon:
                         "status": "ON" if status else "OFF",
                         "attributes": {"raw": stdout.split("\n")},
                     }
-                    self.lnxlink.run_module(f"{self.name}/{expose_name}", senddata)
+                    self.lnxlink.run_module(
+                        f"{self.name}/{expose_name}",
+                        senddata,
+                        force_update=force_update,
+                    )
             elif discovery.get("type") == "switch":
                 stdout, _, _ = syscommand(
                     discovery["local_command"],
@@ -56,17 +70,28 @@ class Addon:
                     timeout=discovery.get("sensor_timeout", 3),
                 )
                 status = stdout.lower() not in ["false", "no", "0", "off", ""]
-                self.lnxlink.run_module(f"{self.name}/{expose_name}", status)
+                self.lnxlink.run_module(
+                    f"{self.name}/{expose_name}",
+                    status,
+                    force_update=force_update,
+                )
             elif discovery.get("type") == "select":
                 cur_time = time.time()
-                if cur_time - discovery["last_time"] > discovery["update_interval"]:
+                if (
+                    force_update
+                    or cur_time - discovery["last_time"] > discovery["update_interval"]
+                ):
                     discovery["last_time"] = cur_time
                     stdout, _, returncode = syscommand(
                         discovery["local_command"],
                         timeout=discovery.get("sensor_timeout", 3),
                     )
                     if returncode == 0:
-                        self.lnxlink.run_module(f"{self.name}/{expose_name}", stdout)
+                        self.lnxlink.run_module(
+                            f"{self.name}/{expose_name}",
+                            stdout,
+                            force_update=force_update,
+                        )
 
     def exposed_controls(self):
         """Exposes to home assistant"""

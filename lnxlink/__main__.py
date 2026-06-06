@@ -5,6 +5,7 @@ import os
 import sys
 import time
 import json
+import inspect
 import threading
 import logging
 import argparse
@@ -91,7 +92,7 @@ class LNXlink:
         """Adds missing configuration under settings"""
         self.config = config_setup.add_settings(self.config, name, settings)
 
-    def publish_monitor_data(self, name, pub_data, retain=True):
+    def publish_monitor_data(self, name, pub_data, retain=True, force_publish=False):
         """Publish info data to mqtt in the correct format"""
         subtopic = helpers.text_to_topic(name)
         topic = f"{self.config['pref_topic']}/monitor_controls/{subtopic}"
@@ -117,14 +118,14 @@ class LNXlink:
             self.prev_publish = {"last_update": time.time()}
         if (
             self.config["update_on_change"] or isinstance(pub_data, bytes)
-        ) and self.prev_publish.get(topic) == pub_data:
+        ) and self.prev_publish.get(topic) == pub_data and not force_publish:
             return
 
         self.prev_publish[topic] = pub_data
         self.saved_publish[subtopic.replace("/", "_")] = pub_data
         self.mqtt.publish(topic, pub_data, retain)
 
-    def run_module(self, name, method, retain=True):
+    def run_module(self, name, method, retain=True, force_update=False):
         """Runs the method of a module"""
         max_failures = 5
         if self.module_failures.get(name, 0) >= max_failures:
@@ -134,11 +135,14 @@ class LNXlink:
             if isinstance(method, (dict, list, bool, bytes, int, str, float)):
                 pub_data = method
             else:
-                pub_data = method()
+                if "force_update" in inspect.signature(method).parameters:
+                    pub_data = method(force_update=force_update)
+                else:
+                    pub_data = method()
                 diff_time = round(time.time() - start_time, 5)
                 self.inference_times[name] = diff_time
             self.module_failures[name] = 0
-            self.publ_queue.add_item(name, pub_data, retain)
+            self.publ_queue.add_item(name, pub_data, retain, force_update)
         except Exception as err:
             self.module_failures[name] = self.module_failures.get(name, 0) + 1
             if self.module_failures[name] >= max_failures:
@@ -156,7 +160,7 @@ class LNXlink:
                     traceback.format_exc(),
                 )
 
-    def run_modules(self, name=None):
+    def run_modules(self, name=None, force_update=False):
         """Runs all methods of the modules"""
         methods_to_run = []
         for _, addon in self.addons.items():
@@ -177,7 +181,11 @@ class LNXlink:
                     )
         self.mqtt.send_lwt("ON")
         for method in methods_to_run:
-            self.run_module(method["name"], method["method"])
+            self.run_module(
+                method["name"],
+                method["method"],
+                force_update=force_update,
+            )
 
     def monitor_run(self):
         """Gets information from each Addon and adds it to the queue"""
@@ -194,8 +202,8 @@ class LNXlink:
             if not self.kill:
                 time.sleep(0.01)
                 for name, queue_data in self.publ_queue:
-                    pub_data, retain = queue_data
-                    self.publish_monitor_data(name, pub_data, retain)
+                    pub_data, retain, force_publish = queue_data
+                    self.publish_monitor_data(name, pub_data, retain, force_publish)
                     time.sleep(0.01)
             if self.stop_event.wait(timeout=0.2):
                 self.mqtt.send_lwt("OFF")
@@ -392,7 +400,7 @@ class LNXlink:
     def restart_script(self):
         """Restarts itself"""
         logger.info("Restarting LNXlink...")
-        os.execv(sys.executable, ["python"] + sys.argv)
+        os.execv(sys.executable, [sys.executable] + sys.argv)
 
 
 def main():
