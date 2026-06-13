@@ -2,7 +2,7 @@
 
 ## Config file location
 
-Your config file is located at the directory you were when you first run LNXlink. This can be anything you write like of the `config.yaml` that I suggested. You can find where it is from the systemd service:
+Your config file is the file passed to `lnxlink -c`. The installer creates `lnxlink.yaml` in the directory where it was run. You can find the active config path from the systemd service:
 
 {% tabs %}
 {% tab title="Desktop" %}
@@ -13,20 +13,27 @@ cat ~/.config/systemd/user/lnxlink.service | grep -i ExecStart
 
 {% tab title="Server" %}
 ```
-cat /etc/systemd/lnxlink.service | grep -i ExecStart
+cat /etc/systemd/system/lnxlink.service | grep -i ExecStart
 ```
 {% endtab %}
 {% endtabs %}
 
 ## Modules
 
-By default all modules are automatically loaded. This happens when the modules section is empty like this:
+If both `modules` and `exclude` are empty, all modules are automatically loaded:
 
 ```yaml
 modules:
+exclude:
 ```
 
-You should select the ones you want to load. All supported modules can be found [here](https://github.com/bkbilly/lnxlink/blob/master/lnxlink/modules) and the configuration should look like this:
+The default template includes an `exclude` list for modules that need extra dependencies, permissions, hardware, or user setup. The easiest way to choose modules is the module selector:
+
+```bash
+lnxlink -m -c lnxlink.yaml
+```
+
+You can also edit the config manually. All supported modules can be found [here](https://github.com/bkbilly/lnxlink/blob/master/lnxlink/modules) and the configuration should look like this:
 
 ```yaml
 modules:

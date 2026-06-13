@@ -10,7 +10,7 @@ Select the installation type you want:
 
 {% tabs %}
 {% tab title="System" %}
-Install LNXlink and it's dependencies. It will create a `config.yaml` file and it will guide you through the basic configuration setup:
+Install LNXlink with `pipx` and the required system dependencies. It will create an `lnxlink.yaml` file in the directory where you run the installer and guide you through the basic configuration setup:
 
 {% code overflow="wrap" lineNumbers="true" %}
 ```bash
@@ -18,7 +18,7 @@ curl -L https://raw.githubusercontent.com/bkbilly/lnxlink/master/install.sh | ba
 ```
 {% endcode %}
 
-You can manually update the configuration file `config.yaml` and restart the service with the use of systemctl:
+You can manually update the configuration file `lnxlink.yaml` and restart the service with the use of systemctl:
 
 {% code overflow="wrap" lineNumbers="true" %}
 ```bash
@@ -27,10 +27,51 @@ sudo systemctl restart lnxlink.service  # For root installations
 ```
 {% endcode %}
 
-There is a CLI interface to easily select which modules to activate:
+Use the module selector whenever you want to enable or disable modules without editing YAML by hand:
 
 ```bash
-lnxlink -m -c config.yaml
+lnxlink -m -c lnxlink.yaml
+```
+
+The selector updates the `modules` or `exclude` section in your config file, depending on which option creates the shorter list.
+{% endtab %}
+
+{% tab title="PyPI / pipx" %}
+If your system dependencies are already installed, you can install LNXlink directly from PyPI:
+
+```bash
+pipx install lnxlink
+lnxlink -sc lnxlink.yaml
+```
+
+Use `-s` to run only the setup workflow. After editing the generated configuration, start LNXlink with:
+
+```bash
+lnxlink -c lnxlink.yaml
+```
+{% endtab %}
+
+{% tab title="AUR" %}
+On Arch Linux and derivatives, install the AUR package:
+
+```bash
+yay -S python-lnxlink
+# or
+paru -S python-lnxlink
+```
+
+Create and edit the configuration file:
+
+```bash
+mkdir -p ~/.config/lnxlink
+cp /usr/share/doc/python-lnxlink/config.yaml.example ~/.config/lnxlink/config.yaml
+$EDITOR ~/.config/lnxlink/config.yaml
+```
+
+Enable and start the user service:
+
+```bash
+systemctl --user enable --now lnxlink
 ```
 {% endtab %}
 
@@ -159,13 +200,16 @@ lnxlink -c config.yaml
 
 ### Run sudo commands
 
-Some commands need to run as a root user. To fix this, you need to allow some of them to run without asking for password:
+Some modules need to run specific commands as root. To fix this, allow only the required command to run without asking for a password:
 
 ```bash
 # Edit the sudoers file:
 sudo visudo
-# Add this line at the end (replace USER with your username):
-USER ALL=(ALL) NOPASSWD: /usr/sbin/grub-reboot
+# Boot Select module (replace USER with your username):
+USER ALL=(ALL) NOPASSWD: /usr/bin/efibootmgr
+
+# WOL module:
+USER ALL=(ALL) NOPASSWD: /usr/sbin/ethtool
 ```
 
 ## Uninstall
@@ -182,7 +226,7 @@ systemctl --user disable lnxlink.service
 rm ~/.config/systemd/user/lnxlink.service
 
 # Uninstall the package
-pip3 uninstall -U lnxlink
+pipx uninstall lnxlink
 ```
 {% endtab %}
 
@@ -195,8 +239,7 @@ sudo systemctl disable lnxlink.service
 sudo rm /etc/systemd/system/lnxlink.service
 
 # Uninstall the package
-sudo pip3 uninstall -U lnxlink
-sudo pip3 uninstall lnxlink
+pipx uninstall lnxlink
 ```
 {% endtab %}
 {% endtabs %}
