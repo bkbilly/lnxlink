@@ -17,6 +17,10 @@ Sends a notification with a `title` and `message`. The other options are optiona
 * `urgency`: Available values are `low`, `normal`, `critical`.
 * `timeout`: Duration in milliseconds the notification disappears. This is ignored by GNOME Shell and Notify OSD.
 * `buttons`: A list of buttons that should appear on the notification.
+* `notifyid`: Replaces an existing notification by its numeric notification ID.
+* `uniqueid`: Replaces or closes a notification using a stable custom ID.
+
+If the message is plain text instead of JSON, it will be sent with the default title `LNXlink Notification`.
 
 ```yaml
 service: notify.send_message
@@ -30,12 +34,15 @@ data:
       "sound": "http://hass.local:8123/local/mysound.wav",
       "urgency": "normal",
       "timeout": 1000,
+      "uniqueid": "test-notification",
       "buttons": ["Open Image"] }
 ```
 
+After a notification is sent, LNXlink publishes its numeric notification ID to the notify entity attributes. You can use that ID later to close or replace the notification.
+
 ### Close notification
 
-Since some distributions do not support automatic timeouts, an option is available to manually close notifications. Providing an ID is optional; if specified, only that particular notification will be dismissed. If no ID is provided, all notifications sent by LNXlink will be closed.
+Since some distributions do not support automatic timeouts, an option is available to manually close notifications. Providing an `id` or `uniqueid` is optional; if specified, only that particular notification will be dismissed. If no ID is provided, all notifications sent by LNXlink will be closed.
 
 ```yaml
 action: notify.send_message
@@ -45,7 +52,7 @@ data:
   message: >-
     {
       "action": "close",
-      "id": 10
+      "uniqueid": "test-notification"
     }
 ```
 
@@ -1042,4 +1049,3 @@ actions:
       topic: lnxlink/desktop-linux/lwt
       payload: "OFF"
 ```
-

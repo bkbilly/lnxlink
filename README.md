@@ -41,6 +41,7 @@ LNXlink is a **Home Assistant companion app** for Linux that bridges the gap bet
 | 🪟 Display Env      | **Identify** the current display environment (e.g., `:0`).                                                                        |
 | 🗔 Active Window    | **Monitor** the name and title of the currently focused window.                                                                   |
 | 📋 Clipboard        | **View or update** the system clipboard content.                                                                                  |
+| 👤 Current Users    | **Monitor** active, unlocked graphical users while ignoring SSH and locked sessions.                                               |
 
 ### **✅ System Actions**
 
@@ -86,6 +87,7 @@ LNXlink is a **Home Assistant companion app** for Linux that bridges the gap bet
 | 🎤 Microphone Used | **Monitor** if any application is currently accessing the microphone.  |
 | 🔈 Speaker Used    | **Detect** active audio output to determine if the system is "in use." |
 | 🎥 Camera Used     | **Track** webcam activity for privacy or presence automations.         |
+| 📹 Webcam          | **Expose** a webcam switch and camera feed.                           |
 | 🎮 Gamepad Used    | **Report** controller activity (active if input detected within 40s).  |
 
 ### **🧰 Applications & Tools**
@@ -107,6 +109,7 @@ LNXlink is a **Home Assistant companion app** for Linux that bridges the gap bet
 | 📜 Logging Level  | **Change** debug verbosity on-the-fly for troubleshooting.                                                                 |
 | 📊 Statistics     | **Opt-in** to send anonymous usage data to help improve LNXlink. [Usage](usage.md#statistics)                              |
 | 📮 RESTful        | **Interact** with the system using standard HTTP requests. [Usage](usage.md#restful)                                       |
+| 🔁 Update Entities | **Force** all or selected module entities to publish a fresh update.                                                        |
 | 👁️ Watch Changes | **Restart** when the configuration changes                                                                                 |
 
 ### **📦 Custom Modules**
@@ -125,4 +128,3 @@ LNXlink is a **Home Assistant companion app** for Linux that bridges the gap bet
 LNXlink is built specifically for **Linux**. There are currently no plans for Windows or macOS support due to deep system dependencies. Here are some alternatives:
 
 <table><thead><tr><th width="178.2578125">Application</th><th>Platform</th><th>Protocol</th></tr></thead><tbody><tr><td>Go Hass Agent</td><td>Linux, Windows, macOS</td><td>Native HA Mobile App API + MQTT</td></tr><tr><td>HASS.Agent</td><td>Windows</td><td>HA API + MQTT</td></tr><tr><td>System Bridge</td><td>Windows, Linux</td><td>HA API (WebSocket)</td></tr><tr><td>Glances</td><td>Cross-platform (Linux, Windows, macOS, BSD)</td><td>REST API (HTTP polling)</td></tr><tr><td>IoTuring</td><td>Cross-platform (Windows, Linux, macOS, BSD)</td><td>MQTT</td></tr></tbody></table>
-

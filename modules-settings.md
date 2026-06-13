@@ -15,6 +15,15 @@ settings:
     - anydesk.service
 ```
 
+User services can be configured with an object entry:
+
+```yaml
+settings:
+  systemd:
+    - name: syncthing.service
+      user: true
+```
+
 ## Docker
 
 If no configuration is provided, then all the available docker containers will be exposed. This can be configured to only show the ones in the included list or ignore the ones in the exclude list. Also by setting check\_update value it will create binary sensors that check if there is an update available.
@@ -27,6 +36,28 @@ settings:
     exclude: []
     check_update: 24
     expose_controls: True
+```
+
+## Battery
+
+Battery devices can be filtered by the beginning of their model name:
+
+```yaml
+settings:
+  battery:
+    include_batteries: []
+    exclude_batteries:
+      - Keyboard
+```
+
+## Brightness
+
+Monitor brightness entities are discovered when the module starts. Enable autodiscovery if monitors are connected or disconnected while LNXlink is running:
+
+```yaml
+settings:
+  brightness:
+    autodiscovery: true
 ```
 
 ## GPIO
@@ -94,7 +125,7 @@ settings:
 
 ## Bash
 
-Using this option you can create `sensors`, `binary_sensors`, `buttons` or `switches` that run custom commands. These options are optional: unit, entity\_category, update\_interval.
+Using this option you can create `sensors`, `binary_sensors`, `buttons`, `switches` or `selects` that run custom commands. These options are optional: unit, entity\_category, update\_interval.
 
 ```yaml
 settings:
@@ -116,6 +147,14 @@ settings:
       command: amixer get Capture | grep "\[off\]"
       command_on: amixer set Capture nocap
       command_off: amixer set Capture cap
+    - name: Power Mode
+      type: select
+      command: powerprofilesctl get
+      options:
+        - performance
+        - balanced
+        - power-saver
+      command_select: powerprofilesctl set {option}
 ```
 
 There are some optional options:
@@ -129,6 +168,8 @@ settings:
       command: ....
       icon: mdi:script-text
       entity_category: config  # config or diagnostic
+      device_class: battery
+      state_class: measurement
       update_interval: 300  # Minimum is the update_interval
       sensor_timeout: 10  # Timeout info command, defaults to 3 sec
       command_timeout: 30  # Timeout control command, defaults to 120 sec
@@ -200,6 +241,27 @@ settings:
       - /dev/sdb
 ```
 
+Set `detailed_info` to expose extra attributes such as filesystem, device, used space and free space:
+
+```yaml
+settings:
+  disk_usage:
+    detailed_info: true
+```
+
+## Disk IO
+
+By default this module finds physical disks and ignores loop, ram and zram devices. You can limit or exclude disks with:
+
+```yaml
+settings:
+  disk_io:
+    include_disks:
+      - sda
+      - nvme0n1
+    exclude_disks: []
+```
+
 ## Mounts usage
 
 Checks the usage of mounted volumes on the system. If autocheck is `true`, it will use the Gnome GVFS to find volumes mounted by the file browser.
@@ -212,16 +274,54 @@ settings:
       - /mnt/mymount      
 ```
 
+## Media
+
+When Home Assistant sends media to LNXlink, the media module tries locally installed players in the configured order:
+
+```yaml
+settings:
+  media:
+    order:
+      - gst-play-1.0
+      - ffplay
+      - mpv
+      - cvlc
+      - vlc
+```
+
+## Steam
+
+LNXlink usually finds the Steam library configuration automatically. If it cannot, set the path to `libraryfolders.vdf`:
+
+```yaml
+settings:
+  steam:
+    library: /home/user/.steam/steam/steamapps/libraryfolders.vdf
+```
+
 ## BeaconDB
 
 Setup custom locations for specific WiFi networks.
 
 ```yaml
-beacondb:
-  wifi_positions:
-  - ssid: mywifi_example
-    latitude: 40.644400
-    longitude: 21.494300
-    accuracy: 2500
+settings:
+  beacondb:
+    wifi_positions:
+      - ssid: mywifi_example
+        latitude: 40.644400
+        longitude: 21.494300
+        accuracy: 2500
 
 ```
+
+## Clipboard
+
+The clipboard module always exposes a text entity to set the clipboard. Clipboard monitoring is disabled by default and can be enabled with:
+
+```yaml
+settings:
+  clipboard:
+    monitor_enabled: true
+```
+
+On Wayland it requires `wl-clipboard`. On X11 it requires `xclip` or `xsel`.

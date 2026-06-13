@@ -64,36 +64,76 @@ This is the default settings:
 
 ```yaml
 mqtt:
-  prefix: lnxlink
-  clientId: DESKTOP-Linux
-  server: server
+  # Use "mqtt" for a direct broker connection, "homeassistant_api" to
+  # publish/subscribe through the Home Assistant HTTP/WebSocket API, or "auto"
+  # to try direct MQTT first and fall back to the Home Assistant API.
+  transport: "mqtt"
+  prefix: 'lnxlink'
+  clientId: 'DESKTOP-Linux'
+  server: '192.168.1.1'
   port: 1883
-  clear_on_off: true
   auth:
-    user: user
-    pass: pass
+    user: 'user'
+    pass: 'pass'
     tls: false
-    keyfile: ''
-    certfile: ''
-    ca_certs: ''
+    keyfile: ""
+    certfile: ""
+    ca_certs: ""
   discovery:
     enabled: true
-    prefix: homeassistant
+    prefix: "homeassistant"
   lwt:
     enabled: true
     qos: 1
+  clear_on_off: true
+  homeassistant:
+    url: ""
+    token: ""
+    token_env: ""
+    token_file: ""
+    timeout: 20
+    verify_ssl: true
+    subscribe_commands: true
 update_interval: 5
 update_on_change: false
-modules: []
-custom_modules: []
-exclude: []
-settings: []
+modules:
+custom_modules:
+exclude:
+  - audio_select
+  - battery
+  - beacondb
+  - boot_select
+  - brightness
+  - fullscreen
+  - gpio
+  - gpu
+  - idle
+  - inference_time
+  - ir_remote
+  - keep_alive
+  - keyboard_hotkeys
+  - media
+  - mouse
+  - notify
+  - power_profile
+  - restful
+  - screen_onoff
+  - screenshot
+  - send_keys
+  - speech_recognition
+  - systemd
+  - webcam
+  - xdg_open
+settings:
+  statistics: "https://analyzer.bkbilly.workers.dev"
 ```
 
 * **MQTT Topic:** This consists of the prefix and the clientId: `/lnxlink/DESKTOP-Linux`**.**
+* **MQTT Transport:** `mqtt` connects directly to the broker, `homeassistant_api` publishes and receives MQTT messages through the Home Assistant API, and `auto` tries MQTT first before falling back to the Home Assistant API.
 * **MQTT Encryption:** To use a secured MQTT broker, you will have to enable the `tls` option and optionally define the `keyfile`, `certfile`, `ca_certs` files.
 * **Discovery Enabled:** It sends the settings for configuring Home Assistant entities.
 * **Clear On Off:** Clears mqtt data from broker when stopped.
+* **Home Assistant API:** When using `homeassistant_api` or `auto`, set `mqtt.homeassistant.url` and provide a long-lived access token with `token`, `token_env`, or `token_file`.
 * **Update Interval:** Sets the interval in seconds for when the sensors are updated.
 * **Update on change:** Sends an update to the MQTT broker when a change is detected or every 15 minutes.
 
@@ -108,6 +148,4 @@ LNXLINK_MQTT_SERVER
 LNXLINK_MQTT_PORT
 LNXLINK_MQTT_USER
 LNXLINK_MQTT_PASS
-LNXLINK_HASS_URL
-LNXLINK_HASS_API
 ```
