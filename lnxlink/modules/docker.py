@@ -78,26 +78,9 @@ class Addon:
                 continue
             if container.name in exclude:
                 continue
-            ports = set()
-            for _, host in container.ports.items():
-                if host is not None:
-                    for host_info in host:
-                        ports.add(host_info["HostPort"])
-            running = "OFF"
-            if container.attrs["State"]["Running"]:
-                running = "ON"
             name_id = container.name.lower().replace(" ", "_")
             images.append(container.image)
-            containers[name_id] = {
-                "running": running,
-                "update": None,
-                "attrs": {
-                    "name": container.name,
-                    "images": ",".join(container.image.tags),
-                    "ports": list(ports),
-                    "status": container.status,
-                },
-            }
+            containers[name_id] = self._container_info(container)
 
         cur_time = time.time() / 60 / 60
         check_update = self.lnxlink.config["settings"]["docker"]["check_update"]
@@ -118,6 +101,26 @@ class Addon:
                             container["update"] = "OFF"
 
         return containers
+
+    @staticmethod
+    def _container_info(container):
+        """Return Home Assistant state and attributes for a Docker container."""
+        ports = set()
+        for _, host in container.ports.items():
+            if host is not None:
+                for host_info in host:
+                    ports.add(host_info["HostPort"])
+        running = "ON" if container.attrs["State"]["Running"] else "OFF"
+        return {
+            "running": running,
+            "update": None,
+            "attrs": {
+                "name": container.name,
+                "images": ",".join(container.image.tags),
+                "ports": list(ports),
+                "status": container.status,
+            },
+        }
 
     def start_control(self, topic, data):
         """Control system"""

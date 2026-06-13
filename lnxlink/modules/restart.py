@@ -34,8 +34,13 @@ class Addon:
                     body=(True,),
                 )
                 reply = conn.send_and_get_reply(msg, timeout=2.0)
-                if getattr(reply.header, "message_type", None) and reply.header.message_type.name == "ERROR":
-                    error_name = reply.header.fields.get(jeepney.HeaderFields.error_name, "Unknown")
+                if (
+                    getattr(reply.header, "message_type", None)
+                    and reply.header.message_type.name == "ERROR"
+                ):
+                    error_name = reply.header.fields.get(
+                        jeepney.HeaderFields.error_name, "Unknown"
+                    )
                     logger.error("DBus Reboot failed: %s", error_name)
                     returncode = -1
                 else:

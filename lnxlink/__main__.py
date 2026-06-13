@@ -117,8 +117,10 @@ class LNXlink:
         if update_change_time > self.update_change_interval:
             self.prev_publish = {"last_update": time.time()}
         if (
-            self.config["update_on_change"] or isinstance(pub_data, bytes)
-        ) and self.prev_publish.get(topic) == pub_data and not force_publish:
+            (self.config["update_on_change"] or isinstance(pub_data, bytes))
+            and self.prev_publish.get(topic) == pub_data
+            and not force_publish
+        ):
             return
 
         self.prev_publish[topic] = pub_data
