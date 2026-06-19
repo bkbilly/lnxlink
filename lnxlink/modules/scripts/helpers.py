@@ -12,8 +12,10 @@ logger = logging.getLogger("lnxlink")
 def syscommand(command, ignore_errors=False, timeout=3, background=False):
     """Global subprocess command"""
     logger.debug("Executing command: %s", command)
+
     if isinstance(command, list):
         command = " ".join(command)
+
     if background:
         subprocess.Popen(
             command,
@@ -22,19 +24,44 @@ def syscommand(command, ignore_errors=False, timeout=3, background=False):
             stderr=subprocess.DEVNULL,
         )
         return "", "", 0
-    result = subprocess.run(
-        command,
-        shell=True,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        check=False,
-        timeout=timeout,
-    )
-    stderr = result.stderr.decode("UTF-8").strip()
-    stdout = result.stdout.decode("UTF-8").strip()
-    returncode = result.returncode
+
+    stdout = b""
+    stderr = b""
+    returncode = 0
+    timed_out = False
+
+    try:
+        result = subprocess.run(
+            command,
+            shell=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=False,
+            timeout=timeout,
+        )
+        stdout = result.stdout
+        stderr = result.stderr
+        returncode = result.returncode
+
+    except subprocess.TimeoutExpired as err:
+        stdout = err.stdout or b""
+        stderr = err.stderr or b""
+        returncode = -1
+        timed_out = True
+
+    stdout = stdout.decode("UTF-8", errors="replace").strip()
+    stderr = stderr.decode("UTF-8", errors="replace").strip()
+
+    if timed_out:
+        timeout_msg = f"Command timed out after {timeout} seconds"
+        stderr = f"{stderr}\n{timeout_msg}".strip()
+
     if returncode != 0 and ignore_errors is False:
-        logger.error("Error with command: %s (%s)", command, stderr)
+        if timed_out:
+            logger.error("Timeout with command: %s (%s)", command, stderr)
+        else:
+            logger.error("Error with command: %s (%s)", command, stderr)
+
     return stdout, stderr, returncode
 
 

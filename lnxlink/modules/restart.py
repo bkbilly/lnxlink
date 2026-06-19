@@ -1,8 +1,7 @@
 """Reboot the system"""
 import logging
 from shutil import which
-import jeepney
-from jeepney import DBusAddress, new_method_call
+from jeepney import DBusAddress, new_method_call, HeaderFields, MessageType
 from jeepney.io.blocking import open_dbus_connection
 from lnxlink.modules.scripts.helpers import syscommand
 
@@ -34,14 +33,14 @@ class Addon:
                     body=(True,),
                 )
                 reply = conn.send_and_get_reply(msg, timeout=2.0)
-                if (
-                    getattr(reply.header, "message_type", None)
-                    and reply.header.message_type.name == "ERROR"
-                ):
+                if getattr(reply.header, "message_type", None) == MessageType.error:
                     error_name = reply.header.fields.get(
-                        jeepney.HeaderFields.error_name, "Unknown"
+                        HeaderFields.error_name, "Unknown"
                     )
-                    logger.error("DBus Reboot failed: %s", error_name)
+                    error_reason = reply.body[0] if reply.body else "No reason given"
+                    logger.error(
+                        "DBus Reboot failed: %s (%s)", error_name, error_reason
+                    )
                     returncode = -1
                 else:
                     logger.info("DBus Reboot succeeded")
