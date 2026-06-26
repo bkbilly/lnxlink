@@ -1,10 +1,17 @@
 """Monitor the currently active, interactive graphical user."""
+from __future__ import annotations
+
 import json
 import logging
 
 from lnxlink.modules.scripts.helpers import syscommand
 
 logger = logging.getLogger("lnxlink")
+
+SESSION_COMMANDS = (
+    "loginctl -o json list-sessions",
+    "loginctl --json=short list-sessions",
+)
 
 
 class Addon:
@@ -18,10 +25,10 @@ class Addon:
     def __init__(self, lnxlink):
         self.name = "Current Users"
         self.lnxlink = lnxlink
+        self._session_command = None
 
-        _, _, returncode = syscommand("loginctl --json=short list-sessions")
-        if returncode != 0:
-            raise SystemError("Could not find loginctl command")
+        if self._get_sessions() is None:
+            raise SystemError("Could not query loginctl sessions")
 
     def get_info(self) -> str:
         """Gather information from the system"""
@@ -41,20 +48,29 @@ class Addon:
             },
         }
 
-    def _get_sessions(self) -> list:
+    def _get_sessions(self) -> list | None:
         """Returns all the current sessions"""
-        stdout, _, returncode = syscommand("loginctl --json=short list-sessions")
-        if returncode != 0:
-            logger.debug("Error running loginctl; returning no current user")
-            return []
+        commands = (
+            (self._session_command,) if self._session_command else SESSION_COMMANDS
+        )
+        for command in commands:
+            stdout, _, returncode = syscommand(command, ignore_errors=True)
+            if returncode != 0:
+                continue
+            try:
+                self._session_command = command
+                return json.loads(stdout)
+            except json.JSONDecodeError:
+                logger.debug("Error parsing loginctl JSON output")
 
-        return json.loads(stdout)
+        logger.debug("Error running loginctl; returning no current user")
+        return None
 
     def _get_users(self) -> set[str]:
         """Returns the set of users with active, unlocked, graphical sessions.
         Normally computers only have 1 seat, so unlikely we'll get more than
         one."""
-        sessions = self._get_sessions()
+        sessions = self._get_sessions() or []
 
         active_users = set()
 
@@ -69,7 +85,8 @@ class Addon:
                     continue
 
                 stdout, _, returncode = syscommand(
-                    f"loginctl show-session {session_id} --property=Active --property=LockedHint"
+                    f"loginctl show-session {session_id} "
+                    "--property=Active --property=LockedHint"
                 )
 
                 if returncode != 0:
