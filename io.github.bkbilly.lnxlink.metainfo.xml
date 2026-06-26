@@ -3,14 +3,15 @@
   <content_rating type="oars-1.1" />
   <id>io.github.bkbilly.lnxlink</id>
   <name>LNXlink</name>
-
   <metadata_license>MIT</metadata_license>
   <project_license>MIT</project_license>
   <developer id="io.github.bkbilly">
     <name>bkbilly</name>
   </developer>
   <url type="homepage">https://bkbilly.gitbook.io/lnxlink</url>
-
+  <url type="bugtracker">https://github.com/bkbilly/lnxlink/issues</url>
+  <url type="donation">https://github.com/sponsors/bkbilly</url>
+  <url type="vcs-browser">https://github.com/bkbilly/lnxlink</url>
   <summary>Manage Linux machine with MQTT</summary>
   <description>
     <p>
@@ -24,53 +25,141 @@
       <li>Easily expanded: Any new module is automatically imported and custom modules can be added.</li>
     </ul>
   </description>
-
   <screenshots>
     <screenshot type="default">
       <image>https://raw.githubusercontent.com/bkbilly/lnxlink/d6e42e9/images/preview.png</image>
       <caption>A caption</caption>
     </screenshot>
   </screenshots>
-
   <provides>
     <binary>lnxlink</binary>
   </provides>
-
   <categories>
     <category>System</category>
     <category>Monitor</category>
   </categories>
   <icon type="stock">io.github.bkbilly.lnxlink</icon>
   <releases>
+    <release version="2026.6.0" date="2026-06-02">
+      <url type="details">https://github.com/bkbilly/lnxlink/releases/tag/2026.6.0</url>
+      <description>
+        <p>2026.6.0</p>
+        <ul>
+          <li>MQTT: Connect through the Home Assistant API - great for Nabu Casa users or anyone who doesn't want to expose their MQTT broker</li>
+          <li>LWT Sensor: Track when your device goes offline with the new availability sensor</li>
+          <li>Current User: New sensor showing who is currently logged in</li>
+          <li>Update Entities: New button to manually refresh all Home Assistant entities</li>
+          <li>Systemd: Run lnxlink as a user service</li>
+          <li>Bash: New select entity type - expose a dropdown driven by a shell command</li>
+          <li>Bash: Set device_class and state_class on custom sensors for better HA integration</li>
+          <li>Notifications: Use custom text IDs to update or close notifications by name</li>
+        </ul>
+      </description>
+    </release>
+    <release version="2026.2.0" date="2026-01-31">
+      <url type="details">https://github.com/bkbilly/lnxlink/releases/tag/2026.2.0</url>
+      <description>
+        <p>2026.2.0</p>
+        <ul>
+          <li>Add interactive module selection, watch changes, clipboard support, mouse scrolling, and an Arch Linux AUR package.</li>
+          <li>Improve Wayland support for brightness, screenshots, active window, fullscreen, and screen control modules.</li>
+          <li>Fix unsupported module startup, media playback stalls, disk I/O filtering, and multi-key send keys handling.</li>
+        </ul>
+      </description>
+    </release>
+    <release version="2025.12.0" date="2025-12-21">
+      <url type="details">https://github.com/bkbilly/lnxlink/releases/tag/2025.12.0</url>
+      <description>
+        <p>2025.12.0</p>
+        <ul>
+          <li>Add advanced mouse input, Wayland input support, improved notifications, non-retainable MQTT topics, and Steam library configuration.</li>
+          <li>Relax keyboard hotkey configuration and improve module initialization error handling.</li>
+          <li>Fix Docker controls, hotkeys, battery discovery names, and MQTT environment variable credentials.</li>
+        </ul>
+      </description>
+    </release>
+    <release version="2025.10.0" date="2025-10-11">
+      <url type="details">https://github.com/bkbilly/lnxlink/releases/tag/2025.10.0</url>
+      <description>
+        <p>2025.10.0</p>
+        <ul>
+          <li>Add Docker update entities, topic cleanup on shutdown, autodiscovery prefix configuration, and detailed disk usage options.</li>
+          <li>Improve LWT updates, sensor availability behavior, and media playback titles.</li>
+          <li>Fix play media, screen control, and invalid MQTT topic characters.</li>
+        </ul>
+      </description>
+    </release>
+    <release version="2025.7.0" date="2025-07-09">
+      <url type="details">https://github.com/bkbilly/lnxlink/releases/tag/2025.7.0</url>
+      <description>
+        <p>2025.7.0</p>
+        <ul>
+          <li>Add device tracking, BeaconDB Wi-Fi tracking, extra UPower battery attributes, and development Docker builds.</li>
+          <li>Replace Dasbus with Jeepney and improve system monitor stability.</li>
+          <li>Fix Bluetooth output parsing and Disk IO initialization.</li>
+        </ul>
+      </description>
+    </release>
+    <release version="2025.6.0" date="2025-05-31">
+      <url type="details">https://github.com/bkbilly/lnxlink/releases/tag/2025.6.0</url>
+      <description>
+        <p>2025.6.0</p>
+        <ul>
+          <li>Add Wake On LAN, Wayland idle support, Bluetooth battery attributes, Docker suspend support, and module-defined settings.</li>
+          <li>Improve PipeWire audio selection, battery filtering, media volume control, and dependency updates.</li>
+          <li>Fix Docker integration, MQTT queue startup, boot selection, system updates, Bluetooth wildcard names, and blocking sudo commands.</li>
+        </ul>
+      </description>
+    </release>
+    <release version="2025.5.0" date="2025-05-01">
+      <url type="details">https://github.com/bkbilly/lnxlink/releases/tag/2025.5.0</url>
+      <description>
+        <p>2025.5.0</p>
+        <ul>
+          <li>Add Docker GUI app support, environment variables for sensitive values, configurable bash command timeouts, and logging level control.</li>
+          <li>Replace dasbus with jeepney, support off bash checks, and split core code into multiple files.</li>
+          <li>Fix MQTT reconnects, system updates in non-English locales, module discovery updates, and Bluetooth and Steam modules.</li>
+        </ul>
+      </description>
+    </release>
+    <release version="2025.2.0" date="2025-03-01">
+      <url type="details">https://github.com/bkbilly/lnxlink/releases/tag/2025.2.0</url>
+      <description>
+        <p>2025.2.0</p>
+        <ul>
+          <li>Add support for multiple media players and Arch installation.</li>
+          <li>Fix battery names with special characters and GI dependency requirements.</li>
+        </ul>
+      </description>
+    </release>
     <release version="2024.8.2" date="2024-08-17">
       <url type="details">https://github.com/bkbilly/lnxlink/releases</url>
       <description>
         <p>SystemD</p>
-          <ul>
-            <li>Add SystemD use inside flatpak with DBUS</li>
-            <li>Defaults configuration to ~/Documents/LNXlink/config.yaml</li>
-          </ul>
+        <ul>
+          <li>Add SystemD use inside flatpak with DBUS</li>
+          <li>Defaults configuration to ~/Documents/LNXlink/config.yaml</li>
+        </ul>
       </description>
     </release>
     <release version="2024.8.1" date="2024-08-16">
       <url type="details">https://github.com/bkbilly/lnxlink/releases</url>
       <description>
         <p>Run without configuration options</p>
-          <ul>
-            <li>Defaults configuration to ~/Documents/lnxlink.yaml</li>
-            <li>Add Docker containers</li>
-          </ul>
+        <ul>
+          <li>Defaults configuration to ~/Documents/lnxlink.yaml</li>
+          <li>Add Docker containers</li>
+        </ul>
       </description>
     </release>
     <release version="2024.8.0" date="2024-08-05">
       <url type="details">https://github.com/bkbilly/lnxlink/releases</url>
       <description>
         <p>First Flatpak Release</p>
-          <ul>
-            <li>Easy installation</li>
-          </ul>
+        <ul>
+          <li>Easy installation</li>
+        </ul>
       </description>
     </release>
   </releases>
-
 </component>

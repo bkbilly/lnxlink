@@ -11,7 +11,7 @@ on:
         required: true
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   publish:
@@ -69,6 +69,25 @@ jobs:
             --yaml \
             --output /tmp/flatpak-modules-lnxlink \
             --requirements-file /tmp/requirements_pinned.txt
+
+      - name: Update AppStream release notes
+        run: |
+          python3 .github/scripts/update_metainfo_release.py \
+            --version "${{ steps.release.outputs.version }}" \
+            --repo "${{ github.repository }}" \
+            --file io.github.bkbilly.lnxlink.metainfo.xml
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - name: Commit AppStream release notes
+        run: |
+          VERSION="${{ steps.release.outputs.version }}"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+          git add io.github.bkbilly.lnxlink.metainfo.xml
+          git diff --cached --quiet && echo "No AppStream metadata changes" && exit 0
+          git commit -m "Update AppStream release notes for ${VERSION}"
+          git push origin HEAD:${{ github.event.repository.default_branch }}
 
       - name: Clone Flathub repository
         run: |
