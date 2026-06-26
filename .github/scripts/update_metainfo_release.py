@@ -114,7 +114,10 @@ def build_release_element(version: str, release: dict) -> ET.Element:
         },
     )
     url = ET.SubElement(element, "url", {"type": "details"})
-    url.text = release.get("html_url") or f"https://github.com/bkbilly/lnxlink/releases/tag/{version}"
+    url.text = (
+        release.get("html_url")
+        or f"https://github.com/bkbilly/lnxlink/releases/tag/{version}"
+    )
 
     description = ET.SubElement(element, "description")
     paragraph = ET.SubElement(description, "p")
@@ -143,19 +146,24 @@ def update_metainfo(path: str, version: str, release: dict) -> bool:
     releases.insert(0, new_release)
 
     ET.indent(tree, space="  ")
-    before = open(path, "rb").read()
+    with open(path, "rb") as before_raw:
+        before = before_raw.read()
     with open(path, "wb") as metainfo:
         metainfo.write(b'<?xml version="1.0" encoding="UTF-8"?>\n')
         tree.write(metainfo, encoding="UTF-8", xml_declaration=False)
         metainfo.write(b"\n")
-    after = open(path, "rb").read()
+    with open(path, "rb") as after_raw:
+        after = after_raw.read()
     return before != after
 
 
 def main() -> int:
+    """Run the app"""
     parser = argparse.ArgumentParser()
     parser.add_argument("--file", default="io.github.bkbilly.lnxlink.metainfo.xml")
-    parser.add_argument("--repo", default=os.environ.get("GITHUB_REPOSITORY", "bkbilly/lnxlink"))
+    parser.add_argument(
+        "--repo", default=os.environ.get("GITHUB_REPOSITORY", "bkbilly/lnxlink")
+    )
     parser.add_argument("--version", required=True)
     args = parser.parse_args()
 
