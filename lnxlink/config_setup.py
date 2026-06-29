@@ -34,18 +34,20 @@ def setup_config(config_path):
     return True
 
 
-def add_settings(config, name, settings):
+def add_settings(config, name, settings, replace_empty=False):
     """Add missing configuration to yaml file"""
+    if not isinstance(config.get("settings"), dict):
+        config["settings"] = {}
     sys_conf = copy.deepcopy(config)
     sys_conf["settings"][name] = settings
-    missing_keys = check_missing(sys_conf, config, [], [])
+    missing_keys = check_missing(sys_conf, config, [], [], replace_empty)
 
     if len(missing_keys) > 0:
         with open(config["config_path"], "r", encoding="utf8") as file:
             new_config = yaml.load(file, Loader=yaml.FullLoader)
         for keys, value in missing_keys:
-            new_config = add_nested(new_config, keys, value)
-            config = add_nested(config, keys, value)
+            new_config = add_nested(new_config, keys, value, replace_empty)
+            config = add_nested(config, keys, value, replace_empty)
             key_path = ".".join(keys)
             logger.info("Added missing configuration option: %s", key_path)
         with open(config["config_path"], "w", encoding="UTF-8") as file:
@@ -70,19 +72,29 @@ def validate_config(config_path):
             file.write(yaml.dump(user_conf, default_flow_style=False, sort_keys=False))
 
 
-def check_missing(sys_conf, user_conf, missing, dirpath):
+def check_missing(sys_conf, user_conf, missing, dirpath, replace_empty=False):
     """Recursive method that returns a list of missing dictionary keys"""
     if isinstance(sys_conf, dict):
         for key, value in sys_conf.items():
             check_path = dirpath + [key]
             if isinstance(user_conf, dict) and key in user_conf:
-                check_missing(value, user_conf[key], missing, check_path)
+                if (
+                    replace_empty
+                    and not isinstance(value, dict)
+                    and user_conf[key] in [None, ""]
+                    and value not in [None, ""]
+                ):
+                    missing.append([check_path, value])
+                else:
+                    check_missing(
+                        value, user_conf[key], missing, check_path, replace_empty
+                    )
             else:
                 missing.append([check_path, value])
     return missing
 
 
-def add_nested(dct, keys, value):
+def add_nested(dct, keys, value, replace_empty=False):
     """
     Adds a nested dictionary item based on a list of keys to an existing dictionary.
 
@@ -97,12 +109,16 @@ def add_nested(dct, keys, value):
     current_level = dct
     for key in keys[:-1]:
         # Create a new dictionary at the current key if it does not exist
-        if key not in current_level:
+        if key not in current_level or not isinstance(current_level[key], dict):
             current_level[key] = {}
         current_level = current_level[key]
 
     # Set the value at the innermost level
-    if keys[-1] not in current_level:
+    if keys[-1] not in current_level or (
+        replace_empty
+        and current_level[keys[-1]] in [None, ""]
+        and value not in [None, ""]
+    ):
         current_level[keys[-1]] = value
     return dct
 

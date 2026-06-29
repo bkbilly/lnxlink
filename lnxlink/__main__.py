@@ -52,6 +52,7 @@ class LNXlink:
         self.saved_publish = {}
         self.update_change_interval = 900
         self.discovery_registry_lock = threading.Lock()
+        self.excluded_modules = set()
 
         # Read configuration from yaml file
         self.publ_queue = files_setup.UniqueQueue()
@@ -61,8 +62,14 @@ class LNXlink:
     def start(self, exclude_modules_arg):
         """Run each addon included in the modules folder"""
         conf_exclude = self.config["exclude"]
-        conf_exclude = [] if conf_exclude is None else conf_exclude
+        conf_exclude = [] if conf_exclude is None else list(conf_exclude)
         conf_exclude.extend(exclude_modules_arg)
+        conf_exclude = [
+            module.strip().lower().replace("-", "_")
+            for module in conf_exclude
+            if isinstance(module, str) and module.strip()
+        ]
+        self.excluded_modules = set(conf_exclude)
         loaded_modules = modules.parse_modules(
             self.config["modules"], self.config["custom_modules"], conf_exclude
         )
@@ -88,9 +95,11 @@ class LNXlink:
         threading.Thread(target=self.monitor_queue, daemon=True).start()
         return mqtt_status
 
-    def add_settings(self, name, settings):
+    def add_settings(self, name, settings, replace_empty=False):
         """Adds missing configuration under settings"""
-        self.config = config_setup.add_settings(self.config, name, settings)
+        self.config = config_setup.add_settings(
+            self.config, name, settings, replace_empty
+        )
 
     def publish_monitor_data(self, name, pub_data, retain=True, force_publish=False):
         """Publish info data to mqtt in the correct format"""
@@ -338,6 +347,8 @@ class LNXlink:
                         current_topics,
                         getattr(addon, "prune_stale_discovery", False),
                     )
+        if filter_name is None:
+            self._clear_excluded_discovery_topics()
 
     def _discovery_registry_path(self):
         """Path of the locally stored Home Assistant discovery topic registry."""
@@ -374,6 +385,26 @@ class LNXlink:
         if isinstance(entry, dict):
             return set(entry.get("topics", [])), set(entry.get("stale_topics", []))
         return set(), set()
+
+    def _clear_excluded_discovery_topics(self):
+        """Clear Home Assistant discovery topics for explicitly excluded modules."""
+        if not self.excluded_modules:
+            return
+        with self.discovery_registry_lock:
+            registry = self._load_discovery_registry()
+            updated = False
+            for service in sorted(self.excluded_modules & set(registry)):
+                topics, stale_topics = self._discovery_registry_entry(registry, service)
+                for topic in sorted(topics | stale_topics):
+                    logger.info(
+                        "Clearing excluded module Home Assistant discovery topic: %s",
+                        topic,
+                    )
+                    self.mqtt.publish(topic, payload=None, retain=True)
+                registry.pop(service, None)
+                updated = True
+            if updated:
+                self._save_discovery_registry(registry)
 
     def _sync_discovery_registry(self, service, current_topics, prune_stale):
         """Track discovery topics and clear stale configs for opt-in modules."""

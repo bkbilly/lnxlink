@@ -94,6 +94,5 @@ exclude:
   - systemd
   - webcam
   - xdg_open
-settings:
-  statistics: "https://analyzer.bkbilly.workers.dev"
+settings: {}
 """
