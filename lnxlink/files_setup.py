@@ -63,10 +63,13 @@ class UniqueQueue:
             self.queue.clear()
 
 
-def setup_logger(config_path, log_level):
-    """Save logs on the same directory as the config file"""
+def setup_logger(config_path, log_level, log_directory=None):
+    """Configure file logging."""
     Path(config_path).parent.mkdir(parents=True, exist_ok=True)
-    config_dir = os.path.dirname(os.path.realpath(config_path))
+    if log_directory is None:
+        log_directory = os.path.dirname(os.path.realpath(config_path))
+    log_path = Path(log_directory).expanduser()
+    log_path.mkdir(parents=True, exist_ok=True)
     start_sec = str(int(time.time()))[-4:]
     log_formatter = logging.Formatter(
         "%(asctime)s ["
@@ -75,7 +78,7 @@ def setup_logger(config_path, log_level):
     )
 
     file_handler = RotatingFileHandler(
-        f"{config_dir}/lnxlink.log",
+        log_path / "lnxlink.log",
         maxBytes=5 * 1024 * 1024,
         backupCount=1,
     )

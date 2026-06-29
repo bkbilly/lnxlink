@@ -438,6 +438,11 @@ def main():
         choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
     )
     parser.add_argument(
+        "-d",
+        "--log-directory",
+        help="Directory where lnxlink.log will be stored",
+    )
+    parser.add_argument(
         "-s",
         "--setup",
         help="Runs only the setup configuration workflow",
@@ -464,7 +469,12 @@ def main():
         parser.print_help()
         parser.exit("\nSomething went wrong, --config condition was not set")
     config_path = os.path.abspath(args.config)
-    files_setup.setup_logger(config_path, args.logging)
+    log_directory = (
+        os.path.abspath(os.path.expanduser(args.log_directory))
+        if args.log_directory
+        else None
+    )
+    files_setup.setup_logger(config_path, args.logging, log_directory)
     config_setup.setup_config(config_path)
     if args.setup:
         logger.info("The configuration exists under the file: %s", config_path)
