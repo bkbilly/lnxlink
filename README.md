@@ -89,6 +89,7 @@ LNXlink is a **Home Assistant companion app** for Linux that bridges the gap bet
 | 🎥 Camera Used     | **Track** webcam activity for privacy or presence automations.         |
 | 📹 Webcam          | **Expose** a webcam switch and camera feed.                           |
 | 🎮 Gamepad Used    | **Report** controller activity (active if input detected within 40s).  |
+| 🔐 Fingerprint     | **Use** an R503 fingerprint scanner over UART on Raspberry Pi. [Settings](modules-settings.md#fingerprint) |
 
 ### **🧰 Applications & Tools**
 

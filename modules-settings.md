@@ -60,6 +60,31 @@ settings:
     autodiscovery: true
 ```
 
+## Idle
+
+The idle module uses `dbus-idle` to read the current desktop idle time. On some Wayland desktop environments, especially setups without the `MIT-SCREEN-SAVER` X11 extension and without Sway support, `dbus-idle` may not find a working monitor.
+
+You can test this manually:
+
+```bash
+pipx install dbus-idle
+dbus-idle -d
+```
+
+If the output includes messages such as `MIT-SCREEN-SAVER missing` or `Could not find any working monitor to get idle time`, install `swayidle` with your distribution package manager and test again:
+
+```bash
+# Arch
+sudo pacman -S swayidle
+
+# Debian/Ubuntu
+sudo apt install swayidle
+
+dbus-idle -d
+```
+
+This is useful for KDE Plasma Wayland and other desktop environments where idle detection is not exposed through the usual screensaver interfaces. After `dbus-idle -d` reports `Using: SwayIdleMonitor`, the LNXlink idle module should be able to publish idle time.
+
 ## GPIO
 
 This is only supported by Raspberry Pi and needs to be configured manually on your _config.yaml_ file:
@@ -76,6 +101,45 @@ settings:
         pin: 25
         icon: mdi:bullhorn
 ```
+
+## Fingerprint
+
+The fingerprint module is only supported on Raspberry Pi devices with an R503-compatible fingerprint scanner connected over UART. It exposes status sensors and controls for scanning, enrolling, and deleting templates from Home Assistant.
+
+Example configuration:
+
+```yaml
+modules:
+  - fingerprint
+
+settings:
+  fingerprint:
+    serial: /dev/serial0
+    baudrate: 57600
+    password: "0x00000000"
+    minimum_confidence: 0
+    delete_all_enabled: false
+    change_password_enabled: false
+    led_enabled: true
+```
+
+Available settings:
+
+| Setting | Default | Description |
+| ------- | ------- | ----------- |
+| `serial` | `/dev/serial0` | UART device used by the fingerprint scanner. |
+| `baudrate` | `57600` | Serial baud rate for the scanner. |
+| `password` | `0x00000000` | Sensor password. Update this if you change the scanner password. |
+| `minimum_confidence` | `0` | Minimum match confidence required before a scan is treated as authorized. |
+| `delete_all_enabled` | `false` | Enables the dangerous delete-all Home Assistant button. |
+| `change_password_enabled` | `false` | Enables the Home Assistant text entity for changing the sensor password. |
+| `led_enabled` | `true` | Enables scanner LED feedback during scan, enroll, and error states. |
+
+The module creates entities for status, mode, last matched ID, last authorized time, confidence, template count, library size, and read errors. It also creates controls for scan, enroll ID, and delete ID.
+
+When enrolling or deleting a fingerprint from Home Assistant, send the template ID as the text value. If enroll is called without a valid ID, the module tries to use the first empty template slot.
+
+Delete-all and password change controls are disabled by default. Enable them only on trusted installations. If you change the scanner password from Home Assistant, update `settings.fingerprint.password` before restarting LNXlink, otherwise the module will not be able to reconnect to the scanner.
 
 ## IR Remote
 
