@@ -3,6 +3,7 @@
 
 import os
 import copy
+import errno
 import subprocess
 import logging
 import shutil
@@ -16,6 +17,23 @@ from lnxlink.modules import get_modules_info
 logger = logging.getLogger("lnxlink")
 
 
+def _write_config(config_path, config):
+    """Write config changes to disk and report permission issues clearly."""
+    try:
+        with open(config_path, "w", encoding="UTF-8") as file:
+            file.write(yaml.dump(config, default_flow_style=False, sort_keys=False))
+        return True
+    except OSError as err:
+        if err.errno in {errno.EACCES, errno.EPERM, errno.EROFS}:
+            logger.error(
+                "Could not update configuration file %s because of permission issues.",
+                config_path,
+            )
+        else:
+            logger.error("Could not update configuration file %s: %s", config_path, err)
+    return False
+
+
 def setup_config(config_path):
     """Setup and create config file"""
     if not os.path.exists(config_path):
@@ -26,8 +44,17 @@ def setup_config(config_path):
             with open(config_path, "wb") as config:
                 config.write(CONFIGTEMP.encode())
             logger.info("Created new template: %s", config_path)
-        except IOError:
-            logger.info("Permision denied")
+        except OSError as err:
+            if err.errno in {errno.EACCES, errno.EPERM, errno.EROFS}:
+                logger.error(
+                    "Could not create configuration file %s because of permission "
+                    "issues.",
+                    config_path,
+                )
+            else:
+                logger.error(
+                    "Could not create configuration file %s: %s", config_path, err
+                )
             return False
         userprompt_config(config_path)
     validate_config(config_path)
@@ -50,8 +77,7 @@ def add_settings(config, name, settings, replace_empty=False):
             config = add_nested(config, keys, value, replace_empty)
             key_path = ".".join(keys)
             logger.info("Added missing configuration option: %s", key_path)
-        with open(config["config_path"], "w", encoding="UTF-8") as file:
-            file.write(yaml.dump(new_config, default_flow_style=False, sort_keys=False))
+        _write_config(config["config_path"], new_config)
     return config
 
 
@@ -68,8 +94,7 @@ def validate_config(config_path):
         logger.info("Added missing configuration option: %s", key_path)
 
     if len(missing_keys) > 0:
-        with open(config_path, "w", encoding="UTF-8") as file:
-            file.write(yaml.dump(user_conf, default_flow_style=False, sort_keys=False))
+        _write_config(config_path, user_conf)
 
 
 def check_missing(sys_conf, user_conf, missing, dirpath, replace_empty=False):
@@ -191,10 +216,8 @@ def userprompt_config(config_path):
         if not statistics:
             config["exclude"].append("statistics")
 
-    with open(config_path, "w", encoding="UTF-8") as file:
-        file.write(yaml.dump(config, default_flow_style=False, sort_keys=False))
-
-    logger.info("\nAll changes have been saved.")
+    if _write_config(config_path, config):
+        logger.info("\nAll changes have been saved.")
     logger.info(
         " MQTT Topic prefix for for monitoring: %s/%s/...",
         config["mqtt"]["prefix"],
@@ -301,8 +324,7 @@ def setup_modules(config_path):
         config["exclude"] = unselected_names
         config["modules"] = None
 
-    with open(config_path, "w", encoding="UTF-8") as file:
-        file.write(yaml.dump(config, default_flow_style=False, sort_keys=False))
+    _write_config(config_path, config)
 
 
 if __name__ == "__main__":

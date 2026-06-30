@@ -5,6 +5,8 @@ import os
 import sys
 import time
 import json
+import copy
+import errno
 import inspect
 import threading
 import logging
@@ -52,6 +54,8 @@ class LNXlink:
         self.saved_publish = {}
         self.update_change_interval = 900
         self.discovery_registry_lock = threading.Lock()
+        self.discovery_registry = {}
+        self.discovery_registry_file_enabled = True
         self.excluded_modules = set()
 
         # Read configuration from yaml file
@@ -357,23 +361,39 @@ class LNXlink:
 
     def _load_discovery_registry(self):
         """Load Home Assistant discovery topics published by this instance."""
+        if not self.discovery_registry_file_enabled:
+            return copy.deepcopy(self.discovery_registry)
         try:
             with open(self._discovery_registry_path(), encoding="UTF-8") as registry:
                 data = json.load(registry)
             if isinstance(data, dict):
-                return data
+                self.discovery_registry = data
+                return copy.deepcopy(data)
         except FileNotFoundError:
             pass
         except Exception as err:
             logger.error("Could not read discovery registry: %s", err)
-        return {}
+        return copy.deepcopy(self.discovery_registry)
 
     def _save_discovery_registry(self, registry):
         """Persist Home Assistant discovery topics published by this instance."""
+        self.discovery_registry = copy.deepcopy(registry)
+        if not self.discovery_registry_file_enabled:
+            return
         try:
             with open(self._discovery_registry_path(), "w", encoding="UTF-8") as file:
                 json.dump(registry, file, indent=2, sort_keys=True)
                 file.write("\n")
+        except OSError as err:
+            if err.errno in {errno.EACCES, errno.EPERM, errno.EROFS}:
+                self.discovery_registry_file_enabled = False
+                logger.error(
+                    "Could not write discovery registry to %s because of permission "
+                    "issues. Discovery registry will be stored in memory only.",
+                    self._discovery_registry_path(),
+                )
+            else:
+                logger.error("Could not write discovery registry: %s", err)
         except Exception as err:
             logger.error("Could not write discovery registry: %s", err)
 
