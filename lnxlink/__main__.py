@@ -387,7 +387,7 @@ class LNXlink:
         except OSError as err:
             if err.errno in {errno.EACCES, errno.EPERM, errno.EROFS}:
                 self.discovery_registry_file_enabled = False
-                logger.error(
+                logger.warning(
                     "Could not write discovery registry to %s because of permission "
                     "issues. Discovery registry will be stored in memory only.",
                     self._discovery_registry_path(),

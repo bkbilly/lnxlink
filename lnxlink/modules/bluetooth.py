@@ -292,7 +292,7 @@ class Addon:
         paths = self._dbus_paths(BLUEZ_SERVICE, "/org/bluez", [])
         for path in paths:
             if self._has_interface(path, BLUEZ_ADAPTER_INTERFACE):
-                logger.info("Found Bluetooth adapter at %s", path)
+                logger.debug("Found Bluetooth adapter at %s", path)
                 return path
         logger.warning("No Bluetooth adapter found")
         return None

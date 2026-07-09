@@ -74,6 +74,7 @@ exclude:
   - beacondb
   - boot_select
   - brightness
+  - fingerprint
   - fullscreen
   - gpio
   - gpu
@@ -93,6 +94,7 @@ exclude:
   - speech_recognition
   - systemd
   - webcam
+  - wol
   - xdg_open
 settings: {}
 """

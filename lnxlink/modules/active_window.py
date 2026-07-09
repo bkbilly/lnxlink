@@ -44,7 +44,7 @@ class Addon:
                 data = json.loads(reply.body[0])
                 if "focused_window_title" not in data:
                     raise SystemError("WindowQueryTool returned unexpected data format")
-            except SystemError as err:
+            except Exception as err:
                 raise SystemError(
                     "Wayland extension 'WindowQueryTool' not found. "
                     "Please install: https://extensions.gnome.org/extension/8763/window-query-tool"
