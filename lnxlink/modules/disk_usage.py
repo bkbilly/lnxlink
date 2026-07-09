@@ -86,10 +86,10 @@ class Addon:
                 continue
             if disk.fstype == "squashfs":
                 continue
-            if len(disk_includes) != 0:
+            if disk_includes:
                 if not any(disk.device.startswith(x) for x in disk_includes):
                     continue
-            if len(disk_excludes) != 0:
+            if disk_excludes:
                 if any(disk.device.startswith(x) for x in disk_excludes):
                     continue
 

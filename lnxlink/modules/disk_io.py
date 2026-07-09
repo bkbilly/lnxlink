@@ -96,12 +96,12 @@ class Addon:
                 continue
 
             # User-defined include filter
-            if len(disk_includes) != 0:
+            if disk_includes:
                 if not any(disk_name.startswith(x) for x in disk_includes):
                     continue
 
             # User-defined exclude filter
-            if len(disk_excludes) != 0:
+            if disk_excludes:
                 if any(disk_name.startswith(x) for x in disk_excludes):
                     continue
 

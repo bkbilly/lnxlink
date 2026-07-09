@@ -12,6 +12,13 @@ class Addon:
         """Setup addon"""
         self.name = "Interfaces"
         self.lnxlink = lnxlink
+        self.lnxlink.add_settings(
+            "interfaces",
+            {
+                "include": [],
+                "exclude": ["veth"],
+            },
+        )
         self.interfaces = self._get_interfaces()
 
     def exposed_controls(self):
@@ -47,10 +54,20 @@ class Addon:
     def _get_interfaces(self):
         """Get a list of all interfaces"""
         interfaces = {}
+        includes = (
+            self.lnxlink.config["settings"].get("interfaces", {}).get("include", [])
+        )
+        excludes = (
+            self.lnxlink.config["settings"].get("interfaces", {}).get("exclude", [])
+        )
         addrs = psutil.net_if_addrs()
         for interf, addr in addrs.items():
-            if interf.startswith("veth"):
-                continue
+            if includes:
+                if not any(interf.startswith(x) for x in includes):
+                    continue
+            if excludes:
+                if any(interf.startswith(x) for x in excludes):
+                    continue
             for addr_item in addr:
                 if addr_item.address not in ["127.0.0.1", "::1"]:
                     afinet = {

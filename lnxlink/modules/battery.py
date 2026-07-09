@@ -76,10 +76,10 @@ class Addon:
         }
 
         for device in self.get_batteries():
-            if len(battery_includes) != 0:
+            if battery_includes:
                 if not any(device["Model"].startswith(x) for x in battery_includes):
                     continue
-            if len(battery_excludes) != 0:
+            if battery_excludes:
                 if any(device["Model"].startswith(x) for x in battery_excludes):
                     continue
 
