@@ -6,6 +6,7 @@ import copy
 import errno
 import subprocess
 import logging
+import traceback
 import shutil
 from pathlib import Path
 
@@ -70,14 +71,21 @@ def add_settings(config, name, settings, replace_empty=False):
     missing_keys = check_missing(sys_conf, config, [], [], replace_empty)
 
     if len(missing_keys) > 0:
-        with open(config["config_path"], "r", encoding="utf8") as file:
-            new_config = yaml.load(file, Loader=yaml.FullLoader)
-        for keys, value in missing_keys:
-            new_config = add_nested(new_config, keys, value, replace_empty)
-            config = add_nested(config, keys, value, replace_empty)
-            key_path = ".".join(keys)
-            logger.info("Added missing configuration option: %s", key_path)
-        _write_config(config["config_path"], new_config)
+        try:
+            with open(config["config_path"], "r", encoding="utf8") as file:
+                new_config = yaml.load(file, Loader=yaml.FullLoader)
+            for keys, value in missing_keys:
+                new_config = add_nested(new_config, keys, value, replace_empty)
+                config = add_nested(config, keys, value, replace_empty)
+                key_path = ".".join(keys)
+                logger.info("Added missing configuration option: %s", key_path)
+            _write_config(config["config_path"], new_config)
+        except Exception as err:
+            logger.error(
+                "Couldn't edit configuration (%s): %s",
+                err,
+                traceback.format_exc(),
+            )
     return config
 
 
