@@ -78,8 +78,21 @@ def add_settings(config, name, settings, replace_empty=False):
                 new_config = add_nested(new_config, keys, value, replace_empty)
                 config = add_nested(config, keys, value, replace_empty)
                 key_path = ".".join(keys)
-                logger.info("Added missing configuration option: %s", key_path)
-            _write_config(config["config_path"], new_config)
+                logger.info("Adding missing configuration option: %s", key_path)
+            success_write = _write_config(config["config_path"], new_config)
+            if not success_write:
+                manual_insert = {}
+                for keys, value in missing_keys:
+                    manual_insert = add_nested(manual_insert, keys, value)
+                manual_yaml = yaml.dump(
+                    manual_insert,
+                    default_flow_style=False,
+                    sort_keys=False,
+                ).rstrip()
+                logger.error(
+                    "Can't write to config file, manual add this: \n%s", manual_yaml
+                )
+
         except Exception as err:
             logger.error(
                 "Couldn't edit configuration (%s): %s",
@@ -99,10 +112,22 @@ def validate_config(config_path):
     for keys, value in missing_keys:
         key_path = ".".join(keys)
         user_conf = add_nested(user_conf, keys, value)
-        logger.info("Added missing configuration option: %s", key_path)
+        logger.info("Adding missing configuration option: %s", key_path)
 
     if len(missing_keys) > 0:
-        _write_config(config_path, user_conf)
+        success_write = _write_config(config_path, user_conf)
+        if not success_write:
+            manual_insert = {}
+            for keys, value in missing_keys:
+                manual_insert = add_nested(manual_insert, keys, value)
+            manual_yaml = yaml.dump(
+                manual_insert,
+                default_flow_style=False,
+                sort_keys=False,
+            ).rstrip()
+            logger.error(
+                "Can't write to config file, manual add this: \n%s", manual_yaml
+            )
 
 
 def check_missing(sys_conf, user_conf, missing, dirpath, replace_empty=False):
