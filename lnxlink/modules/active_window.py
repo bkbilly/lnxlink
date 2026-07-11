@@ -1,11 +1,13 @@
 """Monitor the name and title of the currently focused window"""
 
-import os
 import json
 import logging
+import os
+
 from jeepney import DBusAddress, new_method_call
 from jeepney.io.blocking import open_dbus_connection
-from lnxlink.modules.scripts.helpers import import_install_package, get_display_variable
+
+from lnxlink.modules.scripts.helpers import get_display_variable, import_install_package
 
 logger = logging.getLogger("lnxlink")
 

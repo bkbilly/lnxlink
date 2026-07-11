@@ -1,25 +1,23 @@
 #!/usr/bin/env python3
 """Start the LNXlink service"""
 
-import os
-import sys
-import time
-import json
+import argparse
 import copy
 import errno
 import inspect
-import threading
+import json
 import logging
-import argparse
+import os
 import platform
+import sys
+import threading
+import time
 import traceback
 
-from lnxlink import modules
-from lnxlink import config_setup
-from lnxlink import files_setup
-from lnxlink.mqtt import MQTT
-from lnxlink.system_monitor import MonitorSuspend, GracefulKiller
+from lnxlink import config_setup, files_setup, modules
 from lnxlink.modules.scripts import helpers
+from lnxlink.mqtt import MQTT
+from lnxlink.system_monitor import GracefulKiller, MonitorSuspend
 
 version, path = files_setup.get_version()
 INSTALL_METHOD = files_setup.get_install_method(path)

@@ -1,9 +1,10 @@
 """Monitor Gamepad controllers for button presses"""
-import re
-import time
-import struct
 import logging
+import re
+import struct
+import time
 from threading import Thread
+
 from lnxlink.modules.scripts.helpers import syscommand
 
 logger = logging.getLogger("lnxlink")

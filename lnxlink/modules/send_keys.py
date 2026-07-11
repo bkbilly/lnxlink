@@ -1,9 +1,10 @@
 """Broadcast keystrokes or complex combinations"""
+import logging
 import os
 import re
-import logging
 from shutil import which
-from lnxlink.modules.scripts.helpers import syscommand, get_display_variable
+
+from lnxlink.modules.scripts.helpers import get_display_variable, syscommand
 
 logger = logging.getLogger("lnxlink")
 
@@ -103,7 +104,7 @@ class Addon:
             return None
 
         try:
-            with open(file_path, "r", encoding="utf-8") as f:
+            with open(file_path, encoding="utf-8") as f:
                 for line_number, line in enumerate(f, 1):
                     match = re.search(pattern, line)
 
@@ -131,7 +132,7 @@ class Addon:
                                 file_path,
                             )
 
-        except IOError as e:
+        except OSError as e:
             logger.error(
                 "An I/O error occurred while reading the file '%s': %s", file_path, e
             )

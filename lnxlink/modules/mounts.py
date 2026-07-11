@@ -1,6 +1,7 @@
 """View space usage for all currently mounted volumes"""
 import logging
-from lnxlink.modules.scripts.helpers import syscommand, import_install_package
+
+from lnxlink.modules.scripts.helpers import import_install_package, syscommand
 
 logger = logging.getLogger("lnxlink")
 

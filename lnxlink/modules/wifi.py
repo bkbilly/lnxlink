@@ -1,8 +1,9 @@
 """Monitor signal strength and connection metadata"""
+import logging
 import os
 import re
-import logging
 from shutil import which
+
 from lnxlink.modules.scripts.helpers import import_install_package, syscommand
 
 logger = logging.getLogger("lnxlink")

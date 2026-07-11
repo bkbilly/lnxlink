@@ -1,9 +1,10 @@
 """Opt-in to send anonymous usage data to help improve LNXlink"""
-import os
-import uuid
 import json
 import logging
+import os
 import time
+import uuid
+
 import requests
 
 logger = logging.getLogger("lnxlink")

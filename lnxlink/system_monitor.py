@@ -1,13 +1,13 @@
 """Monitors for shutdown/sleep events"""
 
-import time
-import threading
-import signal
 import logging
+import signal
+import threading
+import time
 import traceback
-from jeepney import MatchRule, DBus
-from jeepney.io.blocking import open_dbus_connection, Proxy
 
+from jeepney import DBus, MatchRule
+from jeepney.io.blocking import Proxy, open_dbus_connection
 
 logger = logging.getLogger("lnxlink")
 

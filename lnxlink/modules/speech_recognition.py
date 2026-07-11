@@ -1,7 +1,8 @@
 """Process voice input and return responses via binary sensor attributes"""
+import logging
 from importlib import import_module
 from threading import Thread
-import logging
+
 from lnxlink.modules.scripts.helpers import import_install_package
 
 logger = logging.getLogger("lnxlink")

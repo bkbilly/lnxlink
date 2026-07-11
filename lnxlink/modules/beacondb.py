@@ -1,13 +1,13 @@
 """Locate the device using WiFi triangulation or custom coordinates"""
-import io
 import csv
-import time
+import io
 import logging
+import time
 from shutil import which
 
 import requests
-from lnxlink.modules.scripts.helpers import syscommand
 
+from lnxlink.modules.scripts.helpers import syscommand
 
 logger = logging.getLogger("lnxlink")
 

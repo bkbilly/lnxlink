@@ -1,8 +1,10 @@
 """Reboot the system"""
 import logging
 from shutil import which
-from jeepney import DBusAddress, new_method_call, HeaderFields, MessageType
+
+from jeepney import DBusAddress, HeaderFields, MessageType, new_method_call
 from jeepney.io.blocking import open_dbus_connection
+
 from lnxlink.modules.scripts.helpers import syscommand
 
 logger = logging.getLogger("lnxlink")

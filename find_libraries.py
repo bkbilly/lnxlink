@@ -1,9 +1,9 @@
 """Parses all requirements to a file"""
 # pylint: skip-file
 
+import glob
 import re
 import sys
-import glob
 
 modules_dependancies = set()
 pattern = re.compile(r"import_install_package\(\s*\"(\S+)\", \s*\"(\S+)\"")

@@ -1,7 +1,8 @@
 """Prevent monitor sleep or idle states"""
 import re
 from shutil import which
-from lnxlink.modules.scripts.helpers import syscommand, get_display_variable
+
+from lnxlink.modules.scripts.helpers import get_display_variable, syscommand
 
 
 class Addon:

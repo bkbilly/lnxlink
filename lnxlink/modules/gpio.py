@@ -3,6 +3,7 @@ import os
 import time
 from collections import deque
 from threading import Thread
+
 from lnxlink.modules.scripts.helpers import import_install_package
 
 
@@ -99,7 +100,7 @@ class Addon:
     def _is_raspberry(self):
         model = ""
         if os.path.exists("/proc/device-tree/model"):
-            with open("/proc/device-tree/model", "r", encoding="UTF-8") as f:
+            with open("/proc/device-tree/model", encoding="UTF-8") as f:
                 model = f.read()
         if "raspberry" in model.lower():
             return True

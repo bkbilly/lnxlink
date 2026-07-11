@@ -14,7 +14,6 @@ import urllib.request
 import xml.etree.ElementTree as ET
 from datetime import datetime, timezone
 
-
 MAX_ITEMS = 8
 MAX_ITEM_LENGTH = 220
 

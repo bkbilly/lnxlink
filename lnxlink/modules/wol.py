@@ -1,7 +1,9 @@
 """Enable or disable Wake-On-LAN support for compatible network cards"""
 import re
 from shutil import which
+
 import psutil
+
 from lnxlink.modules.scripts.helpers import syscommand, text_to_topic
 
 

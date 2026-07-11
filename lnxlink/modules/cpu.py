@@ -1,5 +1,6 @@
 """Monitor real-time CPU load and performance"""
 import psutil
+
 from lnxlink.modules.scripts.helpers import syscommand
 
 

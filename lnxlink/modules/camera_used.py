@@ -1,7 +1,9 @@
 """Track webcam activity for privacy or presence automations"""
 import glob
 from threading import Thread
+
 from inotify.adapters import Inotify
+
 from lnxlink.modules.scripts.helpers import syscommand
 
 

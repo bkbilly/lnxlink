@@ -1,21 +1,22 @@
 [build-system]
-requires = ["setuptools~=68.0.0", "wheel~=0.40.0"]
+requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name              = "lnxlink"
-version           = "2026.6.0"
-description       = "Internet Of Things (IOT) integration with Linux using MQTT"
-readme            = "README.md"
-keywords          = ["lnxlink"]
-requires-python   = ">=3.8.0"
-authors     = [
-    {name="bkbilly", email="bkbilly@hotmail.com"}
+name = "lnxlink"
+version = "2026.6.0"
+description = "Internet Of Things (IOT) integration with Linux using MQTT"
+readme = "README.md"
+keywords = ["lnxlink", "homeassistant", "mqtt", "linux"]
+requires-python = ">=3.8.0"
+license = {text = "MIT"}
+authors = [
+    {name = "bkbilly", email = "bkbilly@hotmail.com"}
 ]
 classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: MIT License",
-    "Operating System :: Unix",
+    "Operating System :: POSIX :: Linux",
 ]
 dependencies = [
     "distro>=1.9.0",
@@ -31,10 +32,48 @@ dependencies = [
 
 [project.urls]
 "Source Code" = "https://github.com/bkbilly/lnxlink"
-"Documentation"   = "https://bkbilly.gitbook.io/lnxlink"
+"Documentation" = "https://bkbilly.gitbook.io/lnxlink"
+
+[project.scripts]
+lnxlink = "lnxlink.__main__:main"
 
 [tool.setuptools.packages.find]
 include = ["lnxlink*"]
 
-[project.scripts]
-lnxlink = "lnxlink.__main__:main"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+norecursedirs = [".git"]
+log_format = "%(asctime)s.%(msecs)03d %(levelname)-8s %(threadName)s %(name)s:%(filename)s:%(lineno)s %(message)s"
+log_date_format = "%Y-%m-%d %H:%M:%S"
+asyncio_mode = "auto"
+
+[tool.coverage.run]
+source = ["lnxlink"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise NotImplementedError",
+    "if TYPE_CHECKING:",
+]
+
+[tool.ruff]
+# Ruff replaces Flake8 entirely, reading configuration directly from here
+target-version = "py38"
+line-length = 100
+
+[tool.ruff.lint]
+# E, F, W are the standard equivalents to what Flake8 was doing for you
+# I enables isort (automatic import sorting)
+# UP enables pyupgrade (modernizes old python syntax automatically)
+select = ["E", "F", "W", "I", "UP"]
+
+ignore = [
+    "E501", # Line too long (handled gracefully by formatters)
+]
+
+[tool.ruff.lint.mccabe]
+# Matches your old Flake8 max-complexity = 25
+max-complexity = 25

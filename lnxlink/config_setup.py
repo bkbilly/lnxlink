@@ -1,18 +1,19 @@
 #!/usr/bin/env python3
 """Setup the configuration file"""
 
-import os
 import copy
 import errno
-import subprocess
 import logging
-import traceback
+import os
 import shutil
+import subprocess
+import traceback
 from pathlib import Path
 
-import yaml
 import beaupy
-from lnxlink.consts import SERVICEHEADLESS, SERVICEUSER, CONFIGTEMP
+import yaml
+
+from lnxlink.consts import CONFIGTEMP, SERVICEHEADLESS, SERVICEUSER
 from lnxlink.modules import get_modules_info
 
 logger = logging.getLogger("lnxlink")
@@ -72,7 +73,7 @@ def add_settings(config, name, settings, replace_empty=False):
 
     if len(missing_keys) > 0:
         try:
-            with open(config["config_path"], "r", encoding="utf8") as file:
+            with open(config["config_path"], encoding="utf8") as file:
                 new_config = yaml.load(file, Loader=yaml.FullLoader)
             for keys, value in missing_keys:
                 new_config = add_nested(new_config, keys, value, replace_empty)
@@ -104,7 +105,7 @@ def add_settings(config, name, settings, replace_empty=False):
 
 def validate_config(config_path):
     """Inform user of missing configuration values"""
-    with open(config_path, "r", encoding="utf8") as file:
+    with open(config_path, encoding="utf8") as file:
         user_conf = yaml.load(file, Loader=yaml.FullLoader)
     sys_conf = yaml.safe_load(CONFIGTEMP)
 
@@ -269,7 +270,10 @@ def get_service_user():
     for num, cmd_user in enumerate(["--user", ""], start=1):
         cmd = f"systemctl {cmd_user} is-enabled lnxlink.service"
         stdout = subprocess.run(
-            cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False
+            cmd,
+            shell=True,
+            capture_output=True,
+            check=False,
         ).stdout.decode("UTF-8")
         result = stdout.strip()
         if result in ["enabled"]:

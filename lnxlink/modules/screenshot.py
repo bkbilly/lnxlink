@@ -1,10 +1,11 @@
 """Stream your desktop directly to Home Assistant via a camera entity"""
 import base64
-import subprocess
+import logging
 import os
+import subprocess
 import threading
 import time
-import logging
+
 from lnxlink.modules.scripts.helpers import import_install_package, syscommand
 
 logger = logging.getLogger("lnxlink")

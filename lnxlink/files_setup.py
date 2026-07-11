@@ -1,17 +1,16 @@
 """Helper functions to get information from files"""
-import os
-import time
-import logging
 import importlib.metadata
-from logging.handlers import RotatingFileHandler
+import logging
+import os
+import threading
+import time
 from collections import OrderedDict
+from logging.handlers import RotatingFileHandler
 from pathlib import Path
 
-import threading
-
 import yaml
-from lnxlink.modules.scripts.helpers import syscommand
 
+from lnxlink.modules.scripts.helpers import syscommand
 
 logger = logging.getLogger("lnxlink")
 
@@ -89,7 +88,7 @@ def setup_logger(config_path, log_level, log_directory=None):
 
 def read_config(config_path):
     """Reads the config file and prepares module names for import"""
-    with open(config_path, "r", encoding="utf8") as file:
+    with open(config_path, encoding="utf8") as file:
         conf = yaml.load(file, Loader=yaml.FullLoader)
 
     conf["config_path"] = config_path

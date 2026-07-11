@@ -1,9 +1,9 @@
 """A collection of helper functions"""
-import os
-import sys
 import importlib.metadata
 import logging
+import os
 import subprocess
+import sys
 
 logger = logging.getLogger("lnxlink")
 
@@ -34,9 +34,8 @@ def syscommand(command, ignore_errors=False, timeout=3, background=False):
         result = subprocess.run(
             command,
             shell=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
             check=False,
+            capture_output=True,
             timeout=timeout,
         )
         stdout = result.stdout

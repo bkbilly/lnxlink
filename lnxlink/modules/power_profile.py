@@ -1,6 +1,7 @@
 """Toggle between performance, balanced, or power-saver profiles"""
 import re
 from shutil import which
+
 from lnxlink.modules.scripts.helpers import syscommand
 
 

@@ -1,5 +1,6 @@
 """Adjust display luminance for External and Laptop monitors"""
 import logging
+
 from lnxlink.modules.scripts.monitor_brightness import MonitorBrightness
 
 logger = logging.getLogger("lnxlink")

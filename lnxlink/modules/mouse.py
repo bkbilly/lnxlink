@@ -1,10 +1,11 @@
 """Simulate mouse movement and actions"""
-import os
-import time
 import logging
+import os
 import threading
+import time
 from shutil import which
-from lnxlink.modules.scripts.helpers import syscommand, get_display_variable
+
+from lnxlink.modules.scripts.helpers import get_display_variable, syscommand
 
 logger = logging.getLogger("lnxlink")
 

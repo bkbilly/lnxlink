@@ -3,6 +3,7 @@ import logging
 import os
 import time
 from shutil import which
+
 from lnxlink.modules.scripts.helpers import syscommand
 
 logger = logging.getLogger("lnxlink")
@@ -81,7 +82,7 @@ class Addon:
                     self.value["needs_restart"] = "ON"
                     if os.path.exists("/var/run/reboot-required.pkgs"):
                         with open(
-                            "/var/run/reboot-required.pkgs", "r", encoding="utf-8"
+                            "/var/run/reboot-required.pkgs", encoding="utf-8"
                         ) as pkgs_file:
                             self.value["attributes"][
                                 "details"

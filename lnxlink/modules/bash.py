@@ -1,6 +1,7 @@
 """Create custom sensors, binary_sensors, buttons, or switches using shell scripts"""
 import logging
 import time
+
 from lnxlink.modules.scripts.helpers import syscommand
 
 logger = logging.getLogger("lnxlink")

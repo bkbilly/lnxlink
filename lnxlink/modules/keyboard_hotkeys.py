@@ -1,9 +1,9 @@
 """Capture specific keypresses for automation triggers"""
-import os
 import logging
+import os
 from datetime import datetime
-from lnxlink.modules.scripts.helpers import import_install_package, get_display_variable
 
+from lnxlink.modules.scripts.helpers import get_display_variable, import_install_package
 
 logger = logging.getLogger("lnxlink")
 

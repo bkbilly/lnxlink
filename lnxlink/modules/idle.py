@@ -1,5 +1,6 @@
 """Monitor user inactivity duration"""
 import logging
+
 from lnxlink.modules.scripts.helpers import import_install_package
 
 logger = logging.getLogger("lnxlink")

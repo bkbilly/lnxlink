@@ -3,18 +3,20 @@
 # pylint: disable=attribute-defined-outside-init,too-many-instance-attributes
 
 import asyncio
-from dataclasses import dataclass
+import json
+import logging
 import os
 import ssl
 import threading
 import time
-import json
-import logging
 import traceback
+from dataclasses import dataclass
+
 import aiohttp
+import distro
 import paho.mqtt.client as mqtt
 import requests
-import distro
+
 from lnxlink.modules.scripts import helpers
 
 logger = logging.getLogger("lnxlink")

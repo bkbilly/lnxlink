@@ -1,8 +1,8 @@
 """Connect a R503 fingerprint scanner via UART on a Raspberry PI and control it."""
 
 import copy
-import json
 import datetime
+import json
 import logging
 import os
 import threading
@@ -225,7 +225,7 @@ class Addon:
         """Return whether the host looks like a Raspberry Pi."""
         model = ""
         if os.path.exists("/proc/device-tree/model"):
-            with open("/proc/device-tree/model", "r", encoding="UTF-8") as device_model:
+            with open("/proc/device-tree/model", encoding="UTF-8") as device_model:
                 model = device_model.read()
         return "raspberry" in model.lower()
 

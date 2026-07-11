@@ -1,9 +1,10 @@
 """Control global Bluetooth power or connect/disconnect specific devices"""
 
-import re
 import logging
-from typing import Optional, Dict, List, Any
+import re
+from typing import Any, Dict, List, Optional
 from xml.etree import ElementTree
+
 from jeepney import DBusAddress, new_method_call
 from jeepney.io.blocking import open_dbus_connection
 from jeepney.wrappers import DBusErrorResponse

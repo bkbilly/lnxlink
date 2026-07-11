@@ -1,10 +1,11 @@
 """Auto load addons/modules"""
-from importlib import import_module
-from importlib.util import spec_from_file_location, module_from_spec
-import time
-import logging
 import glob
+import logging
 import os
+import time
+from importlib import import_module
+from importlib.util import module_from_spec, spec_from_file_location
+
 import requests
 
 logger = logging.getLogger("lnxlink")

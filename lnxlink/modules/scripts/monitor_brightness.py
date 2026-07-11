@@ -4,15 +4,15 @@ Based on the work from: https://github.com/Crozzers/screen_brightness_control
 Copyright (c) 2025 Crozzers (https://github.com/Crozzers)
 """
 
-import os
-import glob
-import time
-import logging
 import fcntl
-import struct
 import functools
+import glob
+import logging
 import operator
-from typing import Optional, List, Set, BinaryIO
+import os
+import struct
+import time
+from typing import BinaryIO, List, Optional, Set
 
 logger = logging.getLogger("lnxlink")
 
@@ -97,9 +97,7 @@ class SysfsMonitor(MonitorBrightness):
     def _read_value(self, filename: str) -> int:
         """Helper to read a single integer from a sysfs file."""
         try:
-            with open(
-                os.path.join(self.identifier, filename), "r", encoding="UTF-8"
-            ) as f:
+            with open(os.path.join(self.identifier, filename), encoding="UTF-8") as f:
                 return int(f.read().strip())
         except (OSError, ValueError):
             return 0
@@ -197,7 +195,7 @@ class DDCIPMonitor(MonitorBrightness):
                 if checksum == data[-1]:
                     return data
             return None
-        except (OSError, IOError):
+        except OSError:
             return None
 
     def get_brightness(self, timeout: float = 1.0) -> Optional[int]:
@@ -224,7 +222,7 @@ class DDCIPMonitor(MonitorBrightness):
                             return self.last_successful_read
 
                     time.sleep(0.1)  # Retry interval
-        except (OSError, IOError):
+        except OSError:
             pass
 
         return None
@@ -243,7 +241,7 @@ class DDCIPMonitor(MonitorBrightness):
                         f, [self.SET_VCP_CMD, self.VCP_BRIGHTNESS, 0x00, target]
                     )
                     time.sleep(0.02)  # Slight delay between retries if needed
-        except (OSError, IOError):
+        except OSError:
             pass
 
 

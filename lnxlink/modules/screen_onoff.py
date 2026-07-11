@@ -1,11 +1,13 @@
 """Turns on or off the screen"""
-import re
-import os
 import logging
+import os
+import re
 from shutil import which
+
 from jeepney import DBusAddress, new_method_call
 from jeepney.io.blocking import open_dbus_connection
-from lnxlink.modules.scripts.helpers import syscommand, get_display_variable
+
+from lnxlink.modules.scripts.helpers import get_display_variable, syscommand
 
 logger = logging.getLogger("lnxlink")
 

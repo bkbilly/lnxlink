@@ -1,5 +1,6 @@
 """Monitor real-time upload and download speeds"""
 from datetime import datetime
+
 import psutil
 
 

@@ -1,8 +1,10 @@
 """Send rich desktop notifications via notify.send_message"""
-import os
 import logging
+import os
 import tempfile
+
 import requests
+
 from lnxlink.modules.scripts.helpers import import_install_package
 
 logger = logging.getLogger("lnxlink")

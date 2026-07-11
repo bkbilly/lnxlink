@@ -1,9 +1,10 @@
 """Control IR devices or decode incoming signals on a Raspberry PI"""
-import os
 import json
-import time
 import logging
+import os
+import time
 from threading import Thread
+
 from lnxlink.modules.scripts.helpers import import_install_package
 
 logger = logging.getLogger("lnxlink")
@@ -98,7 +99,7 @@ class Addon:
     def _is_raspberry(self):
         model = ""
         if os.path.exists("/proc/device-tree/model"):
-            with open("/proc/device-tree/model", "r", encoding="UTF-8") as f:
+            with open("/proc/device-tree/model", encoding="UTF-8") as f:
                 model = f.read()
         if "raspberry" in model.lower():
             return True

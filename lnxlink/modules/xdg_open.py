@@ -1,6 +1,7 @@
 """Open URLs or files"""
 import logging
 from shutil import which
+
 from lnxlink.modules.scripts.helpers import syscommand
 
 logger = logging.getLogger("lnxlink")

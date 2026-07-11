@@ -1,9 +1,11 @@
 """Update LNXlink directly remotely"""
+import logging
 import re
 import sys
-import logging
 import time
+
 import requests
+
 from lnxlink.modules.scripts.helpers import syscommand
 
 logger = logging.getLogger("lnxlink")

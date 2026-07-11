@@ -1,12 +1,13 @@
 """Monitor load and usage for NVIDIA or AMD graphics cards"""
-import re
-import math
 import logging
+import math
+import re
 from shutil import which
+
 from lnxlink.modules.scripts.helpers import (
+    get_display_variable,
     import_install_package,
     syscommand,
-    get_display_variable,
 )
 
 logger = logging.getLogger("lnxlink")

@@ -1,5 +1,6 @@
 """List active network interfaces and their assigned IP addresses"""
 import logging
+
 import psutil
 
 logger = logging.getLogger("lnxlink")

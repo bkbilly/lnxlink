@@ -1,9 +1,10 @@
 """Checks for updates on selected docker images"""
 
-import os
-from typing import Optional, Dict, List, Tuple, Any
-from urllib.parse import quote_plus
 import asyncio
+import os
+from typing import Any, Dict, List, Optional, Tuple
+from urllib.parse import quote_plus
+
 import aiohttp
 
 # --- Configuration ---

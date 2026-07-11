@@ -6,23 +6,30 @@ repos:
         entry: python find_libraries.py
         language: python
         pass_filenames: false
+
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v6.0.0
     hooks:
       - id: check-yaml
       - id: end-of-file-fixer
       - id: trailing-whitespace
+
   - repo: https://github.com/psf/black
     rev: 23.12.0
     hooks:
       - id: black
-  - repo: https://github.com/PyCQA/flake8
-    rev: 6.1.0
+
+  # ------------------------------------
+  # NEW: Ruff replaces Flake8
+  # ------------------------------------
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    # Check the Ruff releases page for the absolute latest version
+    rev: v0.5.0
     hooks:
-      - id: flake8
-        # E402 module level import not at top of file
-        # W503 line break before binary operator
-        args: ["--max-line-length=105", "-j8", "--ignore=E402,W503"]
+      # Run the linter
+      - id: ruff
+        args: [ --fix ]
+
   - repo: https://github.com/pycqa/pylint
     rev: v3.0.3
     hooks:

@@ -1,6 +1,6 @@
 """Watches for configuration changes and restarts LNXlink"""
-import logging
 import hashlib
+import logging
 import os
 
 logger = logging.getLogger("lnxlink")

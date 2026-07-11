@@ -1,12 +1,14 @@
 """Launch Steam or non-Steam games from a dropdown list"""
+import binascii
+import glob
+import logging
 import os
 import re
-import glob
 import struct
-import binascii
-import logging
 from shutil import which
+
 import psutil
+
 from lnxlink.modules.scripts.helpers import import_install_package, syscommand
 
 logger = logging.getLogger("lnxlink")

@@ -1,5 +1,6 @@
 """Monitor storage capacity and percentage used per disk"""
 import logging
+
 import psutil
 
 logger = logging.getLogger("lnxlink")
