@@ -1,6 +1,6 @@
 [![license](https://img.shields.io/badge/license-MIT-blue)](LICENSE.md)
 [![OS - Linux](https://img.shields.io/badge/OS-Linux-blue?logo=linux&logoColor=white)]()
-[![Python 3.7](https://img.shields.io/badge/Python-3.7-blue?logo=python&logoColor=white)]()
+[![Python 3.8](https://img.shields.io/badge/Python-3.8-blue?logo=python&logoColor=white)]()
 [![Last commit](https://img.shields.io/github/last-commit/bkbilly/lnxlink?color=blue&logo=github&logoColor=white)]()
 
 [![PyPI](https://img.shields.io/pypi/v/lnxlink?logo=pypi&logoColor=white)](https://pypi.python.org/pypi/lnxlink/)

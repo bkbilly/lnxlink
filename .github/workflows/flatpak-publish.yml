@@ -75,7 +75,7 @@ jobs:
           python3 .github/scripts/update_metainfo_release.py \
             --version "${{ steps.release.outputs.version }}" \
             --repo "${{ github.repository }}" \
-            --file io.github.bkbilly.lnxlink.metainfo.xml
+            --file packaging/flatpak/io.github.bkbilly.lnxlink.metainfo.xml
         env:
           GH_TOKEN: ${{ github.token }}
 
@@ -84,7 +84,7 @@ jobs:
           VERSION="${{ steps.release.outputs.version }}"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git config user.name "github-actions[bot]"
-          git add io.github.bkbilly.lnxlink.metainfo.xml
+          git add packaging/flatpak/io.github.bkbilly.lnxlink.metainfo.xml
           git diff --cached --quiet && echo "No AppStream metadata changes" && exit 0
           git commit -m "Update AppStream release notes for ${VERSION}"
           git push origin HEAD:${{ github.event.repository.default_branch }}
@@ -106,7 +106,7 @@ jobs:
           cp packaging/flatpak/runlnxlink.sh /tmp/flathub/
 
           # Metadata and icon from the main repo
-          cp io.github.bkbilly.lnxlink.metainfo.xml /tmp/flathub/
+          cp packaging/flatpak/io.github.bkbilly.lnxlink.metainfo.xml /tmp/flathub/
           cp images/logo.png /tmp/flathub/io.github.bkbilly.lnxlink.png
 
           # Generated files
