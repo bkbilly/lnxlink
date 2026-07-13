@@ -80,7 +80,7 @@ class Addon:
 
     def _requirements(self):
         self.dbus_mediaplayer = import_install_package(
-            "dbus-mediaplayer", ">=2025.6.0", "dbus_mediaplayer"
+            "dbus-mediaplayer", ">=2026.7.0", "dbus_mediaplayer"
         )
 
     def exposed_controls(self):

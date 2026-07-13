@@ -27,7 +27,7 @@ class Addon:
     def _requirements(self):
         self.lib = {
             "dbus_nd": import_install_package(
-                "dbus-networkdevices", ">=2026.6.0", "dbus_networkdevices"
+                "dbus-networkdevices", ">=2026.7.0", "dbus_networkdevices"
             ),
         }
 

@@ -12,10 +12,10 @@ requests>=2.31.0
 # Modules dependencies
 PyGObject>=3.44.0
 SpeechRecognition>=3.10.0
-dbus-idle>=2025.5.1
-dbus-mediaplayer>=2025.6.0
-dbus-networkdevices>=2026.6.0
-dbus-notification>=2026.2.1
+dbus-idle>=2026.7.0
+dbus-mediaplayer>=2026.7.0
+dbus-networkdevices>=2026.7.0
+dbus-notification>=2026.7.0
 docker>=7.0.0
 ewmh>=0.1.6
 flask>=3.0.3
