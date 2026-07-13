@@ -34,11 +34,26 @@ jobs:
         id: version
         run: |
           if [ -n "${{ inputs.version }}" ]; then
+            # Handles your manual workflow_dispatch inputs
             VERSION="${{ inputs.version }}"
           else
+            # 1st attempt: Look for a tag on the exact triggering commit
             VERSION=$(git tag --points-at "${{ github.event.workflow_run.head_sha }}" | head -n1)
+
+            # 2nd attempt: Fallback to the absolute latest tag in the repo
+            if [ -z "$VERSION" ]; then
+              VERSION=$(git describe --tags --abbrev=0)
+            fi
+
             VERSION="${VERSION#v}"
           fi
+
+          # Hard stop if it's still empty, preventing makepkg errors later
+          if [ -z "$VERSION" ]; then
+            echo "ERROR: Could not determine version automatically or manually."
+            exit 1
+          fi
+
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "Detected version: $VERSION"
 
