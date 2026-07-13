@@ -40,6 +40,22 @@
   </categories>
   <icon type="stock">io.github.bkbilly.lnxlink</icon>
   <releases>
+    <release version="2026.7.0" date="2026-07-13">
+      <url type="details">https://github.com/bkbilly/lnxlink/releases/tag/2026.7.0</url>
+      <description>
+        <p>2026.7.0</p>
+        <ul>
+          <li>Fingerprint scanner module</li>
+          <li>Include/exclude options for interfaces module</li>
+          <li>Configuration option for a custom logging directory</li>
+          <li>Compatibility with older loginctl JSON output</li>
+          <li>Excluded entries are now automatically deleted from Home Assistant</li>
+          <li>dasbus dependency dropped</li>
+          <li>asyncio standard library requirement dropped</li>
+          <li>Build dependencies bumped for better stability</li>
+        </ul>
+      </description>
+    </release>
     <release version="2026.6.0" date="2026-06-02">
       <url type="details">https://github.com/bkbilly/lnxlink/releases/tag/2026.6.0</url>
       <description>
