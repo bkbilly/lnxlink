@@ -1,46 +1,90 @@
 """Control and monitor Raspberry Pi GPIO pins"""
 import os
-import time
-from collections import deque
-from threading import Thread
+from threading import Timer
 
 from lnxlink.modules.scripts.helpers import import_install_package
 
 
 class GpioHandle:
-    """Handle the Raspberry PI GPIO inputs by fixing spike events"""
+    """Handle Raspberry PI GPIO inputs (with glitch filtering) and outputs."""
 
-    def __init__(self, gpio, pin, callback, setup="input"):
-        """Start checking for pin values in a new thread"""
-        self.gpio = gpio
+    def __init__(self, lib_gpio, pin, callback, setup="input"):
+        self.lib_gpio = lib_gpio
         self.pin = pin
         self.callback = callback
         self.setup = setup
-        self.pinvalue = None
-        readgpio_thr = Thread(target=self.read, daemon=True)
-        readgpio_thr.start()
 
-    def read(self):
-        """Gets the average value of the input pin and send it to the callback"""
+        # Delay for input glitch filtering (seconds)
+        self.delay = 0.15
+        self.timer = None
+        self.last_reported_state = None
+
         if self.setup == "input":
-            self.gpio.setup(self.pin, self.gpio.IN, pull_up_down=self.gpio.PUD_UP)
-            deq = deque(maxlen=15)
+            self.lib_gpio.setup(
+                self.pin,
+                self.lib_gpio.IN,
+                pull_up_down=self.lib_gpio.PUD_UP,
+            )
+            self.last_reported_state = self.lib_gpio.input(self.pin)
+            self.callback(self.pin, self.last_reported_state, self.setup)
+
+            self.lib_gpio.add_event_detect(
+                self.pin,
+                self.lib_gpio.BOTH,
+                callback=self.edge_detected,
+                bouncetime=20,
+            )
+
         elif self.setup == "output":
-            deq = deque(maxlen=1)
-        else:
+            # Establish the initial baseline state and report it immediately upon boot
+            self.last_reported_state = (
+                1 if self.lib_gpio.gpio_function(self.pin) == self.lib_gpio.OUT else 0
+            )
+            self.callback(self.pin, self.last_reported_state, self.setup)
+
+    def edge_detected(self, channel):
+        """Cancels active timers and starts a new verification countdown instantly upon detecting a GPIO state change"""
+        if self.timer is not None:
+            self.timer.cancel()
+
+        current_state = self.lib_gpio.input(self.pin)
+
+        if current_state == self.last_reported_state:
             return
-        while True:
-            if self.setup == "input":
-                deq.append(self.gpio.input(self.pin))
-            else:
-                deq.append(0)
-                if self.gpio.gpio_function(self.pin) == self.gpio.OUT:
-                    deq.append(1)
-            pinvalue = round(sum(deq) / deq.maxlen)
-            if pinvalue != self.pinvalue:
-                self.pinvalue = pinvalue
-                self.callback(self.pin, self.pinvalue, self.setup)
-            time.sleep(0.1)
+
+        if self.delay > 0:
+            self.timer = Timer(
+                self.delay, self.verify_and_trigger, args=[current_state]
+            )
+            self.timer.start()
+        else:
+            self.verify_and_trigger(current_state)
+
+    def verify_and_trigger(self, target_state):
+        """Verifies GPIO state after a delay and triggers the external callback"""
+        current_state = self.lib_gpio.input(self.pin)
+
+        if current_state == target_state and current_state != self.last_reported_state:
+            self.last_reported_state = current_state
+            self.callback(self.pin, current_state, self.setup)
+
+    def set_state(self, command):
+        """Changes the output pin state and triggers the callback."""
+        if self.setup != "output":
+            return
+
+        if command.lower() == "on":
+            self.lib_gpio.setup(self.pin, self.lib_gpio.OUT)
+            self.lib_gpio.output(self.pin, self.lib_gpio.HIGH)
+            self.last_reported_state = 1
+
+        elif command.lower() == "off":
+            self.lib_gpio.setup(self.pin, self.lib_gpio.OUT)
+            self.lib_gpio.output(self.pin, self.lib_gpio.LOW)
+            self.lib_gpio.setup(self.pin, self.lib_gpio.IN)
+            self.last_reported_state = 0
+
+        self.callback(self.pin, self.last_reported_state, self.setup)
 
 
 class Addon:
@@ -52,6 +96,8 @@ class Addon:
         self.lnxlink = lnxlink
         self.gpio_results = {}
         self.started = False
+        self.handles = {}
+
         if not self._is_raspberry():
             raise SystemError("Not supported non Raspberry PI devices")
         self.lnxlink.add_settings(
@@ -61,26 +107,31 @@ class Addon:
                 "outputs": [],
             },
         )
-        self._requirements()
+        self.lib_gpio = import_install_package("RPi.GPIO")
+        self.lib_gpio.GPIO.setmode(self.lib_gpio.GPIO.BCM)
 
     def get_info(self):
         """Starts only once the GPIO class for each pin"""
         if self._is_raspberry() and not self.started:
             self.started = True
+
             for device in self.lnxlink.config["settings"]["gpio"]["inputs"]:
-                GpioHandle(
-                    self.lib["gpio"].GPIO, device["pin"], self.pin_callback, "input"
+                pin = device["pin"]
+                self.handles[pin] = GpioHandle(
+                    self.lib_gpio.GPIO, pin, self.pin_callback, "input"
                 )
+
             for device in self.lnxlink.config["settings"]["gpio"]["outputs"]:
-                GpioHandle(
-                    self.lib["gpio"].GPIO, device["pin"], self.pin_callback, "output"
+                pin = device["pin"]
+                self.handles[pin] = GpioHandle(
+                    self.lib_gpio.GPIO, pin, self.pin_callback, "output"
                 )
+        return self.gpio_results
 
     def pin_callback(self, pin, pinvalue, pintype):
         """Sends the data to the MQTT broker asyncronous"""
-        value = "ON"
-        if pinvalue == 0:
-            value = "OFF"
+        value = "ON" if pinvalue == 1 else "OFF"
+
         filter_input_gpio = list(
             filter(
                 lambda pins: pins["pin"] == pin,
@@ -105,12 +156,6 @@ class Addon:
         if "raspberry" in model.lower():
             return True
         return False
-
-    def _requirements(self):
-        self.lib = {
-            "gpio": import_install_package("RPi.GPIO"),
-        }
-        self.lib["gpio"].GPIO.setmode(self.lib["gpio"].GPIO.BCM)
 
     def exposed_controls(self):
         """Exposes to home assistant"""
@@ -139,11 +184,8 @@ class Addon:
         }
 
         out_key = topic[1].replace("gpio_", "")
-        pin = outputs[out_key]
-        if data.lower() == "on":
-            self.lib["gpio"].GPIO.setup(pin, self.lib["gpio"].GPIO.OUT)
-            self.lib["gpio"].GPIO.output(pin, self.lib["gpio"].GPIO.HIGH)
-        elif data.lower() == "off":
-            self.lib["gpio"].GPIO.setup(pin, self.lib["gpio"].GPIO.OUT)
-            self.lib["gpio"].GPIO.output(pin, self.lib["gpio"].GPIO.LOW)
-            self.lib["gpio"].GPIO.setup(pin, self.lib["gpio"].GPIO.IN)
+
+        if out_key in outputs:
+            pin = outputs[out_key]
+            if pin in self.handles:
+                self.handles[pin].set_state(data)
