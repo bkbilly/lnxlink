@@ -355,66 +355,71 @@ class Fingerprint:  # pylint: disable=too-many-instance-attributes
         self._consecutive_read_errors = 0
         self._last_connect_attempt = 0
 
+        self._hw_lock = threading.RLock()
+
         threading.Thread(target=self.get_fingerprint, daemon=True).start()
 
     def connect(self, force=False):
         """Connect or reconnect to the fingerprint sensor."""
-        now = time.time()
-        if not force and self.finger is not None and self.connected:
-            return True
+        with self._hw_lock:
+            now = time.time()
+            if not force and self.finger is not None and self.connected:
+                return True
 
-        if not force and now - self._last_connect_attempt < self.reconnect_interval:
-            return False
+            if not force and now - self._last_connect_attempt < self.reconnect_interval:
+                return False
 
-        self._last_connect_attempt = now
-        self.disconnect()
+            self._last_connect_attempt = now
+            self.disconnect()
 
-        try:
-            self.status = "connecting"
-            self.publish_state("connecting")
-            self.uart = self.serial_module.Serial(
-                self.serial_port,
-                baudrate=self.baudrate,
-                timeout=self.timeout,
-            )
-            self.finger = self.adafruit_fingerprint.Adafruit_Fingerprint(
-                self.uart,
-                passwd=self.password,
-            )
-            self.connected = True
-            self.status = "connected"
-            self.last_error = None
-            self._consecutive_read_errors = 0
-            self.get_sensor_info()
-            self.set_ledcolor(action="reset")
-            self.publish_state("connected")
-            logger.info("Fingerprint sensor connected on %s", self.serial_port)
-            return True
-        except Exception as err:  # pylint: disable=broad-exception-caught
-            self.connected = False
-            self.status = "connection failed"
-            self.last_error = str(err)
-            self.finger = None
-            self._safe_close_uart()
-            logger.error("Fingerprint connection failed: %s", err)
-            self.error("connect", err)
-            return False
+            try:
+                self.status = "connecting"
+                self.publish_state("connecting")
+                self.uart = self.serial_module.Serial(
+                    self.serial_port,
+                    baudrate=self.baudrate,
+                    timeout=self.timeout,
+                )
+                self.finger = self.adafruit_fingerprint.Adafruit_Fingerprint(
+                    self.uart,
+                    passwd=self.password,
+                )
+                self.connected = True
+                self.status = "connected"
+                self.last_error = None
+                self._consecutive_read_errors = 0
+                self.get_sensor_info()
+                self.set_ledcolor(action="reset")
+                self.publish_state("connected")
+                logger.info("Fingerprint sensor connected on %s", self.serial_port)
+                return True
+            except Exception as err:  # pylint: disable=broad-exception-caught
+                self.connected = False
+                self.status = "connection failed"
+                self.last_error = str(err)
+                self.finger = None
+                self._safe_close_uart()
+                logger.error("Fingerprint connection failed: %s", err)
+                self.error("connect", err)
+                return False
 
     def disconnect(self):
         """Mark the sensor disconnected and close the UART handle."""
-        self.connected = False
-        self.finger = None
-        self._safe_close_uart()
+        with self._hw_lock:
+            self.connected = False
+            self.finger = None
+            self._safe_close_uart()
 
     def reconnect(self, reason):
         """Force a clean reconnect after repeated sensor errors."""
-        logger.error("Fingerprint reconnecting: %s", reason)
-        self.status = "reconnecting"
-        self.connected = False
-        self.last_error = str(reason)
-        self.publish_state("reconnecting")
-        self.disconnect()
-        return self.connect(force=True)
+        with self._hw_lock:
+            logger.error("Fingerprint reconnecting: %s", reason)
+            self.status = "reconnecting"
+            self.connected = False
+            self.last_error = str(reason)
+            self.publish_state("reconnecting")
+            self.disconnect()
+            return self.connect(force=True)
 
     def _safe_close_uart(self):
         """Close the UART handle without raising from cleanup."""
@@ -437,20 +442,23 @@ class Fingerprint:  # pylint: disable=too-many-instance-attributes
             self.mode = mode
             self.publish_state(f"mode_{mode}")
 
-            if mode in ("enroll", "delete", "empty") and not self.connect(force=True):
-                self.mode = "scan"
-                return
-            if mode == "enroll":
-                self.enroll_new(args)
-                self.mode = "scan"
-            elif mode == "delete":
-                self.delete_model(args)
-                self.mode = "scan"
-            elif mode == "empty":
-                self.empty_library()
-                self.mode = "scan"
-            elif mode == "scan":
-                self.mode = "scan"
+            with self._hw_lock:
+                if mode in ("enroll", "delete", "empty") and not self.connect(
+                    force=True
+                ):
+                    self.mode = "scan"
+                    return
+                if mode == "enroll":
+                    self.enroll_new(args)
+                    self.mode = "scan"
+                elif mode == "delete":
+                    self.delete_model(args)
+                    self.mode = "scan"
+                elif mode == "empty":
+                    self.empty_library()
+                    self.mode = "scan"
+                elif mode == "scan":
+                    self.mode = "scan"
 
     def get_sensor_info(self):
         """Refresh sensor information exactly like the working service."""
@@ -577,33 +585,42 @@ class Fingerprint:  # pylint: disable=too-many-instance-attributes
                 time.sleep(self.scan_sleep)
                 continue
 
-            if not self.connect():
-                time.sleep(self.reconnect_interval)
-                continue
+            sleep_for = self.scan_sleep
+            with self._hw_lock:
+                # Re-check mode now that we hold the lock: set_mode() may
+                # have switched us out of "scan" and grabbed the lock for
+                # enroll/delete/empty while we were waiting for it.
+                if self.mode != "scan":
+                    continue
 
-            try:
-                is_finger_ok = self.finger.get_image() == self.adafruit_fingerprint.OK
-            except Exception as err:  # pylint: disable=broad-exception-caught
-                self._record_error("get_image", err)
-                self._maybe_reconnect_after_error("get_image")
-                time.sleep(self.scan_sleep)
-                continue
-
-            if not is_finger_ok:
-                self._consecutive_read_errors = 0
-                if self.finger_present or self.status != "waiting":
-                    self.finger_present = False
-                    self.status = "waiting"
-                    self.matched = False
-                    self.publish_state("waiting")
+                if not self.connect():
+                    sleep_for = self.reconnect_interval
                 else:
-                    self.status = "waiting"
-                    self.matched = False
-                time.sleep(self.scan_sleep)
-                continue
+                    try:
+                        is_finger_ok = (
+                            self.finger.get_image() == self.adafruit_fingerprint.OK
+                        )
+                    except Exception as err:  # pylint: disable=broad-exception-caught
+                        is_finger_ok = None
+                        self._record_error("get_image", err)
+                        self._maybe_reconnect_after_error("get_image")
 
-            self._handle_detected_finger()
-            time.sleep(self.scan_sleep)
+                    if is_finger_ok is None:
+                        pass
+                    elif not is_finger_ok:
+                        self._consecutive_read_errors = 0
+                        if self.finger_present or self.status != "waiting":
+                            self.finger_present = False
+                            self.status = "waiting"
+                            self.matched = False
+                            self.publish_state("waiting")
+                        else:
+                            self.status = "waiting"
+                            self.matched = False
+                    else:
+                        self._handle_detected_finger()
+
+            time.sleep(sleep_for)
 
     def _handle_detected_finger(self):
         """Template and search one detected fingerprint."""
@@ -698,37 +715,40 @@ class Fingerprint:  # pylint: disable=too-many-instance-attributes
         self.publish_state("mode_password")
 
         try:
-            if not self.connect(force=True):
-                return False
+            with self._hw_lock:
+                if not self.connect(force=True):
+                    return False
 
-            password_bytes = self.parse_password(new_password)
-            self.finger._send_packet(  # pylint: disable=protected-access
-                [0x12] + list(password_bytes)
-            )
-            result = self.finger._get_packet(12)[0]  # pylint: disable=protected-access
-
-            if result == self.adafruit_fingerprint.OK:
-                self.password = password_bytes
-                if hasattr(self.finger, "password"):
-                    self.finger.password = password_bytes
-                self.restart_requires_password_update = True
-                self.password_update_warning = (
-                    "Password changed on sensor. Update "
-                    "settings.fingerprint.password before restarting LNXlink."
+                password_bytes = self.parse_password(new_password)
+                self.finger._send_packet(  # pylint: disable=protected-access
+                    [0x12] + list(password_bytes)
                 )
-                self.status = "password changed; update config password"
-                self.last_error = None
-                self.publish_state("password_changed")
-                logger.info("Fingerprint password changed")
-                self.set_ledcolor(action="success")
-                return True
+                result = self.finger._get_packet(  # pylint: disable=protected-access
+                    12
+                )[0]
 
-            self.status = "password change failed"
-            self.last_error = f"SetPwd returned {result}"
-            self.publish_state("password_change_failed")
-            logger.error("Fingerprint password change failed with code %s", result)
-            self.set_ledcolor(action="error")
-            return False
+                if result == self.adafruit_fingerprint.OK:
+                    self.password = password_bytes
+                    if hasattr(self.finger, "password"):
+                        self.finger.password = password_bytes
+                    self.restart_requires_password_update = True
+                    self.password_update_warning = (
+                        "Password changed on sensor. Update "
+                        "settings.fingerprint.password before restarting LNXlink."
+                    )
+                    self.status = "password changed; update config password"
+                    self.last_error = None
+                    self.publish_state("password_changed")
+                    logger.info("Fingerprint password changed")
+                    self.set_ledcolor(action="success")
+                    return True
+
+                self.status = "password change failed"
+                self.last_error = f"SetPwd returned {result}"
+                self.publish_state("password_change_failed")
+                logger.error("Fingerprint password change failed with code %s", result)
+                self.set_ledcolor(action="error")
+                return False
         except Exception as err:  # pylint: disable=broad-exception-caught
             self._record_error("change_password", err)
             self.set_ledcolor(action="error")
@@ -778,59 +798,68 @@ class Fingerprint:  # pylint: disable=too-many-instance-attributes
             start = time.time()
 
             while True:
-                i = self.finger.get_image()
-                if i == self.adafruit_fingerprint.OK:
+                image_result = self.finger.get_image()
+                if image_result == self.adafruit_fingerprint.OK:
                     self._set_enroll_status(
                         f"enroll {location}: image {fingerimg} captured"
                     )
                     break
-                if i == self.adafruit_fingerprint.NOFINGER:
+                if image_result == self.adafruit_fingerprint.NOFINGER:
                     if (time.time() - start) > timeout:
                         self._set_enroll_status(
                             f"enroll {location}: timeout image {fingerimg}"
                         )
                         self.set_ledcolor(action="error")
                         return False
-                elif i == self.adafruit_fingerprint.IMAGEFAIL:
+                elif image_result == self.adafruit_fingerprint.IMAGEFAIL:
                     logger.error("Fingerprint enroll imaging error")
                     self._set_enroll_status(f"enroll {location}: imaging error")
                     self.set_ledcolor(action="error")
                     return False
                 else:
-                    logger.error("Fingerprint enroll get_image error code=%s", i)
-                    self._set_enroll_status(f"enroll {location}: get image error {i}")
+                    logger.error(
+                        "Fingerprint enroll get_image error code=%s", image_result
+                    )
+                    self._set_enroll_status(
+                        f"enroll {location}: get image error {image_result}"
+                    )
                     self.set_ledcolor(action="error")
                     return False
 
-            i = self.finger.image_2_tz(fingerimg)
-            if i == self.adafruit_fingerprint.OK:
+            template_result = self.finger.image_2_tz(fingerimg)
+            if template_result == self.adafruit_fingerprint.OK:
                 self.set_ledcolor(action="success")
                 self._set_enroll_status(
                     f"enroll {location}: image {fingerimg} templated"
                 )
             else:
-                logger.error("Fingerprint enroll image_2_tz failed code=%s", i)
-                self._set_enroll_status(f"enroll {location}: template failed {i}")
+                logger.error(
+                    "Fingerprint enroll image_2_tz failed code=%s", template_result
+                )
+                self._set_enroll_status(
+                    f"enroll {location}: template failed {template_result}"
+                )
                 self.set_ledcolor(action="error")
                 return False
 
             if fingerimg == 1:
                 self._set_enroll_status(f"enroll {location}: remove finger")
                 time.sleep(1)
-                while i != self.adafruit_fingerprint.NOFINGER:
-                    i = self.finger.get_image()
+                image_result = self.finger.get_image()
+                while image_result != self.adafruit_fingerprint.NOFINGER:
+                    image_result = self.finger.get_image()
 
-        i = self.finger.create_model()
-        if i != self.adafruit_fingerprint.OK:
-            logger.error("Fingerprint enroll create_model failed code=%s", i)
-            self._set_enroll_status(f"enroll {location}: model failed {i}")
+        model_result = self.finger.create_model()
+        if model_result != self.adafruit_fingerprint.OK:
+            logger.error("Fingerprint enroll create_model failed code=%s", model_result)
+            self._set_enroll_status(f"enroll {location}: model failed {model_result}")
             self.set_ledcolor(action="error")
             return False
 
-        i = self.finger.store_model(location)
-        if i != self.adafruit_fingerprint.OK:
-            logger.error("Fingerprint enroll store_model failed code=%s", i)
-            self._set_enroll_status(f"enroll {location}: store failed {i}")
+        store_result = self.finger.store_model(location)
+        if store_result != self.adafruit_fingerprint.OK:
+            logger.error("Fingerprint enroll store_model failed code=%s", store_result)
+            self._set_enroll_status(f"enroll {location}: store failed {store_result}")
             self.set_ledcolor(action="error")
             return False
 
@@ -842,9 +871,14 @@ class Fingerprint:  # pylint: disable=too-many-instance-attributes
     def enroll_new(self, position):
         """Enroll a new fingerprint in the requested or first empty position."""
         if position < 0:
-            empty_positions = list(
-                set(range(0, self.finger.library_size - 1)) - set(self.finger.templates)
+            empty_positions = sorted(
+                set(range(0, self.finger.library_size)) - set(self.finger.templates)
             )
+            if not empty_positions:
+                logger.error("Fingerprint enroll failed: template library is full")
+                self._set_enroll_status("enroll: library full")
+                self.set_ledcolor(action="error")
+                return None
             position = empty_positions[0]
         logger.info("Fingerprint enrolling id=%s", position)
         self.enroll_finger(position)
