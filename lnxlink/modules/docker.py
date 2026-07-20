@@ -1,5 +1,6 @@
 """Manage containers; toggle status, check for updates, or prune images"""
 import logging
+import os
 import time
 
 from lnxlink.modules.scripts.docker_update_status import DockerUpdateStatus
@@ -16,14 +17,6 @@ class Addon:
         """Setup addon"""
         self.name = "Docker"
         self.lnxlink = lnxlink
-        self.docker = import_install_package("docker", ">=7.0.0")
-        if self.docker is None:
-            raise SystemError("Docker package not found")
-        try:
-            # client = docker.from_env()
-            self.client = self.docker.DockerClient(base_url="unix://run/docker.sock")
-        except Exception as err:
-            raise SystemError(f"Docker instance not found: {err}") from err
         self.lnxlink.add_settings(
             "docker",
             {
@@ -31,11 +24,50 @@ class Addon:
                 "exclude": [],
                 "check_update": 24,
                 "expose_controls": True,
+                "base_url": "",
             },
         )
+        self.docker = import_install_package("docker", ">=7.0.0")
+        if self.docker is None:
+            raise SystemError("Docker package not found")
+
+        self.client = self._get_client()
         self.prev_update = 0
         self.images_remoteinfo = []
         self.containers = self._get_containers()
+
+    def _get_client(self):
+        """Finds and returns a working Docker client connection."""
+        config_base_url = self.lnxlink.config["settings"]["docker"].get("base_url", "")
+        if config_base_url:
+            try:
+                client = self.docker.DockerClient(base_url=config_base_url)
+                client.ping()
+                return client
+            except Exception as err:
+                raise SystemError(
+                    f"Docker instance not found at configured base_url {config_base_url}: {err}"
+                ) from err
+
+        uid = os.getuid()
+        targets_to_try = [
+            self.docker.from_env,
+            lambda: self.docker.DockerClient(base_url="unix://var/run/docker.sock"),
+            lambda: self.docker.DockerClient(base_url="unix://run/docker.sock"),
+            lambda: self.docker.DockerClient(
+                base_url=f"unix://run/user/{uid}/docker.sock"
+            ),
+        ]
+
+        for target in targets_to_try:
+            try:
+                client = target()
+                client.ping()
+                return client
+            except Exception:
+                pass
+
+        raise SystemError("Docker instance not found")
 
     def exposed_controls(self):
         """Exposes to home assistant"""
