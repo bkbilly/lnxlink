@@ -354,6 +354,10 @@ class LNXlink:
 
     def _discovery_registry_path(self):
         """Path of the locally stored Home Assistant discovery topic registry."""
+        registry_path = self.config.get("registry_path")
+        if registry_path:
+            return registry_path
+
         config_dir = os.path.dirname(os.path.realpath(self.config_path))
         return os.path.join(config_dir, "discovery_registry.json")
 
@@ -492,6 +496,11 @@ def main():
         help="Directory where lnxlink.log will be stored",
     )
     parser.add_argument(
+        "-r",
+        "--registry-path",
+        help="Path to the Home Assistant discovery topic registry file",
+    )
+    parser.add_argument(
         "-s",
         "--setup",
         help="Runs only the setup configuration workflow",
@@ -540,6 +549,10 @@ def main():
         )
 
     config = files_setup.read_config(config_path)
+    if args.registry_path:
+        config["registry_path"] = os.path.abspath(
+            os.path.expanduser(args.registry_path)
+        )
     lnxlink = LNXlink(config)
 
     # Monitor for system changes (Shutdown/Suspend/Sleep)
