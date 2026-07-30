@@ -56,11 +56,11 @@ jobs:
           COMMIT="${{ steps.release.outputs.commit }}"
           echo "lnxlink @ git+https://github.com/bkbilly/lnxlink@${COMMIT}" > /tmp/requirements_pinned.txt
           python3 - << 'EOF' >> /tmp/requirements_pinned.txt
-          import tomllib
-          with open('pyproject.toml', 'rb') as f:
-              data = tomllib.load(f)
-          for dep in data['project']['dependencies']:
-              print(dep)
+          with open('requirements.txt', 'r') as f:
+              for line in f:
+                  line = line.strip()
+                  if line and not line.startswith('#'):
+                      print(line)
           EOF
 
       - name: Regenerate flatpak-modules-lnxlink.yaml
