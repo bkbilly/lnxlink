@@ -1,4 +1,5 @@
 """Track webcam activity for privacy or presence automations"""
+
 import glob
 from threading import Thread
 
@@ -32,11 +33,9 @@ class Addon:
 
     def _watch_events(self):
         for _ in self.inotify.event_gen(yield_nones=False):
-            cam_used = False
             _, _, returncode = syscommand("fuser /dev/video*", ignore_errors=True)
-            if returncode == 0:
-                cam_used = True
-            self.lnxlink.run_module(self.name, cam_used)
+            self.cam_used = returncode == 0
+            self.lnxlink.run_module(self.name, self.cam_used)
 
     def exposed_controls(self):
         """Exposes to home assistant"""
