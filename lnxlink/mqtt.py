@@ -538,6 +538,7 @@ class MQTT:
                 "command_topic": command_topic,
                 "payload_install": options.get("install", ""),
             },
+            "schema": {"schema": options.get("schema", "")},
         }
         lookup_entities = {
             "sensor": {
@@ -616,6 +617,11 @@ class MQTT:
                 "command_topic": command_topic,
                 "json_attributes_topic": state_topic,
                 "name": self.config["mqtt"]["clientId"],
+            },
+            "infrared": {
+                "platform": "infrared",
+                "command_topic": command_topic,
+                "state_topic": state_topic,
             },
         }
         discovery = discovery_template.copy()

@@ -52,16 +52,17 @@ class Addon:
         transmitter = self.lnxlink.config["settings"]["ir_remote"]["transmitter"]
         if receiver:
             discovery_info["IR Receiver"] = {
-                "type": "sensor",
+                "type": "infrared",
+                "schema": "receiver",
                 "icon": "mdi:square-wave",
-                "value_template": "{{ value_json.decsignal }}",
                 "subtopic": True,
             }
         if transmitter:
             discovery_info["IR Transmitter"] = {
-                "type": "text",
-                "icon": "mdi:square-wave",
-                "max": 255,
+                "type": "infrared",
+                "schema": "emitter",
+                "icon": "mdi:remote",
+                "subtopic": True,
             }
             for button in self.lnxlink.config["settings"]["ir_remote"]["buttons"]:
                 discovery_info[f"IR {button['name']}"] = {
@@ -76,13 +77,44 @@ class Addon:
         """Control system"""
         transmitter = self.lnxlink.config["settings"]["ir_remote"]["transmitter"]
         if transmitter and self.irremote is not None:
-            self.irremote.pause = True
-            self.irremote.send_signal(transmitter, data)
-            self.irremote.pause = False
+            if isinstance(data, str):
+                try:
+                    data = json.loads(data)
+                except Exception:
+                    pass
+
+            frequency = 38.0
+            repeat_count = 0
+            if isinstance(data, dict):
+                ir_signal = data.get("timings", [])
+                modulation = data.get("modulation", 38000)
+                frequency = modulation / 1000.0 if modulation else 38.0
+                repeat_count = data.get("repeat_count", 0)
+            else:
+                ir_signal = data
+
+            if ir_signal:
+                self.irremote.pause = True
+                self.irremote.send_signal(
+                    transmitter,
+                    ir_signal,
+                    frequency=frequency,
+                    repeat_count=repeat_count,
+                )
+                self.irremote.pause = False
 
     def receiver_callback(self, rawsignal, binsignal, decsignal, protocol):
         """Callback that sends the data to the MQTT broker"""
+        timings = []
+        for i, duration in enumerate(rawsignal):
+            if i % 2 == 1:
+                timings.append(-abs(duration))
+            else:
+                timings.append(abs(duration))
+
         tosend = {
+            "timings": timings,
+            "modulation": 38000,
             "rawsignal": rawsignal,
             "binsignal": binsignal,
             "decsignal": decsignal,
@@ -147,7 +179,9 @@ class IRRemote:
                 self.gpio_rx, self.pigpio.INPUT
             )  # IR RX connected to this GPIO.
             self.pi.set_glitch_filter(self.gpio_rx, glitch)  # Ignore glitches.
-            self.pi.callback(self.gpio_rx, self.pigpio.EITHER_EDGE, self.cbf)
+            self.pi.callback(
+                self.gpio_rx, self.pigpio.EITHER_EDGE, self.gpio_callback_handler
+            )
             if self.read_thr is None:
                 self.read_thr = Thread(
                     target=self.start_receiving, args=(callback,), daemon=True
@@ -164,84 +198,94 @@ class IRRemote:
                 self.read_thr.join(timeout=5.0)
                 self.read_thr = None
 
-    def send_signal(self, gpio, ir_signal):
+    def send_signal(self, gpio, ir_signal, frequency=38.0, repeat_count=0):
         """Sends an IR Signal to the IR LED"""
         self.pi.set_mode(gpio, self.pigpio.OUTPUT)  # IR TX connected to this GPIO.
 
         # Create wave
         self.pi.wave_add_new()
         waves_dict = {}
-        wave = []
-        for num, ci in enumerate(ir_signal):
-            ci = int(ci)
-            if num & 1:  # Space
-                if ci not in waves_dict:
-                    self.pi.wave_add_generic([self.pigpio.pulse(0, 0, ci)])
-                    waves_dict[ci] = self.pi.wave_create()
+        wave_sequence = []
+        for pulse_index, duration_us in enumerate(ir_signal):
+            duration_us = abs(int(duration_us))
+            if pulse_index & 1:  # Space
+                if duration_us not in waves_dict:
+                    self.pi.wave_add_generic([self.pigpio.pulse(0, 0, duration_us)])
+                    waves_dict[duration_us] = self.pi.wave_create()
             else:  # Pulse
-                if ci not in waves_dict:
-                    wf = self.carrier(gpio, ci)
-                    self.pi.wave_add_generic(wf)
-                    waves_dict[ci] = self.pi.wave_create()
-            wave.append(waves_dict[ci])
+                if duration_us not in waves_dict:
+                    wave_pulses = self.carrier(gpio, duration_us, frequency)
+                    self.pi.wave_add_generic(wave_pulses)
+                    waves_dict[duration_us] = self.pi.wave_create()
+            wave_sequence.append(waves_dict[duration_us])
 
-        self.pi.wave_chain(wave)
-        while self.pi.wave_tx_busy():
-            time.sleep(0.002)
+        for _ in range(max(1, repeat_count + 1)):
+            self.pi.wave_chain(wave_sequence)
+            while self.pi.wave_tx_busy():
+                time.sleep(0.002)
         self.pi.wave_clear()
         self.pi.set_mode(gpio, self.pigpio.INPUT)
 
-    def carrier(self, gpio, micros):
+    def carrier(self, gpio, micros, frequency=38.0):
         """Generate carrier square wave"""
-        frequency = 38.0
-        wf = []
+        wave_pulses = []
         cycle = 1000.0 / frequency
         cycles = int(round(micros / cycle))
         on = int(round(cycle / 2.0))
-        sofar = 0
-        for c in range(cycles):
-            target = int(round((c + 1) * cycle))
-            sofar += on
-            off = target - sofar
-            sofar += off
-            wf.append(self.pigpio.pulse(1 << gpio, 0, on))
-            wf.append(self.pigpio.pulse(0, 1 << gpio, off))
-        return wf
+        time_elapsed = 0
+        for cycle_index in range(cycles):
+            target = int(round((cycle_index + 1) * cycle))
+            time_elapsed += on
+            off = target - time_elapsed
+            time_elapsed += off
+            wave_pulses.append(self.pigpio.pulse(1 << gpio, 0, on))
+            wave_pulses.append(self.pigpio.pulse(0, 1 << gpio, off))
+        return wave_pulses
 
-    def normalise(self, c):
+    def normalise(self, code_durations):
         """This function identifies the distinct pulses and takes the
-        average of the lengths making up each distinct pulse.  Pulses
+        average of the lengths making up each distinct pulse. Pulses
         and spaces are processed separately."""
 
         tolerance = 15
         toler_min = (100 - tolerance) / 100.0
         toler_max = (100 + tolerance) / 100.0
 
-        entries = len(c)
-        p = [0] * entries  # Set all entries not processed.
-        for i in range(entries):
-            if not p[i]:  # Not processed?
-                v = c[i]
-                tot = v
+        entries = len(code_durations)
+        processed_flags = [0] * entries  # Set all entries not processed.
+        for start_index in range(entries):
+            if not processed_flags[start_index]:  # Not processed?
+                base_duration = code_durations[start_index]
+                total_duration = base_duration
                 similar = 1.0
 
                 # Find all pulses with similar lengths to the start pulse.
-                for j in range(i + 2, entries, 2):
-                    if not p[j]:  # Unprocessed.
-                        if (c[j] * toler_min) < v < (c[j] * toler_max):  # Similar.
-                            tot = tot + c[j]
+                for compare_index in range(start_index + 2, entries, 2):
+                    if not processed_flags[compare_index]:  # Unprocessed.
+                        if (
+                            (code_durations[compare_index] * toler_min)
+                            < base_duration
+                            < (code_durations[compare_index] * toler_max)
+                        ):  # Similar.
+                            total_duration = (
+                                total_duration + code_durations[compare_index]
+                            )
                             similar += 1.0
 
                 # Calculate the average pulse length.
-                newv = int(round(tot / similar, 0))
-                c[i] = newv
+                average_duration = int(round(total_duration / similar, 0))
+                code_durations[start_index] = average_duration
 
                 # Set all similar pulses to the average value.
-                for j in range(i + 2, entries, 2):
-                    if not p[j]:  # Unprocessed.
-                        if (c[j] * toler_min) < v < (c[j] * toler_max):  # Similar.
-                            c[j] = newv
-                            p[j] = 1
+                for compare_index in range(start_index + 2, entries, 2):
+                    if not processed_flags[compare_index]:  # Unprocessed.
+                        if (
+                            (code_durations[compare_index] * toler_min)
+                            < base_duration
+                            < (code_durations[compare_index] * toler_max)
+                        ):  # Similar.
+                            code_durations[compare_index] = average_duration
+                            processed_flags[compare_index] = 1
 
     def end_of_code(self):
         """End of the IR code"""
@@ -252,7 +296,7 @@ class IRRemote:
         else:
             self.ir_signal = []
 
-    def cbf(self, gpio, level, tick):
+    def gpio_callback_handler(self, gpio, level, tick):
         """Callback function of GPIO input"""
         pre_ms = 200
         post_ms = 25
