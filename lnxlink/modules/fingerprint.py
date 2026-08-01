@@ -129,10 +129,12 @@ class Addon:
             "Fingerprint Enroll ID": {
                 "type": "text",
                 "icon": "mdi:account-plus",
+                "value_template": "{{ value_json.get('enroll_id', '') }}",
             },
             "Fingerprint Delete ID": {
                 "type": "text",
                 "icon": "mdi:delete",
+                "value_template": "{{ value_json.get('delete_id', '') }}",
             },
         }
 
@@ -147,6 +149,7 @@ class Addon:
                 "type": "text",
                 "icon": "mdi:form-textbox-password",
                 "entity_category": "config",
+                "value_template": "{{ value_json.get('change_password', '') }}",
             }
 
         return controls
