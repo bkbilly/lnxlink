@@ -245,17 +245,14 @@ class LNXlink:
             try:
                 data = data.decode("utf-8")
             except Exception:
-                return None
+                data = None
         if isinstance(data, str):
             try:
                 parsed = json.loads(data)
                 if isinstance(parsed, (dict, list)):
-                    replaced = self.replace_values_with_none(parsed)
-                    return json.dumps(replaced)
+                    return json.dumps(self.replace_values_with_none(parsed))
             except (json.JSONDecodeError, TypeError):
                 pass
-            return None
-        if isinstance(data, (bool, float, int)):
             return None
         if isinstance(data, dict):
             return {
@@ -263,7 +260,7 @@ class LNXlink:
             }
         if isinstance(data, list):
             return [self.replace_values_with_none(item) for item in data]
-        return data
+        return None
 
     def temp_connection_callback(self, status):
         """Report the connection status to MQTT server"""

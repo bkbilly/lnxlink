@@ -3,6 +3,7 @@ import logging
 import os
 import time
 
+from lnxlink.modules.scripts import helpers
 from lnxlink.modules.scripts.docker_update_status import DockerUpdateStatus
 from lnxlink.modules.scripts.helpers import import_install_package
 
@@ -83,9 +84,10 @@ class Addon:
                 }
             if self.lnxlink.config["settings"]["docker"]["check_update"] is not None:
                 discovery_info[f"Docker Update {container}"] = {
-                    "type": "binary_sensor",
+                    "type": "update",
                     "icon": "mdi:docker",
-                    "value_template": f"{{{{ value_json.get('{container}', {{}}).get('update') }}}}",
+                    "value_template": f"{{{{ value_json.get('{container}', {{}}).get('update_json', {{}}) | tojson }}}}",
+                    "install": "UPDATE",
                 }
         discovery_info["Docker Prune"] = {
             "type": "button",
@@ -126,12 +128,29 @@ class Addon:
             for remoteimage_info in self.images_remoteinfo:
                 for container in containers.values():
                     if remoteimage_info["tag"] in container["attrs"]["images"]:
+                        local_ver = remoteimage_info.get("local", "installed")
+                        remote_ver = remoteimage_info.get("remote", "latest")
+                        if local_ver.startswith("sha256:"):
+                            local_ver = local_ver[7:19]
+                        if remote_ver.startswith("sha256:"):
+                            remote_ver = remote_ver[7:19]
+
                         if remoteimage_info["status"] == "update_available":
                             container["attrs"]["update"] = True
                             container["update"] = "ON"
+                            container["update_json"] = {
+                                "installed_version": local_ver,
+                                "latest_version": remote_ver,
+                                "title": container["attrs"]["name"],
+                            }
                         elif remoteimage_info["status"] == "up_to_date":
                             container["attrs"]["update"] = False
                             container["update"] = "OFF"
+                            container["update_json"] = {
+                                "installed_version": local_ver,
+                                "latest_version": local_ver,
+                                "title": container["attrs"]["name"],
+                            }
 
         return containers
 
@@ -144,12 +163,18 @@ class Addon:
                 for host_info in host:
                     ports.add(host_info["HostPort"])
         running = "ON" if container.attrs["State"]["Running"] else "OFF"
+        images_str = (
+            ",".join(container.image.tags)
+            if container.image.tags
+            else container.image.short_id
+        )
         return {
             "running": running,
             "update": None,
+            "update_json": None,
             "attrs": {
                 "name": container.name,
-                "images": ",".join(container.image.tags),
+                "images": images_str,
                 "ports": list(ports),
                 "status": container.status,
             },
@@ -157,19 +182,118 @@ class Addon:
 
     def start_control(self, topic, data):
         """Control system"""
-        name_id = topic[1].replace("docker_", "")
-        if name_id in self.containers:
-            name = self.containers[name_id]["attrs"]["name"]
+        subcontrol = (
+            topic[1] if isinstance(topic, list) and len(topic) > 1 else str(topic)
+        )
+        client_id_topic = helpers.text_to_topic(self.lnxlink.config["mqtt"]["clientId"])
+
+        if subcontrol.startswith("docker_"):
+            subcontrol = subcontrol[7:]
+        if subcontrol.startswith(f"{client_id_topic}_"):
+            subcontrol = subcontrol[len(client_id_topic) + 1 :]
+        if subcontrol.startswith("docker_"):
+            subcontrol = subcontrol[7:]
+
+        if subcontrol.startswith("update_"):
+            container_id = subcontrol[7:]
+            if container_id in self.containers:
+                name = self.containers[container_id]["attrs"]["name"]
+                logger.info("Updating container %s...", name)
+                self._update_container(name)
+                self.lnxlink.run_module(self.name, self.get_info(force_update=True))
+            else:
+                logger.error(
+                    "Container ID %s not found in monitored containers: %s",
+                    container_id,
+                    list(self.containers.keys()),
+                )
+        elif subcontrol in self.containers:
+            name = self.containers[subcontrol]["attrs"]["name"]
             if data == "ON":
                 logger.info("Starting container %s", name)
                 self.client.containers.get(name).start()
             elif data == "OFF":
                 logger.info("Stopping container %s", name)
                 self.client.containers.get(name).stop()
-        elif name_id == "prune":
+        elif subcontrol == "prune":
             # docker system prune -af
             logger.info("Running prune all")
             self.client.containers.prune()
             self.client.images.prune()
             self.client.networks.prune()
             self.client.volumes.prune()
+
+    def _update_container(self, name):
+        """Pull latest image for container and recreate container."""
+        try:
+            container = self.client.containers.get(name)
+            image_name = None
+            if container.image.tags:
+                image_name = container.image.tags[0]
+            elif (
+                "RepoDigests" in container.image.attrs
+                and container.image.attrs["RepoDigests"]
+            ):
+                image_name = container.image.attrs["RepoDigests"][0].split("@")[0]
+            elif "Config" in container.attrs and "Image" in container.attrs["Config"]:
+                image_name = container.attrs["Config"]["Image"]
+
+            if not image_name:
+                logger.error("Could not determine image name for container %s", name)
+                return False
+
+            logger.info(
+                "Pulling latest image '%s' for container '%s'...", image_name, name
+            )
+            self.client.images.pull(image_name)
+
+            self._recreate_container(container)
+            logger.info("Container %s successfully updated.", name)
+            return True
+        except Exception as err:
+            logger.error("Failed to update container %s: %s", name, err)
+            return False
+
+    def _recreate_container(self, container):
+        """Recreate container using updated image."""
+        container.reload()
+        container_info = self.client.api.inspect_container(container.id)
+        config = container_info["Config"]
+        host_config = container_info["HostConfig"]
+        name = container_info["Name"].lstrip("/")
+        was_running = container_info["State"]["Running"]
+
+        if was_running:
+            logger.info("Stopping container %s...", name)
+            container.stop()
+
+        logger.info("Removing old container %s...", name)
+        container.remove()
+
+        logger.info("Creating new container %s...", name)
+        new_container_dict = self.client.api.create_container(
+            name=name,
+            image=config.get("Image"),
+            command=config.get("Cmd"),
+            hostname=config.get("Hostname"),
+            user=config.get("User"),
+            detach=True,
+            stdin_open=config.get("OpenStdin", False),
+            tty=config.get("Tty", False),
+            ports=config.get("ExposedPorts"),
+            environment=config.get("Env"),
+            volumes=config.get("Volumes"),
+            network_disabled=config.get("NetworkDisabled", False),
+            entrypoint=config.get("Entrypoint"),
+            working_dir=config.get("WorkingDir"),
+            domainname=config.get("Domainname"),
+            host_config=host_config,
+            mac_address=config.get("MacAddress"),
+            labels=config.get("Labels"),
+            stop_signal=config.get("StopSignal"),
+            stop_timeout=config.get("StopTimeout"),
+        )
+        new_container = self.client.containers.get(new_container_dict["Id"])
+        if was_running:
+            logger.info("Starting new container %s...", name)
+            new_container.start()
