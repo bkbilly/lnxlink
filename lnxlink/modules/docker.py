@@ -10,10 +10,10 @@ from lnxlink.modules.scripts.helpers import import_install_package
 logger = logging.getLogger("lnxlink")
 
 
+# pylint: disable=too-many-branches,too-many-instance-attributes
 class Addon:
     """Addon module"""
 
-    # pylint: disable=too-many-branches
     def __init__(self, lnxlink):
         """Setup addon"""
         self.name = "Docker"
@@ -35,6 +35,7 @@ class Addon:
         self.client = self._get_client()
         self.prev_update = 0
         self.images_remoteinfo = []
+        self.updating_containers = set()
         self.containers = self._get_containers()
 
     def _get_client(self):
@@ -103,6 +104,7 @@ class Addon:
         self.containers = containers
         return self.containers
 
+    # pylint: disable=too-many-locals
     def _get_containers(self, force_update=False):
         include = self.lnxlink.config["settings"].get("docker", {}).get("include", [])
         exclude = self.lnxlink.config["settings"].get("docker", {}).get("exclude", [])
@@ -126,7 +128,7 @@ class Addon:
                 self.images_remoteinfo = docker_update_status.get_updates_sync(images)
 
             for remoteimage_info in self.images_remoteinfo:
-                for container in containers.values():
+                for container_id, container in containers.items():
                     if remoteimage_info["tag"] in container["attrs"]["images"]:
                         local_ver = remoteimage_info.get("local", "installed")
                         remote_ver = remoteimage_info.get("remote", "latest")
@@ -135,6 +137,7 @@ class Addon:
                         if remote_ver.startswith("sha256:"):
                             remote_ver = remote_ver[7:19]
 
+                        in_progress = container_id in self.updating_containers
                         if remoteimage_info["status"] == "update_available":
                             container["attrs"]["update"] = True
                             container["update"] = "ON"
@@ -142,6 +145,7 @@ class Addon:
                                 "installed_version": local_ver,
                                 "latest_version": remote_ver,
                                 "title": container["attrs"]["name"],
+                                "in_progress": in_progress,
                             }
                         elif remoteimage_info["status"] == "up_to_date":
                             container["attrs"]["update"] = False
@@ -150,6 +154,7 @@ class Addon:
                                 "installed_version": local_ver,
                                 "latest_version": local_ver,
                                 "title": container["attrs"]["name"],
+                                "in_progress": in_progress,
                             }
 
         return containers
@@ -199,8 +204,16 @@ class Addon:
             if container_id in self.containers:
                 name = self.containers[container_id]["attrs"]["name"]
                 logger.info("Updating container %s...", name)
-                self._update_container(name)
-                self.lnxlink.run_module(self.name, self.get_info(force_update=True))
+                self.updating_containers.add(container_id)
+                if self.containers[container_id].get("update_json") is None:
+                    self.containers[container_id]["update_json"] = {}
+                self.containers[container_id]["update_json"]["in_progress"] = True
+                self.lnxlink.run_module(self.name, self.containers)
+                try:
+                    self._update_container(name)
+                finally:
+                    self.updating_containers.discard(container_id)
+                    self.lnxlink.run_module(self.name, self.get_info(force_update=True))
             else:
                 logger.error(
                     "Container ID %s not found in monitored containers: %s",
