@@ -23,3 +23,8 @@ stage/
 *.snap
 snapcraft.yaml
 snapcraft-*.txt
+
+# Nix
+result
+result-*
+.direnv/

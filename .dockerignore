@@ -30,3 +30,10 @@ tests/
 .env
 .venv/
 venv/
+
+# Nix
+flake.nix
+flake.lock
+packaging/
+result
+result-*
