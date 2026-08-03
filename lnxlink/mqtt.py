@@ -623,6 +623,12 @@ class MQTT:
                 "command_topic": command_topic,
                 "state_topic": state_topic,
             },
+            "event": {
+                "automation_type": "trigger",
+                "platform": "device_automation",
+                "type": options.get("event_type", "button_short_press"),
+                "subtype": options.get("event_subtype", "turn_on"),
+            },
         }
         discovery = discovery_template.copy()
         discovery["name"] = exp_name
