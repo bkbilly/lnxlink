@@ -6,7 +6,7 @@ import time
 
 import requests
 
-from lnxlink.modules.scripts.helpers import syscommand
+from lnxlink.modules.scripts.helpers import find_uv_bin, syscommand
 
 logger = logging.getLogger("lnxlink")
 
@@ -84,7 +84,8 @@ class Addon:
         if method == "pipx":
             syscommand("pipx upgrade lnxlink", timeout=120)
         elif method == "uv":
-            syscommand("uv tool upgrade lnxlink", timeout=120)
+            uv_bin = find_uv_bin() or "uv"
+            syscommand(f"{uv_bin} tool upgrade lnxlink", timeout=120)
         elif method == "flatpak":
             syscommand("flatpak update -y io.github.bkbilly.lnxlink", timeout=120)
         elif method == "snap":
@@ -107,8 +108,9 @@ class Addon:
                 timeout=120,
             )
         elif "uv" in method:
+            uv_bin = find_uv_bin() or "uv"
             syscommand(
-                f"uv pip install --python {sys.executable} -e {self.lnxlink.path}",
+                f"{uv_bin} pip install --python {sys.executable} -e {self.lnxlink.path}",
                 timeout=120,
             )
         else:
