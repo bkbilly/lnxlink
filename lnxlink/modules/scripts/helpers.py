@@ -2,6 +2,7 @@
 import importlib.metadata
 import logging
 import os
+import shutil
 import subprocess
 import sys
 
@@ -77,16 +78,29 @@ def import_install_package(package, req_version="", syspackage=None):
     if current_version is None or needs_update(current_version, req_version):
         package_version = f"'{package}{req_version}'"
         logger.info("Installing %s...", package_version)
-        args = [
-            sys.executable,
-            "-m",
-            "pip",
-            "install",
-            "--break-system-packages",
-            "-U",
-            "--quiet",
-            package_version,
-        ]
+        if shutil.which("uv"):
+            args = [
+                "uv",
+                "pip",
+                "install",
+                "--python",
+                sys.executable,
+                "--break-system-packages",
+                "-U",
+                "--quiet",
+                package_version,
+            ]
+        else:
+            args = [
+                sys.executable,
+                "-m",
+                "pip",
+                "install",
+                "--break-system-packages",
+                "-U",
+                "--quiet",
+                package_version,
+            ]
         _, _, returncode = syscommand(args, ignore_errors=True, timeout=None)
         if returncode != 0:
             try:

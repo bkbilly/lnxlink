@@ -70,35 +70,61 @@ class Addon:
         self.message["in_progress"] = True
         self.lnxlink.run_module(self.name, self.get_info)
         try:
-            method = self.lnxlink.install_method
-            if method == "edit":
-                syscommand(f"git -C {self.lnxlink.path} pull", timeout=15)
-                syscommand(
-                    f"{sys.executable} -m pip install -e {self.lnxlink.path}",
-                    timeout=120,
-                )
-            elif method == "pipx":
-                syscommand("pipx upgrade lnxlink", timeout=120)
-            elif method == "flatpak":
-                syscommand("flatpak update -y io.github.bkbilly.lnxlink", timeout=120)
-            elif method == "snap":
-                syscommand("snap refresh lnxlink", timeout=120)
-            elif method == "aur":
-                _, _, yay = syscommand("which yay", ignore_errors=True)
-                _, _, paru = syscommand("which paru", ignore_errors=True)
-                if yay == 0:
-                    syscommand("yay -Syu --noconfirm python-lnxlink", timeout=120)
-                elif paru == 0:
-                    syscommand("paru -Syu --noconfirm python-lnxlink", timeout=120)
-                else:
-                    logger.warning("No AUR helper found (yay or paru)")
-                    return
-            elif method in ("pip", "system"):
-                syscommand(f"{sys.executable} -m pip install -U lnxlink", timeout=120)
-            else:
-                logger.warning("Update not supported for install method: %s", method)
-                return
-            self.lnxlink.restart_script()
+            if self._run_update():
+                self.lnxlink.restart_script()
         finally:
             self.message["in_progress"] = False
             self.lnxlink.run_module(self.name, self.get_info)
+
+    def _run_update(self):
+        """Run the appropriate update command based on install method"""
+        method = self.lnxlink.install_method
+        if "_edit" in method:
+            return self._update_edit(method)
+        if method == "pipx":
+            syscommand("pipx upgrade lnxlink", timeout=120)
+        elif method == "uv":
+            syscommand("uv tool upgrade lnxlink", timeout=120)
+        elif method == "flatpak":
+            syscommand("flatpak update -y io.github.bkbilly.lnxlink", timeout=120)
+        elif method == "snap":
+            syscommand("snap refresh lnxlink", timeout=120)
+        elif method == "aur":
+            return self._update_aur()
+        elif method in ("pip", "system"):
+            syscommand(f"{sys.executable} -m pip install -U lnxlink", timeout=120)
+        else:
+            logger.warning("Update not supported for install method: %s", method)
+            return False
+        return True
+
+    def _update_edit(self, method):
+        """Handle update for editable installations"""
+        syscommand(f"git -C {self.lnxlink.path} pull", timeout=15)
+        if "pip" in method:
+            syscommand(
+                f"{sys.executable} -m pip install -e {self.lnxlink.path}",
+                timeout=120,
+            )
+        elif "uv" in method:
+            syscommand(
+                f"uv pip install --python {sys.executable} -e {self.lnxlink.path}",
+                timeout=120,
+            )
+        else:
+            logger.warning("Update not supported for install method: %s", method)
+            return False
+        return True
+
+    def _update_aur(self):
+        """Handle update for AUR installations"""
+        _, _, yay = syscommand("which yay", ignore_errors=True)
+        _, _, paru = syscommand("which paru", ignore_errors=True)
+        if yay == 0:
+            syscommand("yay -Syu --noconfirm python-lnxlink", timeout=120)
+        elif paru == 0:
+            syscommand("paru -Syu --noconfirm python-lnxlink", timeout=120)
+        else:
+            logger.warning("No AUR helper found (yay or paru)")
+            return False
+        return True

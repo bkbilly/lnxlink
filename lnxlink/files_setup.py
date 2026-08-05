@@ -115,11 +115,23 @@ def read_config(config_path):
     return conf
 
 
-def get_install_method(path):
+def _get_installer():
+    """Get the installer tool name from package metadata"""
+    try:
+        dist = importlib.metadata.distribution("lnxlink")
+        installer_file = dist.read_text("INSTALLER")
+        if installer_file:
+            return installer_file.strip()
+    except Exception:
+        pass
+    return ""
+
+
+def get_install_method():
     """Detect how lnxlink was installed"""
-    if os.path.exists(os.path.join(path, "lnxlink/edit.txt")):
-        method = "edit"
-    elif os.environ.get("FLATPAK_ID"):
+    path = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+    installer = _get_installer()
+    if os.environ.get("FLATPAK_ID"):
         method = "flatpak"
     elif os.environ.get("SNAP"):
         method = "snap"
@@ -127,6 +139,8 @@ def get_install_method(path):
         method = "docker"
     elif "pipx" in path:
         method = "pipx"
+    elif "/uv/" in path or installer == "uv":
+        method = "uv"
     elif (
         path.startswith("/usr/lib")
         and syscommand("pacman -Qq python-lnxlink", ignore_errors=True)[2] == 0
@@ -136,6 +150,10 @@ def get_install_method(path):
         method = "system"
     else:
         method = "pip"
+
+    if os.path.exists(os.path.join(path, "lnxlink/edit.txt")):
+        method += "_edit"
+
     return method
 
 
