@@ -58,7 +58,7 @@ jobs:
       - name: Install system build dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y libcairo2-dev libgirepository1.0-dev pkg-config libasound2-dev
+          sudo apt-get install -y pkg-config libasound2-dev
 
       - name: Install flatpak-pip-generator
         run: |
@@ -74,7 +74,7 @@ jobs:
           with open('requirements.txt', 'r') as f:
               for line in f:
                   line = line.strip()
-                  if line and not line.startswith('#'):
+                  if line and not line.startswith('#') and not line.startswith('PyGObject'):
                       print(line)
           EOF
 
@@ -85,6 +85,25 @@ jobs:
             --output /tmp/flatpak-modules-lnxlink \
             --ignore-errors \
             --requirements-file /tmp/requirements_pinned.txt
+
+      - name: Validate generated flatpak-modules-lnxlink.yaml
+        run: |
+          python3 - << 'EOF'
+          import yaml, sys
+          with open('/tmp/flatpak-modules-lnxlink.yaml') as f:
+              data = yaml.safe_load(f)
+          modules = data.get('modules', [data])
+          for m in modules:
+              if m.get('name') == 'python3-lnxlink':
+                  sources = m.get('sources', [])
+                  if not sources:
+                      print("ERROR: python3-lnxlink has empty sources in generated Flatpak manifest!", file=sys.stderr)
+                      sys.exit(1)
+                  print("Validation passed: python3-lnxlink sources are present.")
+                  sys.exit(0)
+          print("ERROR: python3-lnxlink module not found in generated Flatpak manifest!", file=sys.stderr)
+          sys.exit(1)
+          EOF
 
       - name: Update AppStream release notes
         run: |
@@ -118,7 +137,6 @@ jobs:
 
           # Static files maintained in this repo
           cp packaging/flatpak/io.github.bkbilly.lnxlink.yaml /tmp/flathub/
-          cp packaging/flatpak/flatpak-modules-meson.yaml /tmp/flathub/
           cp packaging/flatpak/runlnxlink.sh /tmp/flathub/
 
           # Metadata and icon from the main repo

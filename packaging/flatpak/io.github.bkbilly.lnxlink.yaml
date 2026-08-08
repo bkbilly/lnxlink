@@ -31,7 +31,6 @@ finish-args:
   # Access to camera, gamepad
   - --device=all
 modules:
-  - flatpak-modules-meson.yaml
   - flatpak-modules-lnxlink.yaml
   - name: opencv
     buildsystem: cmake-ninja
