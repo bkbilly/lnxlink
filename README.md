@@ -32,6 +32,8 @@ To get started with LNXlink, follow these simple steps:
 
 For detailed installation instructions, please refer to the documentation page: [bkbilly.gitbook.io/lnxlink](https://bkbilly.gitbook.io/lnxlink).
 
+On NixOS, a flake with NixOS and Home Manager service modules is available: see [packaging/nix](packaging/nix/README.md).
+
 # Benefits
  - **Cross-Platform Compatibility:** Runs on any Linux distribution, providing flexibility and wide-ranging compatibility.
  - **Enhanced System Insights:** Gain real-time insights into your Linux machine's performance by monitoring essential system metrics.

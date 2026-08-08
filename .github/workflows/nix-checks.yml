@@ -1,0 +1,43 @@
+name: Nix Checks
+
+on:
+  push:
+    paths:
+      - 'flake.nix'
+      - 'flake.lock'
+      - 'packaging/nix/**'
+      - 'lnxlink/**'
+      - 'pyproject.toml'
+  pull_request:
+    paths:
+      - 'flake.nix'
+      - 'flake.lock'
+      - 'packaging/nix/**'
+      - 'lnxlink/**'
+      - 'pyproject.toml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: cachix/install-nix-action@v31
+        with:
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+            # The integration check boots a VM.
+            system-features = nixos-test benchmark big-parallel kvm
+
+      # `nix flake check` builds the package, evaluates both service modules,
+      # verifies formatting and runs the NixOS integration test.
+      - name: nix flake check
+        run: nix flake check --print-build-logs
+
+      # Not part of `checks`, because OpenCV and the NVIDIA stack make it slow.
+      - name: build lnxlink-full
+        run: nix build .#lnxlink-full --print-build-logs
