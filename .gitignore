@@ -18,4 +18,3 @@ venv/
 # Flatpak
 repo/
 .flatpak-builder
-
