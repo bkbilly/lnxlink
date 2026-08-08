@@ -150,16 +150,16 @@ jobs:
           cd /tmp/flathub
           git config user.email "bkbillybk@gmail.com"
           git config user.name "bkbilly"
-          git checkout -b "$BRANCH"
+          git checkout -B "$BRANCH"
           git add .
           git diff --cached --quiet && echo "No changes to commit" && exit 0
           git commit -m "Update to version ${VERSION}"
-          git push origin "$BRANCH"
+          git push --force origin "$BRANCH"
           gh pr create \
             --repo flathub/io.github.bkbilly.lnxlink \
             --head "$BRANCH" \
             --base master \
             --title "Update to ${VERSION}" \
-            --body "Automated update to version ${VERSION}."
+            --body "Automated update to version ${VERSION}." || echo "Pull request already exists"
         env:
           GH_TOKEN: ${{ secrets.FLATHUB_TOKEN }}
