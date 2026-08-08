@@ -1,15 +1,19 @@
-__pycache__
 lnxlink_config/
 config.yaml
+lnxlink_uuid.txt
+discovery_registry.json
+lnxlink.yaml
+*.log
+*.log.*
+
+# Python
+__pycache__
 *.egg-info
 dist/
 build/
 .venv/
 venv/
-*.log
-*.log.*
 *test_*
-lnxlink_uuid.txt
 
 # Flatpak
 repo/
