@@ -20,7 +20,7 @@ from lnxlink.mqtt import MQTT
 from lnxlink.system_monitor import GracefulKiller, MonitorSuspend
 
 version, path = files_setup.get_version()
-INSTALL_METHOD = files_setup.get_install_method(path)
+INSTALL_METHOD = files_setup.get_install_method()
 logger = logging.getLogger("lnxlink")
 
 

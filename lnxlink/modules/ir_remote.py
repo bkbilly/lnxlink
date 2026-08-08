@@ -57,6 +57,13 @@ class Addon:
                 "icon": "mdi:square-wave",
                 "subtopic": True,
             }
+            discovery_info["IR Receiver Event"] = {
+                "type": "event",
+                "event_type": "button_short_press",
+                "event_subtype": "ir_received",
+                "icon": "mdi:remote",
+                "subtopic": True,
+            }
         if transmitter:
             discovery_info["IR Transmitter"] = {
                 "type": "infrared",
@@ -121,6 +128,7 @@ class Addon:
             "protocol": protocol,
         }
         self.lnxlink.run_module(f"{self.name}/IR Receiver", tosend)
+        self.lnxlink.run_module(f"{self.name}/IR Receiver Event", tosend, retain=False)
         logger.debug("{%s}:{%s} = {%s}", protocol, decsignal, binsignal)
 
     def _requirements(self):
