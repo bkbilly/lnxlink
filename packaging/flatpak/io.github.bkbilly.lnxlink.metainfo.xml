@@ -40,6 +40,22 @@
   </categories>
   <icon type="stock">io.github.bkbilly.lnxlink</icon>
   <releases>
+    <release version="2026.8.0" date="2026-08-08">
+      <url type="details">https://github.com/bkbilly/lnxlink/releases/tag/2026.8.0</url>
+      <description>
+        <p>2026.8.0</p>
+        <ul>
+          <li>Docker container update installation with progress status</li>
+          <li>Support for MQTT Infrared platform introduced in Home Assistant 2026.8.0</li>
+          <li>Event triggers with support for IR Receiver</li>
+          <li>Support for installation using uv package manager alongside pip</li>
+          <li>Configuration option for custom discovery registry file path</li>
+          <li>Configuration option for docker socket location, plus auto-detect for additional paths</li>
+          <li>Use delay for GPIO to ensure states changes register correctly</li>
+          <li>Resolved fingerprint scanner enrollment issues</li>
+        </ul>
+      </description>
+    </release>
     <release version="2026.7.0" date="2026-07-13">
       <url type="details">https://github.com/bkbilly/lnxlink/releases/tag/2026.7.0</url>
       <description>
