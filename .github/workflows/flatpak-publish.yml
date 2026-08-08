@@ -53,7 +53,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          python-version: '3.13'
 
       - name: Install system build dependencies
         run: |
@@ -74,7 +74,7 @@ jobs:
           with open('requirements.txt', 'r') as f:
               for line in f:
                   line = line.strip()
-                  if line and not line.startswith('#') and not line.startswith('PyGObject'):
+                  if line and not line.startswith('#') and not line.startswith(('PyGObject', 'opencv-python')):
                       print(line)
           EOF
 
