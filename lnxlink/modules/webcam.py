@@ -18,7 +18,9 @@ class Addon:
 
     def _requirements(self):
         self.lib = {
-            "cv2": import_install_package("opencv-python", ">=4.7.0.68", "cv2"),
+            "cv2": import_install_package(
+                "opencv-python-headless", ">=4.7.0.72", "cv2"
+            ),
         }
 
     def get_camera_frame(self):
