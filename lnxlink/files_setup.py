@@ -133,8 +133,6 @@ def get_install_method():
     installer = _get_installer()
     if os.environ.get("FLATPAK_ID"):
         method = "flatpak"
-    elif os.environ.get("SNAP"):
-        method = "snap"
     elif os.path.exists("/.dockerenv"):
         method = "docker"
     elif "pipx" in path:

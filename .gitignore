@@ -19,11 +19,3 @@ venv/
 repo/
 .flatpak-builder
 
-# Snap
-.craft/
-parts/
-prime/
-stage/
-*.snap
-snapcraft.yaml
-snapcraft-*.txt

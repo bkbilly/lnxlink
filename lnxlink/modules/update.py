@@ -88,8 +88,6 @@ class Addon:
             syscommand(f"{uv_bin} tool upgrade lnxlink", timeout=120)
         elif method == "flatpak":
             syscommand("flatpak update -y io.github.bkbilly.lnxlink", timeout=120)
-        elif method == "snap":
-            syscommand("snap refresh lnxlink", timeout=120)
         elif method == "aur":
             return self._update_aur()
         elif method in ("pip", "system"):

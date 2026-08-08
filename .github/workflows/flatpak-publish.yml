@@ -25,16 +25,26 @@ jobs:
           fetch-depth: 0
           fetch-tags: true
 
+      - name: Configure Git safe directory
+        run: git config --global --add safe.directory '*'
+
       - name: Get version and commit SHA
         id: release
         run: |
           if [ -n "${{ inputs.version }}" ]; then
             VERSION="${{ inputs.version }}"
-            COMMIT=$(git rev-list -n 1 "$VERSION")
+            VERSION="${VERSION#v}"
+            COMMIT=$(git rev-parse "$VERSION" 2>/dev/null || git rev-parse "v$VERSION" 2>/dev/null || echo "")
           else
             VERSION=$(git tag --points-at "${{ github.event.workflow_run.head_sha }}" | head -n1)
+            if [ -z "$VERSION" ]; then
+              VERSION=$(git describe --tags --abbrev=0)
+            fi
             VERSION="${VERSION#v}"
             COMMIT="${{ github.event.workflow_run.head_sha }}"
+          fi
+          if [ -z "$COMMIT" ]; then
+            COMMIT="${{ github.sha }}"
           fi
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "commit=$COMMIT" >> "$GITHUB_OUTPUT"
@@ -44,6 +54,11 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+
+      - name: Install system build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libcairo2-dev libgirepository1.0-dev pkg-config libasound2-dev
 
       - name: Install flatpak-pip-generator
         run: |
@@ -68,6 +83,7 @@ jobs:
           python3 flatpak-pip-generator.py \
             --yaml \
             --output /tmp/flatpak-modules-lnxlink \
+            --ignore-errors \
             --requirements-file /tmp/requirements_pinned.txt
 
       - name: Update AppStream release notes

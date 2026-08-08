@@ -30,6 +30,9 @@ jobs:
           fetch-depth: 0
           fetch-tags: true
 
+      - name: Configure Git safe directory
+        run: git config --global --add safe.directory '*'
+
       - name: Get version from release tag
         id: version
         run: |
