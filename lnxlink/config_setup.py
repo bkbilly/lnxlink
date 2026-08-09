@@ -211,6 +211,33 @@ def query_true_false(question, default="false"):
         logger.info("Please respond with 'true' or 'false' (or 't' or 'f').")
 
 
+def _prompt_general_mqtt_settings(config):
+    """Prompt for general MQTT/LNXlink settings (prefix, clientId, discovery, LWT, clear_on_off)"""
+    mqtt = config["mqtt"]
+    print("\n--- General Settings ---")
+    mqtt["prefix"] = input(f" Topic prefix [{mqtt['prefix']}]: ") or mqtt["prefix"]
+    mqtt["clientId"] = input(f" Client ID [{mqtt['clientId']}]: ") or mqtt["clientId"]
+    mqtt["discovery"]["enabled"] = query_true_false(
+        "Enable MQTT auto-discovery", mqtt["discovery"]["enabled"]
+    )
+    if mqtt["discovery"]["enabled"]:
+        mqtt["discovery"]["prefix"] = (
+            input(f" Discovery prefix [{mqtt['discovery']['prefix']}]: ")
+            or mqtt["discovery"]["prefix"]
+        )
+    mqtt["lwt"]["enabled"] = query_true_false(
+        "Enable Last Will and Testament (LWT)", mqtt["lwt"]["enabled"]
+    )
+    if mqtt["lwt"]["enabled"]:
+        mqtt["lwt"]["qos"] = (
+            input(f" LWT QoS level [{mqtt['lwt']['qos']}]: ") or mqtt["lwt"]["qos"]
+        )
+        mqtt["lwt"]["qos"] = int(mqtt["lwt"]["qos"])
+    mqtt["clear_on_off"] = query_true_false(
+        "Clear sensor values on power-off", mqtt["clear_on_off"]
+    )
+
+
 def _prompt_mqtt_broker(config):
     """Prompt for direct MQTT broker settings"""
     mqtt = config["mqtt"]
@@ -238,27 +265,6 @@ def _prompt_mqtt_broker(config):
             input(f" Client key file [{mqtt['auth']['keyfile']}]: ")
             or mqtt["auth"]["keyfile"]
         )
-    mqtt["clientId"] = input(f" Client ID [{mqtt['clientId']}]: ") or mqtt["clientId"]
-    mqtt["prefix"] = input(f" Topic prefix [{mqtt['prefix']}]: ") or mqtt["prefix"]
-    mqtt["discovery"]["enabled"] = query_true_false(
-        "Enable MQTT auto-discovery", mqtt["discovery"]["enabled"]
-    )
-    if mqtt["discovery"]["enabled"]:
-        mqtt["discovery"]["prefix"] = (
-            input(f" Discovery prefix [{mqtt['discovery']['prefix']}]: ")
-            or mqtt["discovery"]["prefix"]
-        )
-    mqtt["lwt"]["enabled"] = query_true_false(
-        "Enable Last Will and Testament (LWT)", mqtt["lwt"]["enabled"]
-    )
-    if mqtt["lwt"]["enabled"]:
-        mqtt["lwt"]["qos"] = (
-            input(f" LWT QoS level [{mqtt['lwt']['qos']}]: ") or mqtt["lwt"]["qos"]
-        )
-        mqtt["lwt"]["qos"] = int(mqtt["lwt"]["qos"])
-    mqtt["clear_on_off"] = query_true_false(
-        "Clear sensor values on power-off", mqtt["clear_on_off"]
-    )
 
 
 def _prompt_homeassistant_api(config):
@@ -315,6 +321,8 @@ def setup_mqtt(config_path):
 
     transport = config["mqtt"]["transport"]
 
+    _prompt_general_mqtt_settings(config)
+
     if transport in ("mqtt", "auto"):
         _prompt_mqtt_broker(config)
 
@@ -324,11 +332,10 @@ def setup_mqtt(config_path):
     if _write_config(config_path, config):
         print("\nMQTT configuration saved successfully.")
     print(f" Transport: {config['mqtt']['transport']}")
-    if transport in ("mqtt", "auto"):
-        print(
-            f" MQTT Topic prefix for monitoring: {config['mqtt']['prefix']}"
-            f"/{config['mqtt']['clientId']}/..."
-        )
+    print(
+        f" MQTT Topic prefix for monitoring: {config['mqtt']['prefix']}"
+        f"/{config['mqtt']['clientId']}/..."
+    )
     if transport in ("homeassistant_api", "auto"):
         print(f" Home Assistant URL: {config['mqtt']['homeassistant']['url']}")
 

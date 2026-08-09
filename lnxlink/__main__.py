@@ -268,6 +268,9 @@ class LNXlink:
         self.kill = True
         if status:
             logger.info("Power Down detected.")
+            self.mqtt.is_disconnecting = True
+            if hasattr(self.mqtt.client, "is_disconnecting"):
+                self.mqtt.client.is_disconnecting = True
             self.mqtt.send_lwt("OFF")
             if self.config["mqtt"]["clear_on_off"]:
                 for topic, message in self.prev_publish.items():
