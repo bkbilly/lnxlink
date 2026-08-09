@@ -41,18 +41,11 @@ LNXlink is a **Home Assistant companion app** for Linux that bridges the gap bet
 | 🪟 Display Env      | **Identify** the current display environment (e.g., `:0`).                                                                        |
 | 🗔 Active Window    | **Monitor** the name and title of the currently focused window.                                                                   |
 | 📋 Clipboard        | **View or update** the system clipboard content.                                                                                  |
-| 👤 Current Users    | **Monitor** active, unlocked graphical users while ignoring SSH and locked sessions.                                               |
+| 👤 Current Users    | **Monitor** active, unlocked graphical users while ignoring SSH and locked sessions.                                              |
 
 ### **✅ System Actions**
 
-| Module          | Description                                                                                                     |
-| --------------- | --------------------------------------------------------------------------------------------------------------- |
-| 🔴 Shutdown     | **Shut down** the computer instantly from your dashboard.                                                       |
-| ⚪ Restart       | **Reboot** the system remotely.                                                                                 |
-| 💤 Suspend      | **Trigger** sleep mode to save power when not in use.                                                           |
-| 🚀 Boot Select  | **Choose** which operating system to load on the next boot.                                                     |
-| ⚡ Power Profile | **Toggle** between performance, balanced, or power-saver profiles.                                              |
-| ⚙️ SystemD      | **Manage** Linux services; check status, start, or stop specific units. [Settings](modules-settings.md#systemd) |
+<table data-search="true"><thead><tr><th>Module</th><th>Description</th></tr></thead><tbody><tr><td>🔴 Shutdown</td><td><strong>Shut down</strong> the computer instantly from your dashboard.</td></tr><tr><td>⚪ Restart</td><td><strong>Reboot</strong> the system remotely.</td></tr><tr><td>💤 Suspend</td><td><strong>Trigger</strong> sleep mode to save power when not in use.</td></tr><tr><td>🚀 Boot Select</td><td><strong>Choose</strong> which operating system to load on the next boot.</td></tr><tr><td>⚡ Power Profile</td><td><strong>Toggle</strong> between performance, balanced, or power-saver profiles.</td></tr><tr><td>⚙️ SystemD</td><td><strong>Manage</strong> Linux services; check status, start, or stop specific units. <a href="modules-settings.md#systemd">Settings</a></td></tr></tbody></table>
 
 ### **🖥 System Information**
 
@@ -71,47 +64,28 @@ LNXlink is a **Home Assistant companion app** for Linux that bridges the gap bet
 
 ### **📡 Network & Devices**
 
-| Module           | Description                                                                                                    |
-| ---------------- | -------------------------------------------------------------------------------------------------------------- |
-| 📶 Network Speed | **Monitor** real-time upload and download speeds.                                                              |
-| 🌐 Interfaces    | **List** active network interfaces and their assigned IP addresses.                                            |
-| 📱 Bluetooth     | **Control** global Bluetooth power, connect/disconnect specific devices and their battery.                     |
-| 🛜 WiFi          | **Monitor** signal strength and connection metadata.                                                           |
-| 🔌 WOL           | **Enable** or disable Wake-On-LAN support for compatible network cards.                                        |
-| 🗺️ BeaconDB     | **Locate** the device using WiFi triangulation or custom coordinates. [Settings](modules-settings.md#beacondb) |
+<table data-search="true"><thead><tr><th>Module</th><th>Description</th></tr></thead><tbody><tr><td>📶 Network Speed</td><td><strong>Monitor</strong> real-time upload and download speeds.</td></tr><tr><td>🌐 Interfaces</td><td><strong>List</strong> active network interfaces and their assigned IP addresses.</td></tr><tr><td>📱 Bluetooth</td><td><strong>Control</strong> global Bluetooth power, connect/disconnect specific devices and their battery.</td></tr><tr><td>🛜 WiFi</td><td><strong>Monitor</strong> signal strength and connection metadata.</td></tr><tr><td>🔌 WOL</td><td><strong>Enable</strong> or disable Wake-On-LAN support for compatible network cards.</td></tr><tr><td>🗺️ BeaconDB</td><td><strong>Locate</strong> the device using WiFi triangulation or custom coordinates. <a href="modules-settings.md#beacondb">Settings</a></td></tr></tbody></table>
 
 ### 🎚️ **Audio/Video/Input**
 
-| Module             | Description                                                            |
-| ------------------ | ---------------------------------------------------------------------- |
-| 🎤 Microphone Used | **Monitor** if any application is currently accessing the microphone.  |
-| 🔈 Speaker Used    | **Detect** active audio output to determine if the system is "in use." |
-| 🎥 Camera Used     | **Track** webcam activity for privacy or presence automations.         |
-| 📹 Webcam          | **Expose** a webcam switch and camera feed.                           |
-| 🎮 Gamepad Used    | **Report** controller activity (active if input detected within 40s).  |
-| 🔐 Fingerprint     | **Use** an R503 fingerprint scanner over UART on Raspberry Pi. [Settings](modules-settings.md#fingerprint) |
+<table data-search="true"><thead><tr><th>Module</th><th>Description</th></tr></thead><tbody><tr><td>🎤 Microphone Used</td><td><strong>Monitor</strong> if any application is currently accessing the microphone.</td></tr><tr><td>🔈 Speaker Used</td><td><strong>Detect</strong> active audio output to determine if the system is "in use."</td></tr><tr><td>🎥 Camera Used</td><td><strong>Track</strong> webcam activity for privacy or presence automations.</td></tr><tr><td>📹 Webcam</td><td><strong>Expose</strong> a webcam switch and camera feed.</td></tr><tr><td>🎮 Gamepad Used</td><td><strong>Report</strong> controller activity (active if input detected within 40s).</td></tr><tr><td>🔐 Fingerprint</td><td><strong>Use</strong> an R503 fingerprint scanner over UART on Raspberry Pi. <a href="modules-settings.md#fingerprint">Settings</a></td></tr></tbody></table>
 
 ### **🧰 Applications & Tools**
 
-| Module            | Description                                                                                                  |
-| ----------------- | ------------------------------------------------------------------------------------------------------------ |
-| 🌍 LNXlink Update | **Update** LNXlink directly from Home Assistant. [Usage](usage.md#install-update)                            |
-| 🗣️ Speech        | **Process** voice input and return responses via binary sensor attributes. [Usage](usage.md#voice-assistant) |
-| 🧲 GPIO           | **Control** and monitor Raspberry Pi GPIO pins. [Settings](modules-settings.md#gpio)                         |
-| 📺 IR Remote      | **Control** IR devices or decode incoming signals. [Settings](modules-settings.md#ir-remote)                 |
+<table data-search="true"><thead><tr><th>Module</th><th>Description</th></tr></thead><tbody><tr><td>🌍 LNXlink Update</td><td><strong>Update</strong> LNXlink directly from Home Assistant. <a href="usage.md#install-update">Usage</a></td></tr><tr><td>🗣️ Speech</td><td><strong>Process</strong> voice input and return responses via binary sensor attributes. <a href="usage.md#voice-assistant">Usage</a></td></tr><tr><td>🧲 GPIO</td><td><strong>Control</strong> and monitor Raspberry Pi GPIO pins. <a href="modules-settings.md#gpio">Settings</a></td></tr><tr><td>📺 IR Remote</td><td><strong>Control</strong> IR devices or decode incoming signals. <a href="modules-settings.md#ir-remote">Settings</a></td></tr></tbody></table>
 
 ### 🧩 **Advanced/Other**
 
-| Module            | Description                                                                                                                |
-| ----------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| 🐚 Bash Commands  | **Create** custom sensors, binary\_sensors, buttons, or switches using shell scripts. [Settings](modules-settings.md#bash) |
-| 🐳 Docker         | **Manage** containers; toggle status, check for updates, or prune images. [Settings](modules-settings.md#docker)           |
-| ⏳ Inference Time  | **Debug** performance by measuring sensor data collection latency.                                                         |
-| 📜 Logging Level  | **Change** debug verbosity on-the-fly for troubleshooting.                                                                 |
-| 📊 Statistics     | **Opt-in** to send anonymous usage data to help improve LNXlink. [Usage](usage.md#statistics)                              |
-| 📮 RESTful        | **Interact** with the system using standard HTTP requests. [Usage](usage.md#restful)                                       |
-| 🔁 Update Entities | **Force** all or selected module entities to publish a fresh update.                                                        |
-| 👁️ Watch Changes | **Restart** when the configuration changes                                                                                 |
+| Module             | Description                                                                                                                |
+| ------------------ | -------------------------------------------------------------------------------------------------------------------------- |
+| 🐚 Bash Commands   | **Create** custom sensors, binary\_sensors, buttons, or switches using shell scripts. [Settings](modules-settings.md#bash) |
+| 🐳 Docker          | **Manage** containers; toggle status, check for updates, or prune images. [Settings](modules-settings.md#docker)           |
+| ⏳ Inference Time   | **Debug** performance by measuring sensor data collection latency.                                                         |
+| 📜 Logging Level   | **Change** debug verbosity on-the-fly for troubleshooting.                                                                 |
+| 📊 Statistics      | **Opt-in** to send anonymous usage data to help improve LNXlink. [Usage](usage.md#statistics)                              |
+| 📮 RESTful         | **Interact** with the system using standard HTTP requests. [Usage](usage.md#restful)                                       |
+| 🔁 Update Entities | **Force** all or selected module entities to publish a fresh update.                                                       |
+| 👁️ Watch Changes  | **Restart** when the configuration changes                                                                                 |
 
 ### **📦 Custom Modules**
 

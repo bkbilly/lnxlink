@@ -77,7 +77,7 @@ systemctl --user enable --now lnxlink
 
 {% tab title="Docker" %}
 {% hint style="info" %}
-Some modules may not work yet.&#x20;
+Some modules may not work yet.
 {% endhint %}
 
 This command will download the LNXlink image and set up the configuration file:
@@ -136,10 +136,10 @@ docker compose -f docker-compose.yaml up
 
 {% tab title="Flatpak" %}
 {% hint style="warning" %}
-This is not easily maintained, so it might not be updated to the latest version. Also some modules are not fully supported.
+Some modules are not fully supported.
 {% endhint %}
 
-Install and follow the setup instructions by running it. A new configuration file will be created at `~/Documents/LNXlink/config.yaml`.&#x20;
+Install and follow the setup instructions by running it. A new configuration file will be created at `~/Documents/LNXlink/config.yaml`.
 
 {% code lineNumbers="true" %}
 ```bash
