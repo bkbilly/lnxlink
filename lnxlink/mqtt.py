@@ -280,26 +280,25 @@ class MQTT:
         return bool(value)
 
     def _homeassistant_api_token(self, ha_config):
-        """Read the Home Assistant long-lived access token."""
-        token = str(ha_config.get("token", ""))
-        if token:
-            return token
+        """Read the Home Assistant long-lived access token.
 
-        token_env = str(ha_config.get("token_env", ""))
-        if token_env:
-            token = os.environ.get(token_env, "")
-            if token:
-                return token
+        If the token value is a path to an existing file, the token is read
+        from that file.  Otherwise it is used as a literal token string.
+        """
+        token = str(ha_config.get("token", "")).strip()
+        if not token:
+            return ""
 
-        token_file = str(ha_config.get("token_file", ""))
-        if token_file:
+        token_path = os.path.expanduser(token)
+        if os.path.isfile(token_path):
             try:
-                with open(os.path.expanduser(token_file), encoding="UTF-8") as file:
+                with open(token_path, encoding="UTF-8") as file:
                     return file.read().strip()
             except OSError as err:
                 logger.error("Could not read Home Assistant token file: %s", err)
+                return ""
 
-        return ""
+        return token
 
     def setup_homeassistant_api(self, on_connect, on_message):
         """Connect to Home Assistant API for MQTT publish and commands."""
@@ -307,7 +306,7 @@ class MQTT:
         if not ha_config["url"] or not ha_config["token"]:
             logger.error(
                 "Home Assistant MQTT API transport needs mqtt.homeassistant.url "
-                "and token/token_env/token_file"
+                "and token"
             )
             return False
 

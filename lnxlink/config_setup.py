@@ -58,7 +58,7 @@ def setup_config(config_path):
                     "Could not create configuration file %s: %s", config_path, err
                 )
             return False
-        userprompt_config(config_path)
+        setup_mqtt(config_path)
     validate_config(config_path)
     return True
 
@@ -211,57 +211,126 @@ def query_true_false(question, default="false"):
         logger.info("Please respond with 'true' or 'false' (or 't' or 'f').")
 
 
-def userprompt_config(config_path):
-    """Ask users questions to setup config file"""
+def _prompt_mqtt_broker(config):
+    """Prompt for direct MQTT broker settings"""
+    mqtt = config["mqtt"]
+    print("\n--- MQTT Broker Settings ---")
+    mqtt["server"] = input(f" MQTT server [{mqtt['server']}]: ") or mqtt["server"]
+    mqtt["port"] = input(f" MQTT port [{mqtt['port']}]: ") or mqtt["port"]
+    mqtt["port"] = int(mqtt["port"])
+    mqtt["auth"]["user"] = (
+        input(f" MQTT username [{mqtt['auth']['user']}]: ") or mqtt["auth"]["user"]
+    )
+    mqtt["auth"]["pass"] = (
+        input(f" MQTT password [{mqtt['auth']['pass']}]: ") or mqtt["auth"]["pass"]
+    )
+    mqtt["auth"]["tls"] = query_true_false("Enable TLS", mqtt["auth"]["tls"])
+    if mqtt["auth"]["tls"]:
+        mqtt["auth"]["ca_certs"] = (
+            input(f" CA certs file [{mqtt['auth']['ca_certs']}]: ")
+            or mqtt["auth"]["ca_certs"]
+        )
+        mqtt["auth"]["certfile"] = (
+            input(f" Client cert file [{mqtt['auth']['certfile']}]: ")
+            or mqtt["auth"]["certfile"]
+        )
+        mqtt["auth"]["keyfile"] = (
+            input(f" Client key file [{mqtt['auth']['keyfile']}]: ")
+            or mqtt["auth"]["keyfile"]
+        )
+    mqtt["clientId"] = input(f" Client ID [{mqtt['clientId']}]: ") or mqtt["clientId"]
+    mqtt["prefix"] = input(f" Topic prefix [{mqtt['prefix']}]: ") or mqtt["prefix"]
+    mqtt["discovery"]["enabled"] = query_true_false(
+        "Enable MQTT auto-discovery", mqtt["discovery"]["enabled"]
+    )
+    if mqtt["discovery"]["enabled"]:
+        mqtt["discovery"]["prefix"] = (
+            input(f" Discovery prefix [{mqtt['discovery']['prefix']}]: ")
+            or mqtt["discovery"]["prefix"]
+        )
+    mqtt["lwt"]["enabled"] = query_true_false(
+        "Enable Last Will and Testament (LWT)", mqtt["lwt"]["enabled"]
+    )
+    if mqtt["lwt"]["enabled"]:
+        mqtt["lwt"]["qos"] = (
+            input(f" LWT QoS level [{mqtt['lwt']['qos']}]: ") or mqtt["lwt"]["qos"]
+        )
+        mqtt["lwt"]["qos"] = int(mqtt["lwt"]["qos"])
+    mqtt["clear_on_off"] = query_true_false(
+        "Clear sensor values on power-off", mqtt["clear_on_off"]
+    )
+
+
+def _prompt_homeassistant_api(config):
+    """Prompt for Home Assistant API settings"""
+    ha = config["mqtt"]["homeassistant"]
+    print("\n--- Home Assistant API Settings ---")
+    ha["url"] = (
+        input(f" Home Assistant URL [{ha['url'] or 'e.g. http://192.168.1.1:8123'}]: ")
+        or ha["url"]
+    )
+    current_token = ha.get("token", "")
+    token_display = current_token[:10] + "..." if current_token else ""
+    ha["token"] = (
+        input(f" Token or path to token file [{token_display}]: ") or current_token
+    )
+    ha["timeout"] = (
+        input(f" HTTP timeout in seconds [{ha['timeout']}]: ") or ha["timeout"]
+    )
+    ha["timeout"] = int(ha["timeout"])
+    ha["verify_ssl"] = query_true_false("Verify SSL certificates", ha["verify_ssl"])
+    ha["subscribe_commands"] = query_true_false(
+        "Subscribe to commands via WebSocket", ha["subscribe_commands"]
+    )
+
+
+def setup_mqtt(config_path):
+    """Interactive MQTT configuration wizard"""
     with open(config_path, encoding="UTF-8") as file:
         config = yaml.safe_load(file)
 
-        # logger.info config
-        logger.info("\nLeave empty for default")
+    transport_options = ["mqtt", "homeassistant_api", "auto"]
+    transport_descriptions = {
+        "mqtt": "Direct MQTT broker connection",
+        "homeassistant_api": "Home Assistant HTTP/WebSocket API",
+        "auto": "Try MQTT first, fall back to Home Assistant API",
+    }
+    current = config["mqtt"].get("transport", "mqtt")
+    print("\n=== MQTT Configuration ===")
+    print("Select transport method:")
+    for num, opt in enumerate(transport_options, 1):
+        marker = " *" if opt == current else ""
+        print(f"  {num}) {opt} - {transport_descriptions[opt]}{marker}")
 
-        # Change default values
-        config["mqtt"]["discovery"]["enabled"] = query_true_false(
-            "Enable MQTT automatic discovery", config["mqtt"]["discovery"]["enabled"]
-        )
-        config["mqtt"]["server"] = (
-            input(f" MQTT server [{config['mqtt']['server']}]: ")
-            or config["mqtt"]["server"]
-        )
-        config["mqtt"]["port"] = (
-            input(f" MQTT port [{config['mqtt']['port']}]: ") or config["mqtt"]["port"]
-        )
-        config["mqtt"]["port"] = int(config["mqtt"]["port"])
-        config["mqtt"]["auth"]["tls"] = query_true_false(
-            "Enable TLS", config["mqtt"]["auth"]["tls"]
-        )
-        config["mqtt"]["auth"]["user"] = (
-            input(f" MQTT username [{config['mqtt']['auth']['user']}]: ")
-            or config["mqtt"]["auth"]["user"]
-        )
-        config["mqtt"]["auth"]["pass"] = (
-            input(f" MQTT password [{config['mqtt']['auth']['pass']}]: ")
-            or config["mqtt"]["auth"]["pass"]
-        )
-        config["mqtt"]["clientId"] = (
-            input(f" Change clientId [{config['mqtt']['clientId']}]: ")
-            or config["mqtt"]["clientId"]
-        )
-        statistics = query_true_false("Send statistics", True)
-        if not statistics:
-            config["exclude"].append("statistics")
+    choice = input(f" Transport [{current}]: ").strip()
+    if choice in ("1", "2", "3"):
+        config["mqtt"]["transport"] = transport_options[int(choice) - 1]
+    elif choice in transport_options:
+        config["mqtt"]["transport"] = choice
+    elif choice == "":
+        config["mqtt"]["transport"] = current
+    else:
+        print(f"Invalid choice, keeping current: {current}")
+        config["mqtt"]["transport"] = current
+
+    transport = config["mqtt"]["transport"]
+
+    if transport in ("mqtt", "auto"):
+        _prompt_mqtt_broker(config)
+
+    if transport in ("homeassistant_api", "auto"):
+        _prompt_homeassistant_api(config)
 
     if _write_config(config_path, config):
-        logger.info("\nAll changes have been saved.")
-    logger.info(
-        " MQTT Topic prefix for for monitoring: %s/%s/...",
-        config["mqtt"]["prefix"],
-        config["mqtt"]["clientId"],
-    )
-    logger.info(
-        " MQTT Topic prefix for for commands: %s/%s/commands/...",
-        config["mqtt"]["prefix"],
-        config["mqtt"]["clientId"],
-    )
+        print("\nMQTT configuration saved successfully.")
+    print(f" Transport: {config['mqtt']['transport']}")
+    if transport in ("mqtt", "auto"):
+        print(
+            f" MQTT Topic prefix for monitoring: {config['mqtt']['prefix']}"
+            f"/{config['mqtt']['clientId']}/..."
+        )
+    if transport in ("homeassistant_api", "auto"):
+        print(f" Home Assistant URL: {config['mqtt']['homeassistant']['url']}")
 
 
 def get_service_user():

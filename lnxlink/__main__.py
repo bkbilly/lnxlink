@@ -471,6 +471,23 @@ class LNXlink:
         os.execv(sys.executable, [sys.executable] + sys.argv)
 
 
+def _run_setup_wizard(args, config_path):
+    """Handle setup wizard CLI flags (--setup, --moduleselector, --mqtt)"""
+    try:
+        if args.setup:
+            logger.info("The configuration exists under the file: %s", config_path)
+            sys.exit()
+        if args.moduleselector:
+            config_setup.setup_modules(config_path)
+            sys.exit()
+        if args.mqtt:
+            config_setup.setup_mqtt(config_path)
+            sys.exit()
+    except KeyboardInterrupt:
+        print("\nSetup cancelled.")
+        sys.exit(0)
+
+
 def main():
     """Starts the app with some arguments"""
     description = (
@@ -482,12 +499,6 @@ def main():
         "--config",
         default="lnxlink_config/lnxlink.yaml",
         help="Configuration file",
-    )
-    parser.add_argument(
-        "-i",
-        "--ignore-systemd",
-        help="Runs without setting up SystemD service",
-        action="store_true",
     )
     parser.add_argument(
         "-e",
@@ -514,9 +525,21 @@ def main():
         help="Path to the Home Assistant discovery topic registry file",
     )
     parser.add_argument(
+        "-i",
+        "--ignore-systemd",
+        help="Runs without setting up SystemD service",
+        action="store_true",
+    )
+    parser.add_argument(
         "-s",
         "--setup",
         help="Runs only the setup configuration workflow",
+        action="store_true",
+    )
+    parser.add_argument(
+        "-q",
+        "--mqtt",
+        help="Runs the MQTT configuration wizard",
         action="store_true",
     )
     parser.add_argument(
@@ -546,14 +569,12 @@ def main():
         else None
     )
     files_setup.setup_logger(config_path, args.logging, log_directory)
-    config_setup.setup_config(config_path)
-    if args.setup:
-        logger.info("The configuration exists under the file: %s", config_path)
-        sys.exit()
-    if args.moduleselector:
-        logger.info("The configuration exists under the file: %s", config_path)
-        config_setup.setup_modules(config_path)
-        sys.exit()
+    try:
+        config_setup.setup_config(config_path)
+        _run_setup_wizard(args, config_path)
+    except KeyboardInterrupt:
+        print("\nSetup cancelled.")
+        sys.exit(0)
     if not args.ignore_systemd:
         config_setup.setup_systemd(config_path)
     else:

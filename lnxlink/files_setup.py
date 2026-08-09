@@ -112,6 +112,15 @@ def read_config(config_path):
     if os.environ.get("LNXLINK_MQTT_PASS") not in [None, ""]:
         conf["mqtt"]["auth"]["pass"] = os.environ.get("LNXLINK_MQTT_PASS")
 
+    if os.environ.get("LNXLINK_HOMEASSISTANT_URL") not in [None, ""]:
+        conf["mqtt"]["homeassistant"]["url"] = os.environ.get(
+            "LNXLINK_HOMEASSISTANT_URL"
+        )
+    if os.environ.get("LNXLINK_HOMEASSISTANT_TOKEN") not in [None, ""]:
+        conf["mqtt"]["homeassistant"]["token"] = os.environ.get(
+            "LNXLINK_HOMEASSISTANT_TOKEN"
+        )
+
     return conf
 
 

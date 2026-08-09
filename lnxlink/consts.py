@@ -59,8 +59,6 @@ mqtt:
   homeassistant:
     url: ""
     token: ""
-    token_env: ""
-    token_file: ""
     timeout: 20
     verify_ssl: true
     subscribe_commands: true
