@@ -40,7 +40,9 @@ class Addon:
             },
         }
         self.commands = None
-        self._detect_commands()
+        found_tool = self._detect_commands()
+        if not found_tool:
+            raise SystemError("System command 'xdotool' or 'ydotool' not found")
 
     def _detect_commands(self):
         """Detect available mouse control tool, retried lazily on first use"""
@@ -48,8 +50,8 @@ class Addon:
             if which(command) is not None:
                 self.commands = command_options
                 logger.debug("Using '%s' for mouse control", command)
-                return
-        logger.warning("System commands 'ydotool' or 'xdotool' not found")
+                return True
+        return False
 
     def exposed_controls(self):
         """Exposes to home assistant"""

@@ -48,10 +48,10 @@ class MonitorBrightness:
             if not os.access(os.path.join(path, "brightness"), os.W_OK):
                 issues.add(
                     "Backlight Permission Error: Create a udev rule.\n"
-                    'Run: echo \'SUBSYSTEM=="backlight",RUN+="/bin/chmod 666" '
-                    "/sys/class/backlight/%k/brightness /sys/class/backlight/%k/bl_power\"'"
-                    " | sudo tee -a /etc/udev/rules.d/backlight-permissions.rules\n"
-                    "Then run: sudo udevadm control --reload-rules && udevadm trigger"
+                    'Run: echo \'ACTION=="add|change", SUBSYSTEM=="backlight", '
+                    'RUN+="/bin/chmod 666 /sys/class/backlight/%k/brightness /sys/class/backlight/%k/bl_power"\' '
+                    "| sudo tee /etc/udev/rules.d/backlight-permissions.rules\n"
+                    "Then run: sudo udevadm control --reload-rules && sudo udevadm trigger"
                 )
             found_displays.append(SysfsMonitor(path))
 
