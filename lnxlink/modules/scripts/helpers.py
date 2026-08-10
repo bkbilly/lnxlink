@@ -9,6 +9,65 @@ import sys
 logger = logging.getLogger("lnxlink")
 
 
+def _get_installer():
+    """Get the installer tool name from package metadata"""
+    try:
+        dist = importlib.metadata.distribution("lnxlink")
+        installer_file = dist.read_text("INSTALLER")
+        if installer_file:
+            return installer_file.strip()
+    except Exception:
+        pass
+    return ""
+
+
+def get_install_method():
+    """Detect how lnxlink was installed"""
+    path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+    installer = _get_installer()
+    if os.environ.get("FLATPAK_ID"):
+        method = "flatpak"
+    elif os.path.exists("/.dockerenv"):
+        method = "docker"
+    elif "pipx" in path:
+        method = "pipx"
+    elif "/uv/" in path or installer == "uv":
+        method = "uv"
+    elif (
+        path.startswith("/usr/lib")
+        and syscommand("pacman -Qq python-lnxlink", ignore_errors=True)[2] == 0
+    ):
+        method = "aur"
+    elif path.startswith("/usr/lib"):
+        method = "system"
+    else:
+        method = "pip"
+
+    if os.path.exists(os.path.join(path, "lnxlink/edit.txt")):
+        method += "_edit"
+
+    return method
+
+
+def get_version():
+    """Get the current version and the path of the app"""
+    pkg_name = __package__.split(".", maxsplit=1)[0] if __package__ else __name__
+    try:
+        version = importlib.metadata.version(pkg_name)
+    except importlib.metadata.PackageNotFoundError:
+        version = importlib.metadata.version("lnxlink")
+    path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+    if os.path.exists(os.path.join(path, "lnxlink/edit.txt")):
+        version += "+edit"
+        git_hash, _, return_code = syscommand(
+            f"git -C {path} rev-parse --short HEAD",
+            ignore_errors=True,
+        )
+        if return_code == 0:
+            version += f"-{git_hash}"
+    return version, path
+
+
 # pylint: disable=consider-using-with
 def syscommand(command, ignore_errors=False, timeout=3, background=False):
     """Global subprocess command"""

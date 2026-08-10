@@ -11,16 +11,64 @@ import sys
 import threading
 import time
 import traceback
+from collections import OrderedDict
 
-from lnxlink import config_setup, files_setup, modules
+from lnxlink import config_setup, modules
 from lnxlink.discovery_registry import DiscoveryRegistry
 from lnxlink.modules.scripts import helpers
 from lnxlink.mqtt import MQTT
 from lnxlink.system_monitor import GracefulKiller, MonitorSuspend
 
-version, path = files_setup.get_version()
-INSTALL_METHOD = files_setup.get_install_method()
+version, path = helpers.get_version()
+INSTALL_METHOD = helpers.get_install_method()
 logger = logging.getLogger("lnxlink")
+
+
+class UniqueQueue:
+    """
+    A queue that maintains unique named items with a maximum size limit.
+    If an item with the same name is added, it replaces the old one.
+    When full, the oldest item is discarded to make room.
+    """
+
+    def __init__(self, max_size=200):
+        """Initializes the UniqueQueue"""
+        self.queue = OrderedDict()
+        self.max_size = max_size
+        self._lock = threading.Lock()
+
+    def __repr__(self):
+        """Returns a string representation of the queue."""
+        return f"<{self.__class__.__name__} queue: {repr(self.queue)}>"
+
+    def __iter__(self):
+        """Returns an iterator that yields and removes items from the queue in FIFO order"""
+        while True:
+            with self._lock:
+                if not self.queue:
+                    break
+                yield self.queue.popitem(last=False)
+
+    def add_item(self, name, value, retain=True, force_publish=False):
+        """Adds an item to the queue. If the item already exists, it replaces it"""
+        with self._lock:
+            if name in self.queue:
+                del self.queue[name]
+            elif len(self.queue) >= self.max_size:
+                self.queue.popitem(last=False)
+            self.queue[name] = (value, retain, force_publish)
+
+    def get_item(self):
+        """Retrieves and removes the next item from the queue (FIFO)"""
+        with self._lock:
+            if self.queue:
+                return self.queue.popitem(last=False)
+        return None, None
+
+    def clear(self):
+        """Clears all items from the queue"""
+        with self._lock:
+            self.queue.clear()
 
 
 # pylint: disable=too-many-instance-attributes
@@ -54,7 +102,7 @@ class LNXlink:
         self.excluded_modules = set()
 
         # Read configuration from yaml file
-        self.publ_queue = files_setup.UniqueQueue()
+        self.publ_queue = UniqueQueue()
         self.mqtt = MQTT(self.config)
         self.stop_event = threading.Event()
 
@@ -378,7 +426,7 @@ def _run_setup_wizard(args, config_path):
         log_directory = (
             args.log_directory if args.log_directory else os.path.dirname(config_path)
         )
-        files_setup.setup_logger(log_directory, args.logging)
+        config_setup.setup_logger(log_directory, args.logging)
         if not os.path.exists(config_path):
             logger.info("Config file not found.")
             if not config_setup.setup_config(config_path):
@@ -481,7 +529,7 @@ def main():
         print("\nSetup cancelled.")
         sys.exit(0)
 
-    config = files_setup.read_config(config_path)
+    config = config_setup.read_config(config_path)
     if args.registry_path:
         config["registry_path"] = os.path.abspath(
             os.path.expanduser(args.registry_path)
