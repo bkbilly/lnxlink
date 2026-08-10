@@ -250,8 +250,11 @@ class LNXlink:
         while not self.stop_event.is_set():
             if not self.kill:
                 self.run_modules()
-            if self.stop_event.wait(timeout=self.config["update_interval"]):
-                break
+                if self.stop_event.wait(timeout=self.config["update_interval"]):
+                    break
+            else:
+                if self.stop_event.wait(timeout=0.1):
+                    break
         logger.info("Stopped monitor_run")
 
     def monitor_queue(self):
