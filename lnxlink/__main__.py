@@ -477,14 +477,20 @@ class LNXlink:
 def _run_setup_wizard(args, config_path):
     """Handle setup wizard CLI flags (--setup, --moduleselector, --mqtt)"""
     try:
-        if args.setup:
-            logger.info("The configuration exists under the file: %s", config_path)
-            sys.exit()
-        if args.moduleselector:
-            config_setup.setup_modules(config_path)
-            sys.exit()
-        if args.mqtt:
+        if not os.path.exists(config_path):
+            logger.info("Config file not found.")
+            if not config_setup.setup_config(config_path):
+                sys.exit()
+            config_setup.validate_config(config_path)
             config_setup.setup_mqtt(config_path)
+            if args.setup:
+                sys.exit()
+        elif args.setup:
+            logger.info("The configuration exists under the file: %s", config_path)
+            config_setup.setup_mqtt(config_path)
+            sys.exit()
+        elif args.moduleselector:
+            config_setup.setup_modules(config_path)
             sys.exit()
     except KeyboardInterrupt:
         print("\nSetup cancelled.")
@@ -540,12 +546,6 @@ def main():
         action="store_true",
     )
     parser.add_argument(
-        "-q",
-        "--mqtt",
-        help="Runs the MQTT configuration wizard",
-        action="store_true",
-    )
-    parser.add_argument(
         "-m",
         "--moduleselector",
         help="Runs the module selection wizard",
@@ -573,7 +573,6 @@ def main():
     )
     files_setup.setup_logger(config_path, args.logging, log_directory)
     try:
-        config_setup.setup_config(config_path)
         _run_setup_wizard(args, config_path)
     except KeyboardInterrupt:
         print("\nSetup cancelled.")

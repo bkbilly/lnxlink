@@ -38,28 +38,23 @@ def _write_config(config_path, config):
 
 def setup_config(config_path):
     """Setup and create config file"""
-    if not os.path.exists(config_path):
-        logger.info("Config file not found.")
-
-        try:
-            Path(config_path).parent.mkdir(parents=True, exist_ok=True)
-            with open(config_path, "wb") as config:
-                config.write(CONFIGTEMP.encode())
-            logger.info("Created new template: %s", config_path)
-        except OSError as err:
-            if err.errno in {errno.EACCES, errno.EPERM, errno.EROFS}:
-                logger.error(
-                    "Could not create configuration file %s because of permission "
-                    "issues.",
-                    config_path,
-                )
-            else:
-                logger.error(
-                    "Could not create configuration file %s: %s", config_path, err
-                )
-            return False
-        setup_mqtt(config_path)
-    validate_config(config_path)
+    try:
+        Path(config_path).parent.mkdir(parents=True, exist_ok=True)
+        with open(config_path, "wb") as config:
+            config.write(CONFIGTEMP.encode())
+        logger.info("Created new template: %s", config_path)
+    except OSError as err:
+        if err.errno in {errno.EACCES, errno.EPERM, errno.EROFS}:
+            logger.error(
+                "Could not create configuration file %s because of permission "
+                "issues.",
+                config_path,
+            )
+        else:
+            logger.error(
+                "Could not create configuration file %s: %s", config_path, err
+            )
+        return False
     return True
 
 
