@@ -2,8 +2,6 @@
 """Start the LNXlink service"""
 
 import argparse
-import copy
-import errno
 import inspect
 import json
 import logging
@@ -15,6 +13,7 @@ import time
 import traceback
 
 from lnxlink import config_setup, files_setup, modules
+from lnxlink.discovery_registry import DiscoveryRegistry
 from lnxlink.modules.scripts import helpers
 from lnxlink.mqtt import MQTT
 from lnxlink.system_monitor import GracefulKiller, MonitorSuspend
@@ -51,9 +50,7 @@ class LNXlink:
         self.prev_publish = {}
         self.saved_publish = {}
         self.update_change_interval = 900
-        self.discovery_registry_lock = threading.Lock()
-        self.discovery_registry = {}
-        self.discovery_registry_file_enabled = True
+        self.discovery_registry = DiscoveryRegistry(self.config)
         self.excluded_modules = set()
 
         # Read configuration from yaml file
@@ -360,113 +357,14 @@ class LNXlink:
                             "%s: %s, %s", exp_name, err, traceback.format_exc()
                         )
                 if discovery_ok:
-                    self._sync_discovery_registry(
+                    self.discovery_registry.sync(
                         service,
                         current_topics,
                         getattr(addon, "prune_stale_discovery", False),
+                        self.mqtt,
                     )
         if filter_name is None:
-            self._clear_excluded_discovery_topics()
-
-    def _discovery_registry_path(self):
-        """Path of the locally stored Home Assistant discovery topic registry."""
-        registry_path = self.config.get("registry_path")
-        if registry_path:
-            return registry_path
-
-        config_dir = os.path.dirname(os.path.realpath(self.config_path))
-        return os.path.join(config_dir, "discovery_registry.json")
-
-    def _load_discovery_registry(self):
-        """Load Home Assistant discovery topics published by this instance."""
-        if not self.discovery_registry_file_enabled:
-            return copy.deepcopy(self.discovery_registry)
-        try:
-            with open(self._discovery_registry_path(), encoding="UTF-8") as registry:
-                data = json.load(registry)
-            if isinstance(data, dict):
-                self.discovery_registry = data
-                return copy.deepcopy(data)
-        except FileNotFoundError:
-            pass
-        except Exception as err:
-            logger.error("Could not read discovery registry: %s", err)
-        return copy.deepcopy(self.discovery_registry)
-
-    def _save_discovery_registry(self, registry):
-        """Persist Home Assistant discovery topics published by this instance."""
-        self.discovery_registry = copy.deepcopy(registry)
-        if not self.discovery_registry_file_enabled:
-            return
-        try:
-            with open(self._discovery_registry_path(), "w", encoding="UTF-8") as file:
-                json.dump(registry, file, indent=2, sort_keys=True)
-                file.write("\n")
-        except OSError as err:
-            if err.errno in {errno.EACCES, errno.EPERM, errno.EROFS}:
-                self.discovery_registry_file_enabled = False
-                logger.warning(
-                    "Could not write discovery registry to %s because of permission "
-                    "issues. Discovery registry will be stored in memory only.",
-                    self._discovery_registry_path(),
-                )
-            else:
-                logger.error("Could not write discovery registry: %s", err)
-        except Exception as err:
-            logger.error("Could not write discovery registry: %s", err)
-
-    def _discovery_registry_entry(self, registry, service):
-        """Read a registry entry, including the old list-only format."""
-        entry = registry.get(service, {})
-        if isinstance(entry, list):
-            return set(entry), set()
-        if isinstance(entry, dict):
-            return set(entry.get("topics", [])), set(entry.get("stale_topics", []))
-        return set(), set()
-
-    def _clear_excluded_discovery_topics(self):
-        """Clear Home Assistant discovery topics for explicitly excluded modules."""
-        if not self.excluded_modules:
-            return
-        with self.discovery_registry_lock:
-            registry = self._load_discovery_registry()
-            updated = False
-            for service in sorted(self.excluded_modules & set(registry)):
-                topics, stale_topics = self._discovery_registry_entry(registry, service)
-                for topic in sorted(topics | stale_topics):
-                    logger.info(
-                        "Clearing excluded module Home Assistant discovery topic: %s",
-                        topic,
-                    )
-                    self.mqtt.publish(topic, payload=None, retain=True)
-                registry.pop(service, None)
-                updated = True
-            if updated:
-                self._save_discovery_registry(registry)
-
-    def _sync_discovery_registry(self, service, current_topics, prune_stale):
-        """Track discovery topics and clear stale configs for opt-in modules."""
-        with self.discovery_registry_lock:
-            registry = self._load_discovery_registry()
-            previous_topics, previous_stale_topics = self._discovery_registry_entry(
-                registry, service
-            )
-            missing_topics = previous_topics - current_topics
-            topics_to_clear = set()
-            topics_to_mark_stale = set()
-            if prune_stale:
-                topics_to_clear = previous_stale_topics & missing_topics
-                topics_to_mark_stale = missing_topics - topics_to_clear
-
-            for topic in sorted(topics_to_clear):
-                logger.info("Clearing stale Home Assistant discovery topic: %s", topic)
-                self.mqtt.publish(topic, payload=None, retain=True)
-
-            registry[service] = {
-                "topics": sorted(current_topics | topics_to_mark_stale),
-                "stale_topics": sorted(topics_to_mark_stale),
-            }
-            self._save_discovery_registry(registry)
+            self.discovery_registry.clear_excluded(self.excluded_modules, self.mqtt)
 
     def restart_script(self):
         """Restarts itself"""

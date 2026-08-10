@@ -231,7 +231,9 @@ class HomeAssistantApiClient:
     def publish(self, topic, payload, qos=1, retain=True):
         """Publish MQTT message through Home Assistant's mqtt.publish service."""
         ha_config = self._get_ha_config()
-        if isinstance(payload, bytes):
+        if payload is None:
+            payload = ""
+        elif isinstance(payload, bytes):
             payload = payload.decode("UTF-8")
         elif not isinstance(payload, str):
             payload = str(payload)
