@@ -475,8 +475,12 @@ class LNXlink:
 
 
 def _run_setup_wizard(args, config_path):
-    """Handle setup wizard CLI flags (--setup, --moduleselector, --mqtt)"""
+    """Handle setup wizard CLI flags"""
     try:
+        log_directory = (
+            args.log_directory if args.log_directory else os.path.dirname(config_path)
+        )
+        files_setup.setup_logger(log_directory, args.logging)
         if not os.path.exists(config_path):
             logger.info("Config file not found.")
             if not config_setup.setup_config(config_path):
@@ -492,6 +496,13 @@ def _run_setup_wizard(args, config_path):
         elif args.moduleselector:
             config_setup.setup_modules(config_path)
             sys.exit()
+
+        if not args.ignore_systemd:
+            config_setup.setup_systemd(config_path)
+        else:
+            logger.info(
+                "By not setting up the SystemD, LNXlink won't be able to start on boot..."
+            )
     except KeyboardInterrupt:
         print("\nSetup cancelled.")
         sys.exit(0)
@@ -566,23 +577,11 @@ def main():
         parser.print_help()
         parser.exit("\nSomething went wrong, --config condition was not set")
     config_path = os.path.abspath(args.config)
-    log_directory = (
-        os.path.abspath(os.path.expanduser(args.log_directory))
-        if args.log_directory
-        else None
-    )
-    files_setup.setup_logger(config_path, args.logging, log_directory)
     try:
         _run_setup_wizard(args, config_path)
     except KeyboardInterrupt:
         print("\nSetup cancelled.")
         sys.exit(0)
-    if not args.ignore_systemd:
-        config_setup.setup_systemd(config_path)
-    else:
-        logger.info(
-            "By not setting up the SystemD, LNXlink won't be able to start on boot..."
-        )
 
     config = files_setup.read_config(config_path)
     if args.registry_path:

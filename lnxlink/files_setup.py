@@ -62,28 +62,27 @@ class UniqueQueue:
             self.queue.clear()
 
 
-def setup_logger(config_path, log_level, log_directory=None):
+def setup_logger(config_path, log_level):
     """Configure file logging."""
-    Path(config_path).parent.mkdir(parents=True, exist_ok=True)
-    if log_directory is None:
-        log_directory = os.path.dirname(os.path.realpath(config_path))
-    log_path = Path(log_directory).expanduser()
-    log_path.mkdir(parents=True, exist_ok=True)
-    start_sec = str(int(time.time()))[-4:]
-    log_formatter = logging.Formatter(
-        "%(asctime)s ["
-        + start_sec
-        + ":%(threadName)s.%(module)s.%(funcName)s.%(lineno)d] [%(levelname)s]  %(message)s"
-    )
-
-    file_handler = RotatingFileHandler(
-        log_path / "lnxlink.log",
-        maxBytes=5 * 1024 * 1024,
-        backupCount=1,
-    )
     logging.basicConfig(level=log_level)
-    file_handler.setFormatter(log_formatter)
-    logger.addHandler(file_handler)
+    try:
+        Path(config_path).parent.mkdir(parents=True, exist_ok=True)
+        log_path = Path(config_path).expanduser()
+        file_handler = RotatingFileHandler(
+            log_path / "lnxlink.log",
+            maxBytes=5 * 1024 * 1024,
+            backupCount=1,
+        )
+        start_sec = str(int(time.time()))[-4:]
+        log_formatter = logging.Formatter(
+            "%(asctime)s ["
+            + start_sec
+            + ":%(threadName)s.%(module)s.%(funcName)s.%(lineno)d] [%(levelname)s]  %(message)s"
+        )
+        file_handler.setFormatter(log_formatter)
+        logger.addHandler(file_handler)
+    except Exception as err:
+        logger.error("Can't log to file: %s", err)
 
 
 def read_config(config_path):

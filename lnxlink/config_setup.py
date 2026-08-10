@@ -51,9 +51,7 @@ def setup_config(config_path):
                 config_path,
             )
         else:
-            logger.error(
-                "Could not create configuration file %s: %s", config_path, err
-            )
+            logger.error("Could not create configuration file %s: %s", config_path, err)
         return False
     return True
 
