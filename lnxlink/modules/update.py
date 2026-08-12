@@ -99,7 +99,7 @@ class Addon:
 
     def _update_edit(self, method):
         """Handle update for editable installations"""
-        syscommand(f"git -C {self.lnxlink.path} pull", timeout=15)
+        syscommand(f"git -c safe.directory=* -C {self.lnxlink.path} pull", timeout=15)
         if "pip" in method:
             syscommand(
                 f"{sys.executable} -m pip install -e {self.lnxlink.path}",

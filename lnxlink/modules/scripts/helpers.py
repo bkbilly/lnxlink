@@ -60,7 +60,7 @@ def get_version():
     if os.path.exists(os.path.join(path, "lnxlink/edit.txt")):
         version += "+edit"
         git_hash, _, return_code = syscommand(
-            f"git -C {path} rev-parse --short HEAD",
+            f"git -c safe.directory=* -C {path} rev-parse --short HEAD",
             ignore_errors=True,
         )
         if return_code == 0:
