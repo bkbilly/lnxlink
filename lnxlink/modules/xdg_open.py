@@ -16,6 +16,10 @@ class Addon:
         if which("xdg-open") is None:
             raise SystemError("System command 'xdg-open' not found")
 
+    def get_info(self):
+        """Gather information from the system"""
+        return ""
+
     def exposed_controls(self):
         """Exposes to home assistant"""
         return {

@@ -88,7 +88,7 @@ exclude:
   - restful
   - screen_onoff
   - screenshot
-  - send_keys
+  - keyboard
   - speech_recognition
   - systemd
   - webcam

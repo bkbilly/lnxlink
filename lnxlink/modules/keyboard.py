@@ -2,6 +2,7 @@
 import logging
 import os
 import re
+import shlex
 from shutil import which
 
 from lnxlink.modules.scripts.helpers import get_display_variable, syscommand
@@ -14,7 +15,7 @@ class Addon:
 
     def __init__(self, lnxlink):
         """Setup addon"""
-        self.name = "Send Keys"
+        self.name = "Keyboard"
         self.used_tool = None
         self._key_map = None
         if which("ydotool") is not None:
@@ -24,13 +25,21 @@ class Addon:
         else:
             raise SystemError("System command 'xdotool' or 'ydotool' not found")
 
+    def get_info(self):
+        """Gather information from the system"""
+        return ""
+
     def exposed_controls(self):
         """Exposes to home assistant"""
         return {
             "Send Keys": {
                 "type": "text",
                 "icon": "mdi:keyboard-outline",
-            }
+            },
+            "Send Text": {
+                "type": "text",
+                "icon": "mdi:keyboard-outline",
+            },
         }
 
     def start_control(self, topic, data):
@@ -42,16 +51,25 @@ class Addon:
         if display_variable is not None and os.environ.get("DISPLAY") is None:
             os.environ["DISPLAY"] = display_variable
             logger.info("Initializing empty DISPLAY environment variable")
-        if self.used_tool == "ydotool":
-            key_map = self._extract_key_definitions(
-                "/usr/include/linux/input-event-codes.h"
-            )
-            if key_map is None:
-                logger.error("Key definitions not found; cannot send keys via ydotool")
-                return
-            data = self._create_key_representation(data, key_map)
-            logger.debug("Sending keys via ydotool: %s", data)
-        syscommand(f"{self.used_tool} key {data}")
+
+        if topic[1] == "send_text":
+            logger.debug("Typing text via %s: %s", self.used_tool, data)
+            syscommand(f"{self.used_tool} type -- {shlex.quote(str(data))}")
+        elif topic[1] == "send_keys":
+            if self.used_tool == "ydotool":
+                key_map = self._extract_key_definitions(
+                    "/usr/include/linux/input-event-codes.h"
+                )
+                if key_map is None:
+                    logger.error(
+                        "Key definitions not found; cannot send keys via ydotool"
+                    )
+                    return
+                data = self._create_key_representation(data, key_map)
+                logger.debug("Sending keys via ydotool: %s", data)
+            syscommand(f"{self.used_tool} key {data}")
+        else:
+            logger.error("No topic found: %s", topic[1])
 
     def _create_key_representation(self, key_string, key_map):
         """
