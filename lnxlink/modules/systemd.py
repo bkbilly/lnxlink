@@ -4,7 +4,7 @@ import logging
 from jeepney import DBusAddress, new_method_call
 from jeepney.io.blocking import open_dbus_connection
 
-from lnxlink.modules.scripts.helpers import syscommand
+from lnxlink.modules.scripts.helpers import syscommand, text_to_topic
 
 logger = logging.getLogger("lnxlink")
 
@@ -248,7 +248,7 @@ class Addon:
 
         for service in self.services:
             label = self._service_label(service)
-            label_slug = label.lower().replace(" ", "_").replace("-", "_")
+            label_slug = text_to_topic(label)
             if label_slug == slug:
                 self._control(service, turn_on=data.lower() == "on")
                 return
