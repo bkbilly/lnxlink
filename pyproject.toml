@@ -30,6 +30,9 @@ dependencies = [
     "beaupy>=3.10.0"
 ]
 
+[project.optional-dependencies]
+test = ["build>=1.2.1"]
+
 [project.urls]
 "Source Code" = "https://github.com/bkbilly/lnxlink"
 "Documentation" = "https://bkbilly.gitbook.io/lnxlink"
@@ -39,6 +42,9 @@ lnxlink = "lnxlink.__main__:main"
 
 [tool.setuptools.packages.find]
 include = ["lnxlink*"]
+
+[tool.setuptools.package-data]
+lnxlink = ["logo.png"]
 
 
 [tool.pytest.ini_options]
