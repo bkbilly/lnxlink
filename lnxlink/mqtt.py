@@ -53,13 +53,8 @@ class DirectMQTTClient:
                 client_id=f"LNXlink-{self.config['mqtt']['clientId']}"
             )
 
-    def connect(self, on_connect, on_message, on_disconnect, on_publish):
-        """Connect to the configured MQTT broker directly."""
-        self.client.on_connect = on_connect
-        self.client.on_message = on_message
-        self.client.on_disconnect = on_disconnect
-        self.client.on_publish = on_publish
-
+    def _setup_auth(self):
+        """Configure authentication and TLS certificates for direct MQTT."""
         keyfile = self.config["mqtt"]["auth"].get("keyfile")
         keyfile = None if keyfile == "" else keyfile
         certfile = self.config["mqtt"]["auth"].get("certfile")
@@ -89,6 +84,15 @@ class DirectMQTTClient:
             )
             if ca_certs is None:
                 self.client.tls_insecure_set(True)
+
+    def connect(self, on_connect, on_message, on_disconnect, on_publish):
+        """Connect to the configured MQTT broker directly."""
+        self.client.on_connect = on_connect
+        self.client.on_message = on_message
+        self.client.on_disconnect = on_disconnect
+        self.client.on_publish = on_publish
+
+        self._setup_auth()
         if self.config["mqtt"]["lwt"]["enabled"]:
             self.client.will_set(
                 f"{self.config['pref_topic']}/lwt",
@@ -101,7 +105,6 @@ class DirectMQTTClient:
             keepalive = int(round(int(self.config.get("update_interval", 5)) * 1.5, 0))
         else:
             keepalive = int(keepalive)
-        logger.error(keepalive)
         try:
             self.client.connect(
                 host=self.config["mqtt"]["server"],
