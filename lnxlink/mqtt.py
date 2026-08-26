@@ -53,13 +53,8 @@ class DirectMQTTClient:
                 client_id=f"LNXlink-{self.config['mqtt']['clientId']}"
             )
 
-    def connect(self, on_connect, on_message, on_disconnect, on_publish):
-        """Connect to the configured MQTT broker directly."""
-        self.client.on_connect = on_connect
-        self.client.on_message = on_message
-        self.client.on_disconnect = on_disconnect
-        self.client.on_publish = on_publish
-
+    def _setup_auth(self):
+        """Configure authentication and TLS certificates for direct MQTT."""
         keyfile = self.config["mqtt"]["auth"].get("keyfile")
         keyfile = None if keyfile == "" else keyfile
         certfile = self.config["mqtt"]["auth"].get("certfile")
@@ -89,6 +84,15 @@ class DirectMQTTClient:
             )
             if ca_certs is None:
                 self.client.tls_insecure_set(True)
+
+    def connect(self, on_connect, on_message, on_disconnect, on_publish):
+        """Connect to the configured MQTT broker directly."""
+        self.client.on_connect = on_connect
+        self.client.on_message = on_message
+        self.client.on_disconnect = on_disconnect
+        self.client.on_publish = on_publish
+
+        self._setup_auth()
         if self.config["mqtt"]["lwt"]["enabled"]:
             self.client.will_set(
                 f"{self.config['pref_topic']}/lwt",
@@ -96,11 +100,16 @@ class DirectMQTTClient:
                 qos=self.config["mqtt"]["lwt"]["qos"],
                 retain=True,
             )
+        keepalive = self.config.get("mqtt", {}).get("keepalive")
+        if keepalive is None:
+            keepalive = int(round(int(self.config.get("update_interval", 5)) * 1.5, 0))
+        else:
+            keepalive = int(keepalive)
         try:
             self.client.connect(
                 host=self.config["mqtt"]["server"],
                 port=self.config["mqtt"]["port"],
-                keepalive=60,
+                keepalive=keepalive,
             )
         except ssl.SSLCertVerificationError:
             logger.info("TLS not verified, using insecure connection instead")
@@ -109,7 +118,7 @@ class DirectMQTTClient:
                 self.client.connect(
                     host=self.config["mqtt"]["server"],
                     port=self.config["mqtt"]["port"],
-                    keepalive=60,
+                    keepalive=keepalive,
                 )
             except Exception as err:
                 logger.error(
@@ -402,6 +411,7 @@ class MQTT:
         self.transport = self.config["mqtt"].get("transport", "mqtt")
         self._on_connect_callback = None
         self._on_message_callback = None
+        self._on_transport_switch_callback = None
 
         if self.transport == "homeassistant_api":
             self.client = HomeAssistantApiClient(config)
@@ -414,6 +424,22 @@ class MQTT:
         msg_info = self.client.publish(topic, payload, qos=qos, retain=retain)
         self.publish_rc_code = msg_info.rc
         return msg_info
+
+    @property
+    def delivery_token(self):
+        """Identify the client responsible for the current delivery attempt."""
+        return self.client
+
+    def publish_accepted(self, msg_info):
+        """Return whether the transport accepted responsibility for delivery."""
+        if msg_info.rc == mqtt.MQTT_ERR_SUCCESS:
+            return True
+        return (
+            self.transport != "auto"
+            and isinstance(self.client, DirectMQTTClient)
+            and self.config["mqtt"]["lwt"]["qos"] > 0
+            and msg_info.rc == mqtt.MQTT_ERR_NO_CONN
+        )
 
     def reconnect(self):
         """Try to reconnect to broker"""
@@ -435,10 +461,11 @@ class MQTT:
             retain=True,
         )
 
-    def setup_mqtt(self, on_connect, on_message):
+    def setup_mqtt(self, on_connect, on_message, on_transport_switch=None):
         """Creates the mqtt object"""
         self._on_connect_callback = on_connect
         self._on_message_callback = on_message
+        self._on_transport_switch_callback = on_transport_switch
 
         if self.client.connect(
             on_connect=on_connect,
@@ -467,6 +494,8 @@ class MQTT:
 
         logger.info("Switching MQTT transport to Home Assistant API")
         self.client.disconnect()
+        if self._on_transport_switch_callback is not None:
+            self._on_transport_switch_callback()
         self.client = HomeAssistantApiClient(self.config)
         return self.client.connect(
             on_connect=self._on_connect_callback,

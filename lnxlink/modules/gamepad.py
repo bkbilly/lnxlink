@@ -16,7 +16,7 @@ class Addon:
     def __init__(self, lnxlink):
         self.name = "Gamepad"
         self.gamepads = []
-        self.running_threads = []
+        self.running_threads = {}
         self.last_used = 0
         self.timeout_used = 40
 
@@ -45,14 +45,17 @@ class Addon:
         if self.gamepads != match:
             logger.info("Gamepads found: %s", match)
             self.gamepads = match
-            for running_thread in self.running_threads:
-                running_thread.join(1)
-            self.running_threads = []
-            for event in match:
+
+            for event in set(self.running_threads) - set(match):
+                self.running_threads.pop(event)
+
+        for event in match:
+            running_thread = self.running_threads.get(event)
+            if running_thread is None or not running_thread.is_alive():
                 watch_thr = Thread(target=self.watch_input, args=(event,), daemon=True)
                 watch_thr.start()
                 logger.debug("Started for: %s", event)
-                self.running_threads.append(watch_thr)
+                self.running_threads[event] = watch_thr
 
     def watch_input(self, event):
         """Thread that watches gamepad inputs"""
