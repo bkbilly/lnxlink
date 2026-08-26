@@ -149,7 +149,9 @@ jobs:
           cp packaging/aur/PKGBUILD /tmp/aur-repo/PKGBUILD
           cp packaging/aur/.SRCINFO /tmp/aur-repo/.SRCINFO
           cp packaging/aur/lnxlink.install /tmp/aur-repo/lnxlink.install
+          cp packaging/aur/lnxlink.service /tmp/aur-repo/lnxlink.service
+          cp packaging/aur/config.yaml.example /tmp/aur-repo/config.yaml.example
           cd /tmp/aur-repo
-          git add PKGBUILD .SRCINFO
+          git add PKGBUILD .SRCINFO lnxlink.install lnxlink.service config.yaml.example
           git diff --cached --quiet || git commit -m "Update to version ${VERSION}"
           git push
