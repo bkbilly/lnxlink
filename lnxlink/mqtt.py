@@ -402,6 +402,7 @@ class MQTT:
         self.transport = self.config["mqtt"].get("transport", "mqtt")
         self._on_connect_callback = None
         self._on_message_callback = None
+        self._on_transport_switch_callback = None
 
         if self.transport == "homeassistant_api":
             self.client = HomeAssistantApiClient(config)
@@ -414,6 +415,22 @@ class MQTT:
         msg_info = self.client.publish(topic, payload, qos=qos, retain=retain)
         self.publish_rc_code = msg_info.rc
         return msg_info
+
+    @property
+    def delivery_token(self):
+        """Identify the client responsible for the current delivery attempt."""
+        return self.client
+
+    def publish_accepted(self, msg_info):
+        """Return whether the transport accepted responsibility for delivery."""
+        if msg_info.rc == mqtt.MQTT_ERR_SUCCESS:
+            return True
+        return (
+            self.transport != "auto"
+            and isinstance(self.client, DirectMQTTClient)
+            and self.config["mqtt"]["lwt"]["qos"] > 0
+            and msg_info.rc == mqtt.MQTT_ERR_NO_CONN
+        )
 
     def reconnect(self):
         """Try to reconnect to broker"""
@@ -435,10 +452,11 @@ class MQTT:
             retain=True,
         )
 
-    def setup_mqtt(self, on_connect, on_message):
+    def setup_mqtt(self, on_connect, on_message, on_transport_switch=None):
         """Creates the mqtt object"""
         self._on_connect_callback = on_connect
         self._on_message_callback = on_message
+        self._on_transport_switch_callback = on_transport_switch
 
         if self.client.connect(
             on_connect=on_connect,
@@ -467,6 +485,8 @@ class MQTT:
 
         logger.info("Switching MQTT transport to Home Assistant API")
         self.client.disconnect()
+        if self._on_transport_switch_callback is not None:
+            self._on_transport_switch_callback()
         self.client = HomeAssistantApiClient(self.config)
         return self.client.connect(
             on_connect=self._on_connect_callback,
