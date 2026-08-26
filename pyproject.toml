@@ -40,6 +40,9 @@ lnxlink = "lnxlink.__main__:main"
 [tool.setuptools.packages.find]
 include = ["lnxlink*"]
 
+[tool.setuptools.package-data]
+lnxlink = ["logo.png"]
+
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
