@@ -23,6 +23,15 @@ class Addon:
         flask_view = import_install_package("flask", ">=3.0.3", "flask.views")
         flask = import_install_package("flask", ">=3.0.3", "flask")
 
+        def json_response(payload):
+            """Return JSON with an explicit application/json content type."""
+            if isinstance(payload, bytes):
+                payload = payload.decode("UTF-8", errors="replace")
+            return flask.Response(
+                json.dumps(payload),
+                mimetype="application/json",
+            )
+
         class ModuleInfo(flask_view.views.MethodView):
             """Get information from Addon modules"""
 
@@ -34,8 +43,8 @@ class Addon:
                 """Fetch data from modules"""
                 info = self.lnxlink.saved_publish
                 if module is None:
-                    return json.dumps(list(info.keys()))
-                return str(info.get(module))
+                    return json_response(list(info.keys()))
+                return json_response(info.get(module))
 
         class ModuleControl(flask_view.views.MethodView):
             """Control Addon modules"""
@@ -50,7 +59,7 @@ class Addon:
                 for addonmodule, addon in self.lnxlink.addons.items():
                     if hasattr(addon, "start_control"):
                         modules.append(addonmodule)
-                return json.dumps(modules)
+                return json_response(modules)
 
             def post(self, module=None):
                 """Control an Addon module"""
@@ -59,7 +68,7 @@ class Addon:
                     for addonmodule, addon in self.lnxlink.addons.items():
                         if hasattr(addon, "start_control"):
                             modules.append(addonmodule)
-                    return json.dumps(modules)
+                    return json_response(modules)
 
                 topic = flask.request.form.get("topic", "")
                 topic = f"{module}/{topic}"
@@ -70,7 +79,7 @@ class Addon:
                     if hasattr(addon, "start_control"):
                         try:
                             result = addon.start_control(topic, message)
-                            return json.dumps(result)
+                            return json_response(result)
                         except Exception as err:
                             logger.error(
                                 "Couldn't run command for module %s: %s, %s",
@@ -78,9 +87,9 @@ class Addon:
                                 err,
                                 traceback.format_exc(),
                             )
-                            return f"Error: {err}"
-                    return "No control support available"
-                return "Module not found"
+                            return json_response(f"Error: {err}")
+                    return json_response("No control support available")
+                return json_response("Module not found")
 
         app = flask.Flask(__name__)
         app.add_url_rule(
