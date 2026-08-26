@@ -1,5 +1,4 @@
 """Prevent monitor sleep or idle states"""
-import re
 from shutil import which
 
 from lnxlink.modules.scripts.helpers import get_display_variable, syscommand
@@ -40,24 +39,23 @@ class Addon:
             )
             if stdout_dim != "" and returncode_dim == 0 and returncode_susp == 0:
                 disabled_dim = "0" == stdout_dim.split()[1]
-                if disabled_dim and stdout_suspend != "":
-                    enabled_list.append("nothing" in stdout_suspend)
+                enabled_list.append(
+                    disabled_dim
+                    and stdout_suspend != ""
+                    and "nothing" in stdout_suspend
+                )
 
         # Check if DPMS is active
         if which("xset"):
             display_variable = get_display_variable()
             if display_variable is not None:
                 stdout_xset, _, _ = syscommand(f"xset -display {display_variable} q")
-                xset_pattern = re.compile(
-                    r"Standby: (\d+)\s+Suspend: (\d+)\s+Off: (\d+)"
-                )
-                xset_match = re.findall(xset_pattern, stdout_xset)
-                for nums in xset_match:
-                    enabled_list.append(all(num != "0" for num in nums))
-                    if enabled_list[-1]:
-                        enabled_list.append("DPMS is Enabled" in stdout_xset)
+                if "DPMS is Disabled" in stdout_xset:
+                    enabled_list.append(True)
+                elif "DPMS is Enabled" in stdout_xset:
+                    enabled_list.append(False)
 
-        return any(enabled_list)
+        return bool(enabled_list) and all(enabled_list)
 
     def start_control(self, topic, data):
         """Control system"""
