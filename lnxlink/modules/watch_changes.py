@@ -14,18 +14,35 @@ class Addon:
         self.name = "Watch Changes"
         self.lnxlink = lnxlink
         self.last_time = 0
-        self.last_updated = os.path.getmtime(self.lnxlink.config_path)
-        self.last_hash = self._get_file_hash(self.lnxlink.config_path)
+        self.last_updated = self._get_file_mtime(self.lnxlink.config_path)
+        self.last_hash = (
+            self._get_file_hash(self.lnxlink.config_path)
+            if self.last_updated is not None
+            else None
+        )
 
     def get_info(self):
         """Gather information from the system"""
-        current_time = os.path.getmtime(self.lnxlink.config_path)
+        current_time = self._get_file_mtime(self.lnxlink.config_path)
+        if current_time is None:
+            self.last_updated = None
+            return
         if current_time != self.last_updated:
-            self.last_updated = current_time
             current_hash = self._get_file_hash(self.lnxlink.config_path)
+            if current_hash is None:
+                self.last_updated = None
+                return
+            self.last_updated = current_time
             if current_hash != self.last_hash:
                 self.last_hash = current_hash
                 self.lnxlink.restart_script()
+
+    def _get_file_mtime(self, filepath):
+        """Return the file modification time or None if the file is absent."""
+        try:
+            return os.path.getmtime(filepath)
+        except FileNotFoundError:
+            return None
 
     def _get_file_hash(self, filepath):
         """Generates a SHA-256 hash of the file content."""
