@@ -407,13 +407,14 @@ class LNXlink:
                         logger.error(
                             "%s: %s, %s", exp_name, err, traceback.format_exc()
                         )
-                if discovery_ok:
-                    self.discovery_registry.sync(
-                        service,
-                        current_topics,
-                        getattr(addon, "prune_stale_discovery", False),
-                        self.mqtt,
-                    )
+                self.discovery_registry.sync(
+                    service,
+                    current_topics,
+                    getattr(addon, "prune_stale_discovery", False)
+                    if discovery_ok
+                    else False,
+                    self.mqtt,
+                )
         if filter_name is None:
             self.discovery_registry.clear_excluded(self.excluded_modules, self.mqtt)
 

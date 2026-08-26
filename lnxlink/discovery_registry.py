@@ -77,6 +77,25 @@ class DiscoveryRegistry:
             return set(entry.get("topics", [])), set(entry.get("stale_topics", []))
         return set(), set()
 
+    def _clear_topic(self, topic, mqtt):
+        """Clear a retained discovery topic and report transport acceptance."""
+        try:
+            msg_info = mqtt.publish(topic, payload="", retain=True)
+        except Exception as err:
+            logger.error(
+                "Could not clear Home Assistant discovery topic %s: %s", topic, err
+            )
+            return False
+
+        if getattr(msg_info, "rc", None) != 0:
+            logger.error(
+                "Could not clear Home Assistant discovery topic %s: MQTT RC %s",
+                topic,
+                getattr(msg_info, "rc", None),
+            )
+            return False
+        return True
+
     def clear_excluded(self, excluded_modules, mqtt):
         """Clear Home Assistant discovery topics for explicitly excluded modules."""
         if not excluded_modules:
@@ -86,14 +105,28 @@ class DiscoveryRegistry:
             updated = False
             for service in sorted(excluded_modules & set(registry)):
                 topics, stale_topics = self.registry_entry(registry, service)
+                failed_topics = set()
                 for topic in sorted(topics | stale_topics):
                     logger.info(
                         "Clearing excluded module Home Assistant discovery topic: %s",
                         topic,
                     )
-                    mqtt.publish(topic, payload="", retain=True)
-                registry.pop(service, None)
-                updated = True
+                    if not self._clear_topic(topic, mqtt):
+                        failed_topics.add(topic)
+
+                if failed_topics:
+                    remaining_topics = topics & failed_topics
+                    remaining_stale_topics = stale_topics & failed_topics
+                    updated_entry = {
+                        "topics": sorted(remaining_topics),
+                        "stale_topics": sorted(remaining_stale_topics),
+                    }
+                    if registry.get(service) != updated_entry:
+                        registry[service] = updated_entry
+                        updated = True
+                else:
+                    registry.pop(service, None)
+                    updated = True
             if updated:
                 self.save(registry)
 
@@ -111,12 +144,22 @@ class DiscoveryRegistry:
                 topics_to_clear = previous_stale_topics & missing_topics
                 topics_to_mark_stale = missing_topics - topics_to_clear
 
+            failed_topics = set()
+
             for topic in sorted(topics_to_clear):
                 logger.info("Clearing stale Home Assistant discovery topic: %s", topic)
-                mqtt.publish(topic, payload="", retain=True)
+                if not self._clear_topic(topic, mqtt):
+                    failed_topics.add(topic)
+
+            if prune_stale:
+                tracked_topics = current_topics | topics_to_mark_stale | failed_topics
+                tracked_stale_topics = topics_to_mark_stale | failed_topics
+            else:
+                tracked_topics = current_topics | previous_topics
+                tracked_stale_topics = previous_stale_topics
 
             registry[service] = {
-                "topics": sorted(current_topics | topics_to_mark_stale),
-                "stale_topics": sorted(topics_to_mark_stale),
+                "topics": sorted(tracked_topics),
+                "stale_topics": sorted(tracked_stale_topics),
             }
             self.save(registry)
