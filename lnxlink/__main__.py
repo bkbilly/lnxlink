@@ -43,11 +43,14 @@ class UniqueQueue:
 
     def __iter__(self):
         """Returns an iterator that yields and removes items from the queue in FIFO order"""
-        while True:
+        with self._lock:
+            remaining = len(self.queue)
+        for _ in range(remaining):
             with self._lock:
                 if not self.queue:
                     break
-                yield self.queue.popitem(last=False)
+                item = self.queue.popitem(last=False)
+            yield item
 
     def add_item(self, name, value, retain=True, force_publish=False):
         """Adds an item to the queue. If the item already exists, it replaces it"""
