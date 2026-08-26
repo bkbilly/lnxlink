@@ -96,11 +96,17 @@ class DirectMQTTClient:
                 qos=self.config["mqtt"]["lwt"]["qos"],
                 retain=True,
             )
+        keepalive = self.config.get("mqtt", {}).get("keepalive")
+        if keepalive is None:
+            keepalive = int(round(int(self.config.get("update_interval", 5)) * 1.5, 0))
+        else:
+            keepalive = int(keepalive)
+        logger.error(keepalive)
         try:
             self.client.connect(
                 host=self.config["mqtt"]["server"],
                 port=self.config["mqtt"]["port"],
-                keepalive=60,
+                keepalive=keepalive,
             )
         except ssl.SSLCertVerificationError:
             logger.info("TLS not verified, using insecure connection instead")
@@ -109,7 +115,7 @@ class DirectMQTTClient:
                 self.client.connect(
                     host=self.config["mqtt"]["server"],
                     port=self.config["mqtt"]["port"],
-                    keepalive=60,
+                    keepalive=keepalive,
                 )
             except Exception as err:
                 logger.error(
