@@ -73,13 +73,12 @@ def syscommand(command, ignore_errors=False, timeout=3, background=False):
     """Global subprocess command"""
     logger.debug("Executing command: %s", command)
 
-    if isinstance(command, list):
-        command = " ".join(command)
+    shell = not isinstance(command, list)
 
     if background:
         subprocess.Popen(
             command,
-            shell=True,
+            shell=shell,
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
         )
@@ -93,7 +92,7 @@ def syscommand(command, ignore_errors=False, timeout=3, background=False):
     try:
         result = subprocess.run(
             command,
-            shell=True,
+            shell=shell,
             check=False,
             capture_output=True,
             timeout=timeout,
@@ -184,7 +183,7 @@ def import_install_package(package, req_version="", syspackage=None):
         current_version = None
 
     if current_version is None or needs_update(current_version, req_version):
-        package_version = f"'{package}{req_version}'"
+        package_version = f"{package}{req_version}"
         logger.info("Installing %s...", package_version)
         uv_bin = find_uv_bin()
         returncode = -1
