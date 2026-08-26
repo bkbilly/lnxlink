@@ -43,11 +43,14 @@ class UniqueQueue:
 
     def __iter__(self):
         """Returns an iterator that yields and removes items from the queue in FIFO order"""
-        while True:
+        with self._lock:
+            remaining = len(self.queue)
+        for _ in range(remaining):
             with self._lock:
                 if not self.queue:
                     break
-                yield self.queue.popitem(last=False)
+                item = self.queue.popitem(last=False)
+            yield item
 
     def add_item(self, name, value, retain=True, force_publish=False):
         """Adds an item to the queue. If the item already exists, it replaces it"""
@@ -96,6 +99,8 @@ class LNXlink:
         self.module_failures = {}
         self.addons = {}
         self.prev_publish = {}
+        self.prev_publish_transport = {}
+        self.monitor_topics = {}
         self.saved_publish = {}
         self.update_change_interval = 900
         self.discovery_registry = DiscoveryRegistry(self.config)
@@ -137,7 +142,11 @@ class LNXlink:
         loaded.sort()
         logger.info("Loaded addons: %s", ", ".join(loaded))
 
-        mqtt_status = self.mqtt.setup_mqtt(self.on_connect, self.on_message)
+        mqtt_status = self.mqtt.setup_mqtt(
+            self.on_connect,
+            self.on_message,
+            self.invalidate_publish_cache,
+        )
         threading.Thread(target=self.monitor_run, daemon=True).start()
         threading.Thread(target=self.monitor_queue, daemon=True).start()
         return mqtt_status
@@ -172,16 +181,35 @@ class LNXlink:
         update_change_time = time.time() - self.prev_publish.get("last_update", 0)
         if update_change_time > self.update_change_interval:
             self.prev_publish = {"last_update": time.time()}
+            self.prev_publish_transport = {}
         if (
             (self.config["update_on_change"] or isinstance(pub_data, bytes))
             and self.prev_publish.get(topic) == pub_data
+            and self.prev_publish_transport.get(topic) is self.mqtt.delivery_token
             and not force_publish
         ):
             return
 
-        self.prev_publish[topic] = pub_data
         self.saved_publish[subtopic.replace("/", "_")] = pub_data
-        self.mqtt.publish(topic, pub_data, retain)
+        self._publish_monitor_message(topic, pub_data, retain)
+
+    def invalidate_publish_cache(self):
+        """Force current monitor values to publish again after transport failover."""
+        self.prev_publish = {}
+        self.prev_publish_transport = {}
+
+    def _publish_monitor_message(self, topic, pub_data, retain):
+        """Publish a monitor value and cache only transport-accepted data."""
+        if retain:
+            self.monitor_topics[topic] = pub_data
+        delivery_token = self.mqtt.delivery_token
+        msg_info = self.mqtt.publish(topic, pub_data, retain)
+        if self.mqtt.publish_accepted(msg_info):
+            self.prev_publish[topic] = pub_data
+            self.prev_publish_transport[topic] = delivery_token
+        else:
+            self.prev_publish.pop(topic, None)
+            self.prev_publish_transport.pop(topic, None)
 
     def run_module(self, name, method, retain=True, force_update=False):
         """Runs the method of a module"""
@@ -321,13 +349,14 @@ class LNXlink:
                 self.mqtt.client.is_disconnecting = True
             self.mqtt.send_lwt("OFF")
             if self.config["mqtt"]["clear_on_off"]:
-                for topic, message in self.prev_publish.items():
-                    if topic == "last_update":
-                        continue
+                for topic, message in self.monitor_topics.items():
                     message = self.replace_values_with_none(message)
                     self.mqtt.publish(topic, message)
         else:
             logger.info("Power Up detected.")
+            self.mqtt.is_disconnecting = False
+            if hasattr(self.mqtt.client, "is_disconnecting"):
+                self.mqtt.client.is_disconnecting = False
             if self.kill:
                 self.kill = False
             self.mqtt.send_lwt("ON")

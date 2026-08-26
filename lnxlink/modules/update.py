@@ -82,49 +82,61 @@ class Addon:
         if "_edit" in method:
             return self._update_edit(method)
         if method == "pipx":
-            syscommand("pipx upgrade lnxlink", timeout=120)
+            _, _, returncode = syscommand("pipx upgrade lnxlink", timeout=120)
         elif method == "uv":
             uv_bin = find_uv_bin() or "uv"
-            syscommand(f"{uv_bin} tool upgrade lnxlink", timeout=120)
+            _, _, returncode = syscommand(f"{uv_bin} tool upgrade lnxlink", timeout=120)
         elif method == "flatpak":
-            syscommand("flatpak update -y io.github.bkbilly.lnxlink", timeout=120)
+            _, _, returncode = syscommand(
+                "flatpak update -y io.github.bkbilly.lnxlink", timeout=120
+            )
         elif method == "aur":
             return self._update_aur()
         elif method in ("pip", "system"):
-            syscommand(f"{sys.executable} -m pip install -U lnxlink", timeout=120)
+            _, _, returncode = syscommand(
+                f"{sys.executable} -m pip install -U lnxlink", timeout=120
+            )
         else:
             logger.warning("Update not supported for install method: %s", method)
             return False
-        return True
+        return returncode == 0
 
     def _update_edit(self, method):
         """Handle update for editable installations"""
-        syscommand(f"git -c safe.directory=* -C {self.lnxlink.path} pull", timeout=15)
+        _, _, returncode = syscommand(
+            f"git -c safe.directory=* -C {self.lnxlink.path} pull", timeout=15
+        )
+        if returncode != 0:
+            return False
         if "pip" in method:
-            syscommand(
+            _, _, returncode = syscommand(
                 f"{sys.executable} -m pip install -e {self.lnxlink.path}",
                 timeout=120,
             )
         elif "uv" in method:
             uv_bin = find_uv_bin() or "uv"
-            syscommand(
+            _, _, returncode = syscommand(
                 f"{uv_bin} pip install --python {sys.executable} -e {self.lnxlink.path}",
                 timeout=120,
             )
         else:
             logger.warning("Update not supported for install method: %s", method)
             return False
-        return True
+        return returncode == 0
 
     def _update_aur(self):
         """Handle update for AUR installations"""
         _, _, yay = syscommand("which yay", ignore_errors=True)
         _, _, paru = syscommand("which paru", ignore_errors=True)
         if yay == 0:
-            syscommand("yay -Syu --noconfirm python-lnxlink", timeout=120)
+            _, _, returncode = syscommand(
+                "yay -Syu --noconfirm python-lnxlink", timeout=120
+            )
         elif paru == 0:
-            syscommand("paru -Syu --noconfirm python-lnxlink", timeout=120)
+            _, _, returncode = syscommand(
+                "paru -Syu --noconfirm python-lnxlink", timeout=120
+            )
         else:
             logger.warning("No AUR helper found (yay or paru)")
             return False
-        return True
+        return returncode == 0
