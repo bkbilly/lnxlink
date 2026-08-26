@@ -3,6 +3,7 @@ import base64
 import hashlib
 import logging
 import re
+import shlex
 import subprocess
 import threading
 import traceback
@@ -295,18 +296,18 @@ class Addon:
     def run_playmedia_thread(self, player, options, url, media_type):
         """Runs in the background"""
         logger.info("Playing %s using app %s", media_type, player)
-        commands = ["exec", player]
+        commands = [player]
         if media_type == "image":
-            commands.append(options["opt_static"])
+            commands.extend(shlex.split(options["opt_static"]))
         elif media_type == "audio":
-            commands.append(options["opt_background"])
+            commands.extend(shlex.split(options["opt_background"]))
         elif media_type in ["video", "playlist", "other"]:
-            commands.append(options["opt_foreground"])
+            commands.extend(shlex.split(options["opt_foreground"]))
         commands.append(url)
         # pylint: disable=consider-using-with
         self.process = subprocess.Popen(
-            " ".join(commands),
-            shell=True,
+            commands,
+            shell=False,
             stdout=subprocess.DEVNULL,
             stderr=subprocess.STDOUT,
         )

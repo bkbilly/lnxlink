@@ -32,4 +32,4 @@ class Addon:
     def start_control(self, topic, data):
         """Control system"""
         logger.info("xdg-open %s", data)
-        syscommand(f"xdg-open {data}", background=True)
+        syscommand(["xdg-open", data], background=True)
