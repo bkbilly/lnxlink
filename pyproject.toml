@@ -30,9 +30,6 @@ dependencies = [
     "beaupy>=3.10.0"
 ]
 
-[project.optional-dependencies]
-test = ["build>=1.2.1"]
-
 [project.urls]
 "Source Code" = "https://github.com/bkbilly/lnxlink"
 "Documentation" = "https://bkbilly.gitbook.io/lnxlink"
