@@ -128,7 +128,13 @@ class Addon:
             "protocol": protocol,
         }
         self.lnxlink.run_module(f"{self.name}/IR Receiver", tosend)
-        self.lnxlink.run_module(f"{self.name}/IR Receiver Event", tosend, retain=False)
+        self.lnxlink.run_module(
+            f"{self.name}/IR Receiver Event",
+            tosend,
+            retain=False,
+            force_update=True,
+            coalesce=False,
+        )
         logger.debug("{%s}:{%s} = {%s}", protocol, decsignal, binsignal)
 
     def _requirements(self):

@@ -27,8 +27,8 @@ logger = logging.getLogger("lnxlink")
 
 class UniqueQueue:
     """
-    A queue that maintains unique named items with a maximum size limit.
-    If an item with the same name is added, it replaces the old one.
+    A queue that coalesces named items by default, with a maximum size limit.
+    Non-coalescing items keep their original names when yielded.
     When full, the oldest item is discarded to make room.
     """
 
@@ -37,6 +37,7 @@ class UniqueQueue:
         self.queue = OrderedDict()
         self.max_size = max_size
         self._lock = threading.Lock()
+        self._sequence = 0
 
     def __repr__(self):
         """Returns a string representation of the queue."""
@@ -50,23 +51,32 @@ class UniqueQueue:
             with self._lock:
                 if not self.queue:
                     break
-                item = self.queue.popitem(last=False)
-            yield item
+                _, item = self.queue.popitem(last=False)
+            name, value, retain, force_publish = item
+            yield name, (value, retain, force_publish)
 
-    def add_item(self, name, value, retain=True, force_publish=False):
-        """Adds an item to the queue. If the item already exists, it replaces it"""
+    def add_item(
+        self, name, value, retain=True, force_publish=False, coalesce=True
+    ):
+        """Add an item, replacing its named predecessor unless coalescing is off."""
         with self._lock:
-            if name in self.queue:
-                del self.queue[name]
+            key = name
+            if not coalesce:
+                self._sequence += 1
+                key = (name, self._sequence)
+            if key in self.queue:
+                del self.queue[key]
             elif len(self.queue) >= self.max_size:
                 self.queue.popitem(last=False)
-            self.queue[name] = (value, retain, force_publish)
+            self.queue[key] = (name, value, retain, force_publish)
 
     def get_item(self):
         """Retrieves and removes the next item from the queue (FIFO)"""
         with self._lock:
             if self.queue:
-                return self.queue.popitem(last=False)
+                _, item = self.queue.popitem(last=False)
+                name, value, retain, force_publish = item
+                return name, (value, retain, force_publish)
         return None, None
 
     def clear(self):
@@ -216,7 +226,9 @@ class LNXlink:
             self.prev_publish.pop(topic, None)
             self.prev_publish_transport.pop(topic, None)
 
-    def run_module(self, name, method, retain=True, force_update=False):
+    def run_module(
+        self, name, method, retain=True, force_update=False, coalesce=True
+    ):
         """Runs the method of a module"""
         max_failures = 5
         if self.module_failures.get(name, 0) >= max_failures:
@@ -233,7 +245,9 @@ class LNXlink:
                 diff_time = round(time.time() - start_time, 5)
                 self.inference_times[name] = diff_time
             self.module_failures[name] = 0
-            self.publ_queue.add_item(name, pub_data, retain, force_update)
+            self.publ_queue.add_item(
+                name, pub_data, retain, force_update, coalesce=coalesce
+            )
         except Exception as err:
             self.module_failures[name] = self.module_failures.get(name, 0) + 1
             if self.module_failures[name] >= max_failures:

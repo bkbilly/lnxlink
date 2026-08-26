@@ -668,7 +668,7 @@ class MQTT:
             },
             "event": {
                 "automation_type": "trigger",
-                "platform": "device_automation",
+                "topic": state_topic,
                 "type": options.get("event_type", "button_short_press"),
                 "subtype": options.get("event_subtype", "turn_on"),
             },
@@ -689,9 +689,24 @@ class MQTT:
             discovery.pop("json_attributes_topic", None)
             discovery.pop("json_attributes_template", None)
         discovery_prefix = self.config["mqtt"]["discovery"]["prefix"]
+        discovery_component = (
+            "device_automation" if options["type"] == "event" else options["type"]
+        )
+        discovery_unique_id = discovery["unique_id"]
+        if options["type"] == "event":
+            discovery = {
+                key: discovery[key]
+                for key in (
+                    "automation_type",
+                    "device",
+                    "topic",
+                    "type",
+                    "subtype",
+                )
+            }
         discovery_topic = (
-            f"{discovery_prefix}/{options['type']}/lnxlink/"
-            f"{discovery['unique_id']}/config"
+            f"{discovery_prefix}/{discovery_component}/lnxlink/"
+            f"{discovery_unique_id}/config"
         )
         msg_info = self.publish(
             discovery_topic,
@@ -702,6 +717,19 @@ class MQTT:
                 f"Could not publish Home Assistant discovery topic "
                 f"{discovery_topic}: MQTT RC {getattr(msg_info, 'rc', None)}"
             )
+        if options["type"] == "event":
+            legacy_topic = (
+                f"{discovery_prefix}/event/lnxlink/"
+                f"{self.config['mqtt']['clientId']}_{control_name_topic}/config"
+            )
+            cleanup_info = self.publish(legacy_topic, payload="")
+            if getattr(cleanup_info, "rc", None) != 0:
+                logger.error(
+                    "Could not clear legacy Home Assistant discovery topic %s: "
+                    "MQTT RC %s. It will be retried on the next discovery setup.",
+                    legacy_topic,
+                    getattr(cleanup_info, "rc", None),
+                )
         if options["type"] == "media_player":
             logger.info(
                 "MQTT Media Player configuration name: lnxlink/%s",
