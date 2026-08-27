@@ -197,6 +197,9 @@ class LNXlink:
         """Force current monitor values to publish again after transport failover."""
         self.prev_publish = {}
         self.prev_publish_transport = {}
+        media_addon = getattr(self, "addons", {}).get("media")
+        if media_addon is not None and hasattr(media_addon, "invalidate_cache"):
+            media_addon.invalidate_cache()
 
     def _publish_monitor_message(self, topic, pub_data, retain):
         """Publish a monitor value and cache only transport-accepted data."""
@@ -303,6 +306,7 @@ class LNXlink:
         """Callback for MQTT connect which reports the connection status
         back to MQTT server"""
         logger.info("MQTT connection: %s", self.mqtt.get_rcode_name(rcode))
+        self.invalidate_publish_cache()
         client.subscribe(f"{self.config['pref_topic']}/commands/#")
         self.mqtt.send_lwt("ON")
         if self.config["mqtt"]["discovery"]["enabled"]:
@@ -354,6 +358,7 @@ class LNXlink:
                     self.mqtt.publish(topic, message)
         else:
             logger.info("Power Up detected.")
+            self.invalidate_publish_cache()
             self.mqtt.is_disconnecting = False
             if hasattr(self.mqtt.client, "is_disconnecting"):
                 self.mqtt.client.is_disconnecting = False
