@@ -17,10 +17,21 @@ class Addon:
         """Setup addon"""
         self.name = "Shutdown"
         self.lnxlink = lnxlink
+        self.lnxlink.add_settings(
+            "shutdown", {"command": "", "command_timeout": 120}
+        )
 
     def start_control(self, topic, data):
         """Control system"""
         self.lnxlink.temp_connection_callback(True)
+        settings = self.lnxlink.config["settings"]["shutdown"]
+        command = settings["command"]
+        if command:
+            _, _, returncode = syscommand(command, timeout=settings["command_timeout"])
+            if returncode != 0:
+                self.lnxlink.temp_connection_callback(False)
+            return
+
         returncode = None
         try:
             with open_dbus_connection(bus="SYSTEM") as conn:
