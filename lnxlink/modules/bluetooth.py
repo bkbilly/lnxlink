@@ -36,6 +36,24 @@ class Addon:
         self.bluetoothdata = self._get_bluetoothdata()
 
     @staticmethod
+    def _device_icon(icon_name: Optional[str]) -> str:
+        """Map BlueZ device icon to Home Assistant MDI icon"""
+        if not icon_name:
+            return "mdi:bluetooth"
+        icon_map = {
+            "audio-card": "mdi:speaker",
+            "audio-headset": "mdi:headphones",
+            "audio-headphones": "mdi:headphones",
+            "input-gaming": "mdi:gamepad-variant",
+            "input-gamepad": "mdi:gamepad-variant",
+            "input-mouse": "mdi:mouse",
+            "input-keyboard": "mdi:keyboard",
+            "phone": "mdi:cellphone",
+            "computer": "mdi:laptop",
+        }
+        return icon_map.get(str(icon_name).lower(), "mdi:bluetooth")
+
+    @staticmethod
     def _battery_sensor(value_template: str) -> Dict[str, Any]:
         """Return common battery sensor configuration"""
         return {
@@ -62,11 +80,14 @@ class Addon:
             device_name = device_info["name"].replace("+", "")
             mac_clean = mac.replace(":", "")
 
-            # Device power switch
+            # Device power switch with icon based on device type
+            device_icon = self._device_icon(
+                device_info.get("attributes", {}).get("icon")
+            )
             attr_templ = f"{{{{ value_json.devices.get('{mac}', {{}}).get('attributes') | tojson }}}}"
             discovery_info[f"Bluetooth Device {device_name} {mac_clean}"] = {
                 "type": "switch",
-                "icon": "mdi:bluetooth",
+                "icon": device_icon,
                 "value_template": f"{{{{ value_json.devices.get('{mac}', {{}}).get('power') }}}}",
                 "attributes_template": attr_templ,
             }
@@ -269,12 +290,59 @@ class Addon:
                     if gatt_batteries:
                         batteries = gatt_batteries
 
+                # Get additional attributes from BlueZ
+                icon = None
+                try:
+                    icon = self._get_property(
+                        object_path=path,
+                        interface=BLUEZ_DEVICE_INTERFACE,
+                        prop="Icon",
+                    )
+                except (OSError, DBusErrorResponse):
+                    pass
+
+                rssi = None
+                try:
+                    rssi = self._get_property(
+                        object_path=path,
+                        interface=BLUEZ_DEVICE_INTERFACE,
+                        prop="RSSI",
+                    )
+                except (OSError, DBusErrorResponse):
+                    pass
+
+                trusted = None
+                try:
+                    trusted = self._get_property(
+                        object_path=path,
+                        interface=BLUEZ_DEVICE_INTERFACE,
+                        prop="Trusted",
+                    )
+                except (OSError, DBusErrorResponse):
+                    pass
+
+                blocked = None
+                try:
+                    blocked = self._get_property(
+                        object_path=path,
+                        interface=BLUEZ_DEVICE_INTERFACE,
+                        prop="Blocked",
+                    )
+                except (OSError, DBusErrorResponse):
+                    pass
+
                 data["devices"][mac] = {
                     "name": name,
                     "power": power,
                     "batteries": batteries,
                     "attributes": {
+                        "mac": mac,
                         "battery": battery,
+                        "rssi": rssi,
+                        "paired": paired,
+                        "trusted": trusted,
+                        "blocked": blocked,
+                        "icon": icon,
                     },
                 }
             except (OSError, DBusErrorResponse) as err:
