@@ -693,10 +693,15 @@ class MQTT:
             f"{discovery_prefix}/{options['type']}/lnxlink/"
             f"{discovery['unique_id']}/config"
         )
-        self.publish(
+        msg_info = self.publish(
             discovery_topic,
             payload=json.dumps(discovery),
         )
+        if getattr(msg_info, "rc", None) != 0:
+            raise RuntimeError(
+                f"Could not publish Home Assistant discovery topic "
+                f"{discovery_topic}: MQTT RC {getattr(msg_info, 'rc', None)}"
+            )
         if options["type"] == "media_player":
             logger.info(
                 "MQTT Media Player configuration name: lnxlink/%s",
