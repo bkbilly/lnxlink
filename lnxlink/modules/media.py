@@ -142,10 +142,15 @@ class Addon:
     def start_control(self, topic, data):
         """Control system"""
         if topic[-1] in ["set_volume", "volume_set"]:
-            if data <= 1:
-                data *= 100
-            data = int(min(data, 100))
-            self._set_volume(data)
+            try:
+                volume = float(data)
+            except (ValueError, TypeError):
+                logger.error("Invalid volume value: %s", data)
+                return
+            if volume <= 1:
+                volume *= 100
+            volume = int(min(max(volume, 0), 100))
+            self._set_volume(volume)
         elif len(self.players) > 0 and topic[-1] == "playpause":
             self.media_player.control_media("PlayPause")
         elif len(self.players) > 0 and topic[-1] == "play":
@@ -320,15 +325,19 @@ class Addon:
 
     def _get_audio_system(self):
         """Get system volume type"""
-        _, _, returncode = syscommand(
-            "pactl get-sink-volume @DEFAULT_SINK@", ignore_errors=True
-        )
-        if returncode == 0:
-            return "pactl"
+        if which("pactl") is not None:
+            _, _, returncode = syscommand(
+                ["pactl", "get-sink-volume", "@DEFAULT_SINK@"], ignore_errors=True
+            )
+            if returncode == 0:
+                return "pactl"
 
-        _, _, returncode = syscommand("amixer get Master", ignore_errors=True)
-        if returncode == 0:
-            return "amixer"
+        if which("amixer") is not None:
+            _, _, returncode = syscommand(
+                ["amixer", "get", "Master"], ignore_errors=True
+            )
+            if returncode == 0:
+                return "amixer"
 
         return None
 
@@ -337,13 +346,13 @@ class Addon:
         volume = 100
         if self.audio_system == "pactl":
             result, _, _ = syscommand(
-                "pactl get-sink-volume @DEFAULT_SINK@", ignore_errors=True
+                ["pactl", "get-sink-volume", "@DEFAULT_SINK@"], ignore_errors=True
             )
             match = re.search(r"(\d+)%", result)
             if match:
                 volume = int(match.group(1))
         elif self.audio_system == "amixer":
-            result, _, _ = syscommand("amixer get Master", ignore_errors=True)
+            result, _, _ = syscommand(["amixer", "get", "Master"], ignore_errors=True)
             match = re.search(r"(\d+)%", result)
             if match:
                 volume = int(match.group(1))
@@ -354,9 +363,9 @@ class Addon:
         if self.mediavolume == "ON":
             self.media_player.control_volume(volume / 100)
         elif self.audio_system == "pactl":
-            syscommand(f"pactl set-sink-volume @DEFAULT_SINK@ {volume}%")
+            syscommand(["pactl", "set-sink-volume", "@DEFAULT_SINK@", f"{volume}%"])
         elif self.audio_system == "amixer":
-            syscommand(f"amixer set Master {volume}%")
+            syscommand(["amixer", "set", "Master", f"{volume}%"])
         else:
             logger.error("Can't find pactl or amixer commands")
 

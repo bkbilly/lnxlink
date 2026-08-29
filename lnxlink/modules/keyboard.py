@@ -54,7 +54,7 @@ class Addon:
 
         if topic[1] == "send_text":
             logger.debug("Typing text via %s: %s", self.used_tool, data)
-            syscommand(f"{self.used_tool} type -- {shlex.quote(str(data))}")
+            syscommand([self.used_tool, "type", "--", str(data)])
         elif topic[1] == "send_keys":
             if self.used_tool == "ydotool":
                 key_map = self._extract_key_definitions(
@@ -67,7 +67,7 @@ class Addon:
                     return
                 data = self._create_key_representation(data, key_map)
                 logger.debug("Sending keys via ydotool: %s", data)
-            syscommand(f"{self.used_tool} key {data}")
+            syscommand([self.used_tool, "key"] + shlex.split(str(data)))
         else:
             logger.error("No topic found: %s", topic[1])
 

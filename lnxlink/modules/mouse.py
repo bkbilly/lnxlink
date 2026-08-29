@@ -19,24 +19,24 @@ class Addon:
         self.movement = [0, 0]
         self._all_commands = {
             "ydotool": {
-                "left_click": "ydotool click 0xc0",
-                "right_click": "ydotool click 0xc1",
-                "left_mouse_down": "ydotool click 0x40",
-                "left_mouse_up": "ydotool click 0x80",
-                "move_rel": "ydotool mousemove -x %s -y %s",
-                "move_abs": "ydotool mousemove -a -x %s -y %s",
-                "wheel_up": "ydotool mousemove -w -x 0 -y +1",
-                "wheel_down": "ydotool mousemove -w -x 0 -y -1",
+                "left_click": ["ydotool", "click", "0xc0"],
+                "right_click": ["ydotool", "click", "0xc1"],
+                "left_mouse_down": ["ydotool", "click", "0x40"],
+                "left_mouse_up": ["ydotool", "click", "0x80"],
+                "move_rel": ["ydotool", "mousemove", "-x", "{x}", "-y", "{y}"],
+                "move_abs": ["ydotool", "mousemove", "-a", "-x", "{x}", "-y", "{y}"],
+                "wheel_up": ["ydotool", "mousemove", "-w", "-x", "0", "-y", "+1"],
+                "wheel_down": ["ydotool", "mousemove", "-w", "-x", "0", "-y", "-1"],
             },
             "xdotool": {
-                "left_click": "xdotool click 1",
-                "right_click": "xdotool click 3",
-                "left_mouse_down": "xdotool mousedown 1",
-                "left_mouse_up": "xdotool mouseup 1",
-                "move_rel": "xdotool mousemove -- %s %s",
-                "move_abs": "xdotool mousemove %s %s",
-                "wheel_up": "xdotool click 4",
-                "wheel_down": "xdotool click 5",
+                "left_click": ["xdotool", "click", "1"],
+                "right_click": ["xdotool", "click", "3"],
+                "left_mouse_down": ["xdotool", "mousedown", "1"],
+                "left_mouse_up": ["xdotool", "mouseup", "1"],
+                "move_rel": ["xdotool", "mousemove", "--", "{x}", "{y}"],
+                "move_abs": ["xdotool", "mousemove", "{x}", "{y}"],
+                "wheel_up": ["xdotool", "click", "4"],
+                "wheel_down": ["xdotool", "click", "5"],
             },
         }
         self.commands = None
@@ -115,18 +115,7 @@ class Addon:
             logger.info("Initializing empty DISPLAY environment variable")
 
         if topic[1] == "mouse_coordinates":
-            if "," in data:
-                coords = data.replace(" ", "").split(",")
-            elif " " in data:
-                coords = data.split(" ")
-            else:
-                return
-            move_type = "move_abs"
-            if coords[0].startswith("+") or coords[0].startswith("-"):
-                move_type = "move_rel"
-            if coords[1].startswith("+") or coords[1].startswith("-"):
-                move_type = "move_rel"
-            syscommand(self.commands[move_type] % (coords[0], coords[1]))
+            self._set_coordinates(data)
         elif topic[1] == "mouse_left":
             self._move([-1, 0])
         elif topic[1] == "mouse_right":
@@ -153,6 +142,34 @@ class Addon:
             self.movement = [0, 0]
             syscommand(self.commands["wheel_down"])
 
+    def _set_coordinates(self, data):
+        """Move mouse to absolute or relative coordinates safely"""
+        if "," in data:
+            coords = data.replace(" ", "").split(",")
+        elif " " in data:
+            coords = data.split(" ")
+        else:
+            return
+        if len(coords) != 2:
+            return
+        try:
+            int(coords[0])
+            int(coords[1])
+        except (ValueError, TypeError):
+            logger.error("Invalid mouse coordinates: %s", data)
+            return
+
+        move_type = "move_abs"
+        if coords[0].startswith("+") or coords[0].startswith("-"):
+            move_type = "move_rel"
+        if coords[1].startswith("+") or coords[1].startswith("-"):
+            move_type = "move_rel"
+        cmd = [
+            arg.replace("{x}", str(coords[0])).replace("{y}", str(coords[1]))
+            for arg in self.commands[move_type]
+        ]
+        syscommand(cmd)
+
     def _move(self, movement):
         if self.movement == movement:
             # Stops mouse if it is moving
@@ -170,7 +187,11 @@ class Addon:
                 return
             move_x = movement[0] * i
             move_y = movement[1] * i
-            syscommand(self.commands["move_rel"] % (move_x, move_y))
+            cmd = [
+                arg.replace("{x}", str(move_x)).replace("{y}", str(move_y))
+                for arg in self.commands["move_rel"]
+            ]
+            syscommand(cmd)
             time.sleep(0.05)
         # Used if the user wants to run the same movement
         self.movement = [0, 0]

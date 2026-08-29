@@ -1,8 +1,11 @@
 """Toggle between performance, balanced, or power-saver profiles"""
+import logging
 import re
 from shutil import which
 
 from lnxlink.modules.scripts.helpers import syscommand
+
+logger = logging.getLogger("lnxlink")
 
 
 class Addon:
@@ -18,7 +21,7 @@ class Addon:
 
     def get_info(self):
         """Gather information from the system"""
-        stdout, _, _ = syscommand("powerprofilesctl get")
+        stdout, _, _ = syscommand(["powerprofilesctl", "get"])
         return stdout
 
     def exposed_controls(self):
@@ -36,13 +39,20 @@ class Addon:
 
     def start_control(self, topic, data):
         """Control system"""
-        syscommand(f"powerprofilesctl set {data}")
+        if data in self.options:
+            syscommand(["powerprofilesctl", "set", str(data)])
+        else:
+            logger.error(
+                "Invalid power profile '%s'. Allowed options: %s",
+                data,
+                self.options,
+            )
 
     def _get_power_profiles(self):
         """Get the power profiles in the correct order"""
         profiles_pattern = re.compile(r"([\w-]+):\n")
 
-        stdout, _, _ = syscommand("powerprofilesctl list")
+        stdout, _, _ = syscommand(["powerprofilesctl", "list"])
         profiles = re.findall(profiles_pattern, stdout)
 
         return profiles
