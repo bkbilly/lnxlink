@@ -5,7 +5,7 @@ import re
 from typing import Any, Dict, List, Optional
 from xml.etree import ElementTree
 
-from jeepney import DBusAddress, new_method_call
+from jeepney import DBusAddress, MessageType, new_method_call
 from jeepney.io.blocking import open_dbus_connection
 from jeepney.wrappers import DBusErrorResponse
 
@@ -173,11 +173,11 @@ class Addon:
     def _get_gatt_batteries(self, device_path: str) -> Dict[str, int]:
         """Get battery levels from GATT characteristics"""
         batteries = {}
-        paths = self._dbus_paths(BLUEZ_SERVICE, device_path, [])
+        objects = self._dbus_objects(BLUEZ_SERVICE, device_path)
 
         battery_index = 0
-        for path in paths:
-            if not self._has_interface(path, BLUEZ_GATT_CHARACTERISTIC_INTERFACE):
+        for path, interfaces in objects.items():
+            if BLUEZ_GATT_CHARACTERISTIC_INTERFACE not in interfaces:
                 continue
 
             try:
@@ -196,7 +196,7 @@ class Addon:
                     interface=BLUEZ_GATT_CHARACTERISTIC_INTERFACE,
                 )
                 msg = new_method_call(addr, "ReadValue", "a{sv}", ({},))
-                reply = self.conn.send_and_get_reply(msg)
+                reply = self.conn.send_and_get_reply(msg, timeout=2.0)
                 value = reply.body[0]
 
                 if value and len(value) > 0:
@@ -216,9 +216,6 @@ class Addon:
         data = {
             "power": "OFF",
             "devices": {},
-            "attributes": {
-                "battery": None,
-            },
         }
 
         # Get adapter power state
@@ -232,11 +229,11 @@ class Addon:
         except (OSError, DBusErrorResponse) as err:
             logger.debug("Failed to get adapter power state: %s", err)
 
-        # Get all device paths
-        paths = self._dbus_paths(BLUEZ_SERVICE, "/org/bluez", [])
+        # Get all BlueZ objects and their interfaces in a single traversal
+        objects = self._dbus_objects(BLUEZ_SERVICE, "/org/bluez")
 
-        for path in paths:
-            if not self._has_interface(path, BLUEZ_DEVICE_INTERFACE):
+        for path, interfaces in objects.items():
+            if BLUEZ_DEVICE_INTERFACE not in interfaces:
                 continue
 
             try:
@@ -272,7 +269,7 @@ class Addon:
 
                 # Try to get battery percentage from Battery1 interface
                 battery = None
-                if self._has_interface(path, BLUEZ_BATTERY_INTERFACE):
+                if BLUEZ_BATTERY_INTERFACE in interfaces:
                     try:
                         battery = str(
                             self._get_property(
@@ -287,11 +284,9 @@ class Addon:
                 # Get battery levels from GATT characteristics (for multi-battery devices)
                 batteries = self._get_gatt_batteries(path) if connected else {}
 
-                data["devices"][mac] = {
-                    "name": props["Name"],
-                    "power": "ON" if connected else "OFF",
-                    "batteries": batteries,
-                    "attributes": {
+                attributes = {
+                    key: value
+                    for key, value in {
                         "mac": mac,
                         "battery": battery,
                         "rssi": props["RSSI"],
@@ -299,8 +294,19 @@ class Addon:
                         "trusted": props["Trusted"],
                         "blocked": props["Blocked"],
                         "icon": props["Icon"],
-                    },
+                    }.items()
+                    if value is not None
                 }
+
+                device_info = {
+                    "name": props["Name"],
+                    "power": "ON" if connected else "OFF",
+                    "attributes": attributes,
+                }
+                if batteries:
+                    device_info["batteries"] = batteries
+
+                data["devices"][mac] = device_info
             except (OSError, DBusErrorResponse) as err:
                 logger.debug("Failed to get device info for %s: %s", path, err)
                 continue
@@ -314,54 +320,51 @@ class Addon:
 
     def _get_adapter_path(self) -> Optional[str]:
         """Find the first available Bluetooth adapter"""
-        paths = self._dbus_paths(BLUEZ_SERVICE, "/org/bluez", [])
-        for path in paths:
-            if self._has_interface(path, BLUEZ_ADAPTER_INTERFACE):
+        objects = self._dbus_objects(BLUEZ_SERVICE, "/org/bluez")
+        for path, interfaces in objects.items():
+            if BLUEZ_ADAPTER_INTERFACE in interfaces:
                 logger.debug("Found Bluetooth adapter at %s", path)
                 return path
         logger.warning("No Bluetooth adapter found")
         return None
 
-    def _dbus_paths(
-        self, service: str, object_path: str, paths: List[str]
-    ) -> List[str]:
-        """Recursively discover all child object paths via introspection"""
+    def _dbus_objects(
+        self,
+        service: str,
+        object_path: str,
+        objects: Optional[Dict[str, List[str]]] = None,
+    ) -> Dict[str, List[str]]:
+        """Recursively discover all child object paths and their interfaces via introspection"""
+        if objects is None:
+            objects = {}
+
         addr = DBusAddress(
             object_path, bus_name=service, interface=DBUS_INTROSPECTABLE_INTERFACE
         )
         msg = new_method_call(addr, "Introspect")
 
         try:
-            reply = self.conn.send_and_get_reply(msg)
+            reply = self.conn.send_and_get_reply(msg, timeout=2.0)
             xml_string = reply.body[0]
         except (OSError, DBusErrorResponse) as err:
             logger.debug("Failed to introspect %s: %s", object_path, err)
-            return paths
+            return objects
 
         root = ElementTree.fromstring(xml_string)
+        interfaces = [
+            child.attrib["name"]
+            for child in root
+            if child.tag == "interface" and "name" in child.attrib
+        ]
+        objects[object_path] = interfaces
+
         for child in root:
             if child.tag == "node" and "name" in child.attrib:
                 name = child.attrib["name"]
                 new_path = f"{object_path.rstrip('/')}/{name}"
-                paths.append(new_path)
-                self._dbus_paths(service, new_path, paths)
+                self._dbus_objects(service, new_path, objects)
 
-        return paths
-
-    def _has_interface(self, object_path: str, interface: str) -> bool:
-        """Check if an object implements a specific interface"""
-        addr = DBusAddress(
-            object_path, bus_name=BLUEZ_SERVICE, interface=DBUS_INTROSPECTABLE_INTERFACE
-        )
-        msg = new_method_call(addr, "Introspect")
-
-        try:
-            reply = self.conn.send_and_get_reply(msg)
-            xml_string = reply.body[0]
-            return interface in xml_string
-        except (OSError, DBusErrorResponse) as err:
-            logger.debug("Failed to check interface on %s: %s", object_path, err)
-            return False
+        return objects
 
     def _get_property(self, object_path: str, interface: str, prop: str) -> Any:
         """Get a property from a D-Bus object"""
@@ -371,7 +374,9 @@ class Addon:
             interface=DBUS_PROPERTIES_INTERFACE,
         )
         msg = new_method_call(addr, "Get", "ss", (interface, prop))
-        reply = self.conn.send_and_get_reply(msg)
+        reply = self.conn.send_and_get_reply(msg, timeout=2.0)
+        if reply.header.message_type == MessageType.error:
+            raise DBusErrorResponse(reply)
         return reply.body[0][1]
 
     def _set_property(
@@ -384,10 +389,14 @@ class Addon:
             interface=DBUS_PROPERTIES_INTERFACE,
         )
         msg = new_method_call(addr, "Set", "ssv", (interface, prop, (signature, value)))
-        self.conn.send_and_get_reply(msg)
+        reply = self.conn.send_and_get_reply(msg, timeout=2.0)
+        if reply.header.message_type == MessageType.error:
+            raise DBusErrorResponse(reply)
 
     def _call_method(self, object_path: str, interface: str, method: str) -> None:
         """Call a method on a D-Bus object"""
         addr = DBusAddress(object_path, bus_name=BLUEZ_SERVICE, interface=interface)
         msg = new_method_call(addr, method)
-        self.conn.send_and_get_reply(msg)
+        reply = self.conn.send_and_get_reply(msg, timeout=2.0)
+        if reply.header.message_type == MessageType.error:
+            raise DBusErrorResponse(reply)
