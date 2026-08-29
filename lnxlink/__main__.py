@@ -2,6 +2,7 @@
 """Start the LNXlink service"""
 
 import argparse
+import copy
 import inspect
 import json
 import logging
@@ -163,6 +164,7 @@ class LNXlink:
         topic = f"{self.config['pref_topic']}/monitor_controls/{subtopic}"
         if pub_data is None:
             return
+        saved_data = copy.deepcopy(pub_data)
         if isinstance(pub_data, bool):
             if pub_data is True:
                 pub_data = "ON"
@@ -190,7 +192,7 @@ class LNXlink:
         ):
             return
 
-        self.saved_publish[subtopic.replace("/", "_")] = pub_data
+        self.saved_publish[subtopic.replace("/", "_")] = saved_data
         self._publish_monitor_message(topic, pub_data, retain)
 
     def invalidate_publish_cache(self):
