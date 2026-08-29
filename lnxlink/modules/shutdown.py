@@ -17,9 +17,7 @@ class Addon:
         """Setup addon"""
         self.name = "Shutdown"
         self.lnxlink = lnxlink
-        self.lnxlink.add_settings(
-            "shutdown", {"command": "", "command_timeout": 120}
-        )
+        self.lnxlink.add_settings("shutdown", {"command": "", "command_timeout": 120})
 
     def start_control(self, topic, data):
         """Control system"""
