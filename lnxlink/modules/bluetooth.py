@@ -241,108 +241,64 @@ class Addon:
 
             try:
                 # Only include paired devices
-                paired = self._get_property(
-                    object_path=path,
-                    interface=BLUEZ_DEVICE_INTERFACE,
-                    prop="Paired",
-                )
-                if not paired:
+                if not self._get_property(path, BLUEZ_DEVICE_INTERFACE, "Paired"):
                     continue
 
-                # Get device properties
-                mac = self._get_property(
-                    object_path=path,
-                    interface=BLUEZ_DEVICE_INTERFACE,
-                    prop="Address",
-                )
-                name = self._get_property(
-                    object_path=path,
-                    interface=BLUEZ_DEVICE_INTERFACE,
-                    prop="Name",
-                )
-                connected = self._get_property(
-                    object_path=path,
-                    interface=BLUEZ_DEVICE_INTERFACE,
-                    prop="Connected",
-                )
+                # Query all device properties into a dictionary
+                props = {
+                    "Address": None,
+                    "Name": None,
+                    "Connected": False,
+                    "Icon": None,
+                    "RSSI": None,
+                    "Trusted": None,
+                    "Blocked": None,
+                }
+                for prop in props:
+                    try:
+                        props[prop] = self._get_property(
+                            object_path=path,
+                            interface=BLUEZ_DEVICE_INTERFACE,
+                            prop=prop,
+                        )
+                    except (OSError, DBusErrorResponse):
+                        pass
 
-                power = "ON" if connected else "OFF"
+                mac = props["Address"]
+                if not mac:
+                    continue
+
+                connected = bool(props["Connected"])
 
                 # Try to get battery percentage from Battery1 interface
                 battery = None
                 if self._has_interface(path, BLUEZ_BATTERY_INTERFACE):
                     try:
-                        battery = self._get_property(
-                            object_path=path,
-                            interface=BLUEZ_BATTERY_INTERFACE,
-                            prop="Percentage",
+                        battery = str(
+                            self._get_property(
+                                object_path=path,
+                                interface=BLUEZ_BATTERY_INTERFACE,
+                                prop="Percentage",
+                            )
                         )
-                        battery = str(battery)
                     except (OSError, DBusErrorResponse):
                         pass
 
                 # Get battery levels from GATT characteristics (for multi-battery devices)
-                # Only attempt if device is connected
-                batteries = {}
-                if connected:
-                    gatt_batteries = self._get_gatt_batteries(path)
-                    # Convert empty dict to None
-                    if gatt_batteries:
-                        batteries = gatt_batteries
-
-                # Get additional attributes from BlueZ
-                icon = None
-                try:
-                    icon = self._get_property(
-                        object_path=path,
-                        interface=BLUEZ_DEVICE_INTERFACE,
-                        prop="Icon",
-                    )
-                except (OSError, DBusErrorResponse):
-                    pass
-
-                rssi = None
-                try:
-                    rssi = self._get_property(
-                        object_path=path,
-                        interface=BLUEZ_DEVICE_INTERFACE,
-                        prop="RSSI",
-                    )
-                except (OSError, DBusErrorResponse):
-                    pass
-
-                trusted = None
-                try:
-                    trusted = self._get_property(
-                        object_path=path,
-                        interface=BLUEZ_DEVICE_INTERFACE,
-                        prop="Trusted",
-                    )
-                except (OSError, DBusErrorResponse):
-                    pass
-
-                blocked = None
-                try:
-                    blocked = self._get_property(
-                        object_path=path,
-                        interface=BLUEZ_DEVICE_INTERFACE,
-                        prop="Blocked",
-                    )
-                except (OSError, DBusErrorResponse):
-                    pass
+                batteries = self._get_gatt_batteries(path) if connected else {}
 
                 data["devices"][mac] = {
-                    "name": name,
-                    "power": power,
+                    "name": props["Name"],
+                    "power": "ON" if connected else "OFF",
                     "batteries": batteries,
                     "attributes": {
                         "mac": mac,
                         "battery": battery,
-                        "rssi": rssi,
-                        "paired": paired,
-                        "trusted": trusted,
-                        "blocked": blocked,
-                        "icon": icon,
+                        "rssi": props["RSSI"],
+                        "paired": True,
+                        "trusted": props["Trusted"],
+                        "blocked": props["Blocked"],
+                        "icon": props["Icon"],
                     },
                 }
             except (OSError, DBusErrorResponse) as err:
