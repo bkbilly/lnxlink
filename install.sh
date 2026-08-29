@@ -1,48 +1,31 @@
 #!/bin/bash
 
 
-find_lnxlink_binary_path() {
-    local binary_name="lnxlink"
-
-    # 1. Check in $PATH using command -v
-    if command -v "$binary_name" >/dev/null 2>&1; then
-        local path_in_path=$(command -v "$binary_name")
-        echo "$path_in_path"
-        return 0 # Success
+run_pipx() {
+    if [ "$system" == "nixos" ]; then
+        nix-shell -p python311Packages.pipx --run "pipx $*"
+    else
+        pipx "$@"
     fi
+}
 
-    # 2. Check in $HOME/.local/bin/
-    local path_local="$HOME/.local/bin/$binary_name"
-    if [[ -x "$path_local" ]]; then
-        echo "$path_local"
-        return 0 # Success
+is_lnxlink_managed_by_pipx() {
+    find_pipx_lnxlink_binary_path >/dev/null
+}
+
+find_pipx_lnxlink_binary_path() {
+    local pipx_home
+    local pipx_binary
+    if [[ "${PIPX_HOME+x}" == "x" ]]; then
+        pipx_home="${PIPX_HOME:-$PWD}"
+    elif [[ -d "$HOME/.local/pipx" ]]; then
+        pipx_home="$HOME/.local/pipx"
+    else
+        pipx_home="${XDG_DATA_HOME:-$HOME/.local/share}/pipx"
     fi
-
-    # 3. Check in $HOME/bin/
-    local path_home_bin="$HOME/bin/$binary_name"
-    if [[ -x "$path_home_bin" ]]; then
-        echo "$path_home_bin"
-        return 0 # Success
-    fi
-
-    # 4. Check in $PIPX_BIN_DIR (If pipx is used and environment variable is set)
-    if [[ -n "$PIPX_BIN_DIR" ]]; then
-        local path_pipx="$PIPX_BIN_DIR/$binary_name"
-        if [[ -x "$path_pipx" ]]; then
-            echo "$path_pipx"
-            return 0 # Success
-        fi
-    fi
-
-    # 5. Root User Local Bin (The sudo/root default) ---
-    local path_root_local="/root/.local/bin/$binary_name"
-    if [[ -x "$path_root_local" ]]; then
-        echo "$path_root_local"
-        return 0 # Success
-    fi
-
-    # If not found, echo nothing and return failure
-    return 1 # Failure
+    pipx_binary="$pipx_home/venvs/lnxlink/bin/lnxlink"
+    [[ -x "$pipx_binary" ]] || return 1
+    echo "$pipx_binary"
 }
 
 
@@ -149,36 +132,44 @@ fi
 
 
 # Install LNXlink
-LNX_PATH=$(find_lnxlink_binary_path)
-LNX_EXIT_STATUS=$?
 LNX_CONFIG_PATH=""
 
-if [ "$LNX_PATH" != "" ] && [ "$LNX_EXIT_STATUS" -eq 0 ]; then
+if is_lnxlink_managed_by_pipx; then
     echo -e "\e[31mUpgrading LNXlink...\e[0m"
-    if [ "$system" == "nixos" ]; then
-        nix-shell -p python311Packages.pipx --run "pipx upgrade lnxlink"
-    else
-        pipx upgrade lnxlink
+    run_pipx upgrade lnxlink
+    PIPX_STATUS=$?
+    if [ "$PIPX_STATUS" -ne 0 ]; then
+        echo -e '\e[31mError: lnxlink upgrade failed. Aborting.\e[0m'
+        exit "$PIPX_STATUS"
     fi
-
 else
     echo -e "\e[35mInstalling LNXlink...\e[0m"
     if [ "$system" == "nixos" ]; then
-        nix-shell -p python311Packages.pipx --run "pipx install lnxlink"
-        nix-shell -p python311Packages.pipx --run "pipx ensurepath"
+        run_pipx install lnxlink
+        PIPX_STATUS=$?
+        if [ "$PIPX_STATUS" -eq 0 ]; then
+            run_pipx ensurepath
+            PIPX_STATUS=$?
+        fi
     else
-        pip install -U pipx
-        pipx install lnxlink
+        run_pipx install lnxlink
+        PIPX_STATUS=$?
     fi
-    source ~/.bashrc
-    LNX_PATH=$(find_lnxlink_binary_path)
-    LNX_EXIT_STATUS=$?
-    if [ "$LNX_PATH" == "" ] || [ "$LNX_EXIT_STATUS" -ne 0 ]; then
+    if [ "$PIPX_STATUS" -ne 0 ]; then
         echo -e '\e[31mError: lnxlink installation failed. Aborting.\e[0m'
-        exit 1
+        exit "$PIPX_STATUS"
     fi
     LNX_CONFIG_PATH=$(pwd)/lnxlink.yaml
-    $LNX_PATH -sc lnxlink.yaml
+fi
+
+LNX_PATH=$(find_pipx_lnxlink_binary_path)
+LNX_EXIT_STATUS=$?
+if [ "$LNX_PATH" == "" ] || [ "$LNX_EXIT_STATUS" -ne 0 ]; then
+    echo -e '\e[31mError: pipx did not install the lnxlink executable. Aborting.\e[0m'
+    exit 1
+fi
+if [ "$LNX_CONFIG_PATH" != "" ]; then
+    "$LNX_PATH" -sc lnxlink.yaml
 fi
 
 
