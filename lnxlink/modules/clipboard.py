@@ -97,69 +97,30 @@ class Addon:
 
     def _get_clipboard(self):
         """Get current clipboard content"""
-        if self.clipboard_tool == "wl-clipboard":
-            # Use wl-paste for Wayland
-            stdout, _, returncode = syscommand(
-                "wl-paste --no-newline",
-                ignore_errors=True,
-                timeout=1,
-            )
+        commands = {
+            "wl-clipboard": ["wl-paste", "--no-newline"],
+            "xclip": ["xclip", "-selection", "clipboard", "-o"],
+            "xsel": ["xsel", "--clipboard", "--output"],
+        }
+        cmd = commands.get(self.clipboard_tool)
+        if cmd:
+            stdout, _, returncode = syscommand(cmd, ignore_errors=True, timeout=1)
             if returncode == 0:
                 return stdout
-
-        elif self.clipboard_tool == "xclip":
-            # Use xclip for X11
-            stdout, _, returncode = syscommand(
-                "xclip -selection clipboard -o",
-                ignore_errors=True,
-                timeout=1,
-            )
-            if returncode == 0:
-                return stdout
-
-        elif self.clipboard_tool == "xsel":
-            # Use xsel for X11
-            stdout, _, returncode = syscommand(
-                "xsel --clipboard --output",
-                ignore_errors=True,
-                timeout=1,
-            )
-            if returncode == 0:
-                return stdout
-
         return ""
 
     def _set_clipboard(self, text):
         """Set clipboard content"""
-        # Escape single quotes in text for shell command
-        escaped_text = text.replace("'", "'\\''")
-
-        if self.clipboard_tool == "wl-clipboard":
-            # Use wl-copy for Wayland
-            _, _, returncode = syscommand(
-                f"printf '%s' '{escaped_text}' | wl-copy",
-                timeout=2,
-            )
+        commands = {
+            "wl-clipboard": ["wl-copy"],
+            "xclip": ["xclip", "-selection", "clipboard"],
+            "xsel": ["xsel", "--clipboard", "--input"],
+        }
+        cmd = commands.get(self.clipboard_tool)
+        if cmd:
+            _, _, returncode = syscommand(cmd, stdin=text, timeout=2)
             if returncode != 0:
-                raise SystemError(f"wl-copy failed with code {returncode}")
-
-        elif self.clipboard_tool == "xclip":
-            # Use xclip for X11
-            _, _, returncode = syscommand(
-                f"printf '%s' '{escaped_text}' | xclip -selection clipboard",
-                timeout=2,
-            )
-            if returncode != 0:
-                raise SystemError(f"xclip failed with code {returncode}")
-
-        elif self.clipboard_tool == "xsel":
-            # Use xsel for X11
-            _, _, returncode = syscommand(
-                f"printf '%s' '{escaped_text}' | xsel --clipboard --input",
-                timeout=2,
-            )
-            if returncode != 0:
-                raise SystemError(f"xsel failed with code {returncode}")
+                raise SystemError(f"{cmd[0]} failed with code {returncode}")
 
         # Update last_clipboard to avoid triggering monitor on self-set
         self.last_clipboard = text

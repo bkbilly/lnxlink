@@ -69,19 +69,33 @@ def get_version():
 
 
 # pylint: disable=consider-using-with
-def syscommand(command, ignore_errors=False, timeout=3, background=False):
+def syscommand(command, ignore_errors=False, timeout=3, background=False, stdin=None):
     """Global subprocess command"""
     logger.debug("Executing command: %s", command)
 
     shell = not isinstance(command, list)
 
+    stdin_bytes = None
+    if stdin is not None:
+        if isinstance(stdin, str):
+            stdin_bytes = stdin.encode("UTF-8")
+        else:
+            stdin_bytes = stdin
+
     if background:
-        subprocess.Popen(
+        proc = subprocess.Popen(
             command,
             shell=shell,
+            stdin=subprocess.PIPE if stdin_bytes is not None else subprocess.DEVNULL,
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
         )
+        if stdin_bytes is not None:
+            try:
+                proc.stdin.write(stdin_bytes)
+                proc.stdin.close()
+            except Exception:
+                pass
         return "", "", 0
 
     stdout = b""
@@ -92,6 +106,7 @@ def syscommand(command, ignore_errors=False, timeout=3, background=False):
     try:
         result = subprocess.run(
             command,
+            input=stdin_bytes,
             shell=shell,
             check=False,
             capture_output=True,
@@ -106,6 +121,11 @@ def syscommand(command, ignore_errors=False, timeout=3, background=False):
         stderr = err.stderr or b""
         returncode = -1
         timed_out = True
+
+    except FileNotFoundError as err:
+        stdout = b""
+        stderr = str(err).encode("UTF-8")
+        returncode = 127
 
     stdout = stdout.decode("UTF-8", errors="replace").strip()
     stderr = stderr.decode("UTF-8", errors="replace").strip()
