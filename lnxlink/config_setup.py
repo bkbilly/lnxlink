@@ -129,20 +129,40 @@ def setup_systemd(config_path):
         # Install on SystemD
         Path(service_location).mkdir(parents=True, exist_ok=True)
         exec_cmd = f"{shutil.which('lnxlink')} -c {config_path}"
-        service_text = systemd_service.format(exec_cmd=exec_cmd).encode()
+        service_text = systemd_service.format(exec_cmd=exec_cmd)
+        service_path = f"{service_location}/lnxlink.service"
+        command_prefix = [sudo] if sudo else []
         try:
-            with open(f"{service_location}/lnxlink.service", "wb") as config:
+            with open(service_path, "w", encoding="UTF-8") as config:
                 config.write(service_text)
         except PermissionError:
-            cmd = f'echo "{service_text}" | {sudo} tee "{service_location}/lnxlink.service"'
-            subprocess.call(cmd, shell=True)
+            subprocess.run(
+                [*command_prefix, "tee", service_path],
+                input=service_text,
+                text=True,
+                stdout=subprocess.DEVNULL,
+                check=True,
+            )
 
-        cmd = f"{sudo} chmod +x {service_location}/lnxlink.service"
-        subprocess.call(cmd, shell=True)
-        cmd = f"{sudo} systemctl {cmd_user} enable lnxlink.service"
-        subprocess.call(cmd, shell=True)
-        cmd = f"{sudo} systemctl {cmd_user} daemon-reload"
-        subprocess.call(cmd, shell=True)
+        systemctl_scope = [cmd_user] if cmd_user else []
+        subprocess.run(
+            [*command_prefix, "chmod", "+x", service_path],
+            check=True,
+        )
+        subprocess.run(
+            [*command_prefix, "systemctl", *systemctl_scope, "daemon-reload"],
+            check=True,
+        )
+        subprocess.run(
+            [
+                *command_prefix,
+                "systemctl",
+                *systemctl_scope,
+                "enable",
+                "lnxlink.service",
+            ],
+            check=True,
+        )
 
 
 def setup_modules(config_path):
