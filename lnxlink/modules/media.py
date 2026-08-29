@@ -218,6 +218,10 @@ class Addon:
                 self.lnxlink.run_module(f"{self.name}/albumart", "")
         return info
 
+    def invalidate_cache(self):
+        """Force media state to be queued again after reconnecting."""
+        self.prev_info = {}
+
     def media_callback(self, players):
         """Callback function to update media information"""
         self.players = players
