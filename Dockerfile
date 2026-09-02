@@ -13,6 +13,7 @@ RUN apt-get update && \
         gcc \
         python3-dev \
         libjpeg62-turbo-dev \
+        libwebp-dev \
         zlib1g-dev \
         libsystemd-dev && \
     rm -rf /var/lib/apt/lists/*
@@ -53,6 +54,9 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         dbus \
         libjpeg62-turbo \
+        libwebp7 \
+        libwebpdemux2 \
+        libwebpmux3 \
         zlib1g \
         xdg-utils \
         xdotool \
