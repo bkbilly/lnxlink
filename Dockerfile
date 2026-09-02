@@ -27,6 +27,7 @@ RUN pip --no-cache-dir install \
     flask \
     waitress \
     jeepney \
+    Pillow \
     dbus-mediaplayer \
     dbus-notification \
     dbus-idle \

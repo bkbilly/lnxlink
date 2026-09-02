@@ -93,8 +93,11 @@ class Addon:
         self.dbus_mediaplayer = import_install_package(
             "dbus-mediaplayer", ">=2026.7.0", "dbus_mediaplayer"
         )
-        pillow = import_install_package("Pillow", ">=9.1.0", ("PIL", ["Image"]))
+        pillow = import_install_package(
+            "Pillow", ">=9.1.0", ("PIL", ["Image", "ImageOps"])
+        )
         self.image = pillow.Image
+        self.image_ops = pillow.ImageOps
 
     def exposed_controls(self):
         """Exposes to home assistant"""
@@ -265,14 +268,21 @@ class Addon:
         """Resize and recompress artwork to stay below the MQTT payload limit."""
         with self.image.open(arturl) as source_image:
             source_image.load()
-            source_image = source_image.convert("RGB")
+            source_image = self.image_ops.exif_transpose(source_image)
+            has_transparency = source_image.mode in ("RGBA", "LA") or (
+                source_image.mode == "P" and "transparency" in source_image.info
+            )
+            source_image = source_image.convert("RGBA" if has_transparency else "RGB")
             for max_dimension, quality in THUMBNAIL_PROFILES:
                 image = source_image.copy()
                 image.thumbnail(
                     (max_dimension, max_dimension), self.image.Resampling.LANCZOS
                 )
                 output = BytesIO()
-                image.save(output, format="JPEG", quality=quality, optimize=True)
+                if has_transparency:
+                    image.save(output, format="PNG", optimize=True)
+                else:
+                    image.save(output, format="JPEG", quality=quality, optimize=True)
                 image_data = output.getvalue()
                 if len(image_data) <= MAX_THUMBNAIL_BYTES:
                     logger.debug(
