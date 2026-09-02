@@ -12,6 +12,8 @@ RUN apt-get update && \
         cmake \
         gcc \
         python3-dev \
+        libjpeg62-turbo-dev \
+        zlib1g-dev \
         libsystemd-dev && \
     rm -rf /var/lib/apt/lists/*
 
@@ -50,6 +52,8 @@ WORKDIR /opt/lnxlink
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         dbus \
+        libjpeg62-turbo \
+        zlib1g \
         xdg-utils \
         xdotool \
         x11-xserver-utils && \
