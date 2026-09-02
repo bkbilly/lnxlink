@@ -296,7 +296,7 @@ class Addon:
             source_image.load()
             source_image = self.image_ops.exif_transpose(source_image)
             has_transparency = source_image.mode in ("RGBA", "LA") or (
-                source_image.mode == "P" and "transparency" in source_image.info
+                "transparency" in source_image.info
             )
             image = source_image.convert("RGBA" if has_transparency else "RGB")
             for max_dimension, quality in THUMBNAIL_PROFILES:
