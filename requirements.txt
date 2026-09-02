@@ -10,6 +10,7 @@ psutil>=7.0.0
 requests>=2.31.0
 
 # Modules dependencies
+Pillow>=9.1.0
 PyGObject>=3.44.0
 SpeechRecognition>=3.10.0
 dbus-idle>=2026.8.0

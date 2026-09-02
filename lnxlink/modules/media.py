@@ -7,11 +7,21 @@ import shlex
 import subprocess
 import threading
 import traceback
+from io import BytesIO
 from shutil import which
 
 from lnxlink.modules.scripts.helpers import import_install_package, syscommand
 
 logger = logging.getLogger("lnxlink")
+
+# Base64 adds about one third, leaving headroom below 128 KiB broker limits.
+MAX_THUMBNAIL_BYTES = 64 * 1024
+THUMBNAIL_PROFILES = (
+    (512, 85),
+    (384, 80),
+    (256, 70),
+    (128, 60),
+)
 
 
 # pylint: disable=too-many-instance-attributes
@@ -83,6 +93,8 @@ class Addon:
         self.dbus_mediaplayer = import_install_package(
             "dbus-mediaplayer", ">=2026.7.0", "dbus_mediaplayer"
         )
+        pillow = import_install_package("Pillow", ">=9.1.0", ("PIL", ["Image"]))
+        self.image = pillow.Image
 
     def exposed_controls(self):
         """Exposes to home assistant"""
@@ -239,12 +251,43 @@ class Addon:
             try:
                 arturl = player["arturl"].replace("file://", "")
                 with open(arturl, "rb") as image_file:
-                    image_thumbnail = base64.b64encode(image_file.read())
-                    return image_thumbnail
+                    image_data = image_file.read(MAX_THUMBNAIL_BYTES + 1)
+                if len(image_data) <= MAX_THUMBNAIL_BYTES:
+                    return base64.b64encode(image_data)
+                return self._resize_thumbnail(arturl)
             except Exception as err:
                 logger.debug(
                     "Can't create thumbnail: %s, %s", err, traceback.format_exc()
                 )
+        return b" "
+
+    def _resize_thumbnail(self, arturl):
+        """Resize and recompress artwork to stay below the MQTT payload limit."""
+        with self.image.open(arturl) as source_image:
+            source_image.load()
+            source_image = source_image.convert("RGB")
+            for max_dimension, quality in THUMBNAIL_PROFILES:
+                image = source_image.copy()
+                image.thumbnail(
+                    (max_dimension, max_dimension), self.image.Resampling.LANCZOS
+                )
+                output = BytesIO()
+                image.save(output, format="JPEG", quality=quality, optimize=True)
+                image_data = output.getvalue()
+                if len(image_data) <= MAX_THUMBNAIL_BYTES:
+                    logger.debug(
+                        "Resized media thumbnail to %dx%d and %d bytes: %s",
+                        image.width,
+                        image.height,
+                        len(image_data),
+                        arturl,
+                    )
+                    return base64.b64encode(image_data)
+        logger.warning(
+            "Can't resize media thumbnail below %d bytes: %s",
+            MAX_THUMBNAIL_BYTES,
+            arturl,
+        )
         return b" "
 
     def stop_playmedia(self):
