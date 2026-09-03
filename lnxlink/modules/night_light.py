@@ -1,4 +1,4 @@
-"""Toggle and report Night Light status across desktop environments"""
+"""Toggle and report Night Light status"""
 import logging
 from shutil import which
 from typing import Any, Dict, Optional, Tuple
@@ -11,9 +11,6 @@ from lnxlink.modules.scripts.helpers import syscommand
 
 logger = logging.getLogger("lnxlink")
 
-KWIN_NIGHTLIGHT_SERVICE = "org.kde.KWin.NightLight"
-KWIN_NIGHTLIGHT_PATH = "/org/kde/KWin/NightLight"
-
 
 class Addon:
     """Addon module for Night Light / Blue Light Filter"""
@@ -24,58 +21,12 @@ class Addon:
         self.lnxlink = lnxlink
         self.inhibit_cookie = None
         self.conn = None
-        self.kwin_addr = DBusAddress(
-            KWIN_NIGHTLIGHT_PATH,
-            bus_name=KWIN_NIGHTLIGHT_SERVICE,
-            interface=KWIN_NIGHTLIGHT_SERVICE,
-        )
-        self.kwin_prop_addr = DBusAddress(
-            KWIN_NIGHTLIGHT_PATH,
-            bus_name=KWIN_NIGHTLIGHT_SERVICE,
-            interface="org.freedesktop.DBus.Properties",
-        )
-        try:
-            self.conn = open_dbus_connection(bus="SESSION")
-        except Exception as err:
-            logger.debug(
-                "Failed to connect to session D-Bus in Night Light module: %s", err
-            )
-            self.conn = None
 
-        # Decide once which backend to use, so we don't spawn `which`/`pgrep`
-        # subprocesses or D-Bus probes on every get_info()/start_control() call.
-        self.backend = self._detect_backend()
-        if self.backend is None:
+        backend_setup = self._setup_backend()
+        if backend_setup is None:
             raise RuntimeError("No supported Night Light backend found")
+        self.backend, self._read_state, self._set_state = backend_setup
         logger.debug("Night Light backend selected: %s", self.backend)
-
-    def _detect_backend(self) -> Optional[str]:
-        """Pick a single Night Light backend, in priority order"""
-        if self._kwin_available():
-            return "kde"
-        if which("gsettings") is not None:
-            return "gnome"
-        if self._nightlight_process() is not None:
-            return "process"
-        return None
-
-    def _kwin_available(self) -> bool:
-        if self.conn is None:
-            return False
-        try:
-            self._kwin_get_all()
-            return True
-        except (OSError, DBusErrorResponse):
-            return False
-
-    @staticmethod
-    def _nightlight_process() -> Optional[str]:
-        stdout, _, rc = syscommand(
-            "pgrep -x gammastep || pgrep -x redshift", ignore_errors=True
-        )
-        if rc == 0 and stdout.strip():
-            return stdout.strip()
-        return None
 
     def exposed_controls(self):
         """Exposes to home assistant"""
@@ -113,20 +64,71 @@ class Addon:
             return
         self._set_state(enabled)
 
-    def _read_state(self) -> Tuple[Optional[bool], Dict[str, Any]]:
-        if self.backend == "kde":
-            return self._read_kde()
-        if self.backend == "gnome":
-            return self._read_gnome()
-        return self._read_process()
+    def _setup_backend(self) -> Optional[Tuple[str, Any, Any]]:
+        """Detect available desktop environment and return (backend, read_func, set_func)"""
+        # 1. KDE Plasma (KWin NightLight via D-Bus)
+        self._init_dbus()
+        if self._kwin_available():
+            return "kde", self._read_kde, self._set_kde
+
+        # 2. GNOME (gsettings)
+        if which("gsettings") is not None:
+            return "gnome", self._read_gnome, self._set_gnome
+
+        # 3. Running process (gammastep / redshift)
+        if self._nightlight_process() is not None:
+            return (
+                "process",
+                self._read_process,
+                lambda _: logger.warning(
+                    "Night Light control is not supported for backend: %s", self.backend
+                ),
+            )
+
+        return None
+
+    def _init_dbus(self):
+        """Initialize session D-Bus connection"""
+        if self.conn is not None:
+            return
+        try:
+            self.conn = open_dbus_connection(bus="SESSION")
+        except Exception as err:
+            logger.debug(
+                "Failed to connect to session D-Bus in Night Light module: %s", err
+            )
+            self.conn = None
+
+    def _kwin_available(self) -> bool:
+        if self.conn is None:
+            return False
+        try:
+            self._kwin_get_all()
+            return True
+        except (OSError, DBusErrorResponse):
+            return False
+
+    @staticmethod
+    def _nightlight_process() -> Optional[str]:
+        stdout, _, rc = syscommand(
+            "pgrep -x gammastep || pgrep -x redshift", ignore_errors=True
+        )
+        if rc == 0 and stdout.strip():
+            return stdout.strip()
+        return None
 
     def _kwin_get_all(self) -> Dict[str, Any]:
         """Fetch all properties from the KWin NightLight D-Bus interface"""
+        kwin_prop_addr = DBusAddress(
+            "/org/kde/KWin/NightLight",
+            bus_name="org.kde.KWin.NightLight",
+            interface="org.freedesktop.DBus.Properties",
+        )
         msg = new_method_call(
-            self.kwin_prop_addr,
+            kwin_prop_addr,
             "GetAll",
             "s",
-            (KWIN_NIGHTLIGHT_SERVICE,),
+            ("org.kde.KWin.NightLight",),
         )
         reply = self.conn.send_and_get_reply(msg, timeout=2.0)
         if reply.header.message_type == MessageType.error:
@@ -175,21 +177,18 @@ class Addon:
             return False, {}
         return True, {"pid": pid}
 
-    def _set_state(self, enabled):
-        if self.backend == "kde":
-            self._set_kde(enabled)
-        elif self.backend == "gnome":
-            self._set_gnome(enabled)
-        else:
-            logger.warning(
-                "Night Light control is not supported for backend: %s", self.backend
-            )
-
     def _set_kde(self, enabled: bool) -> None:
         """Inhibit/Uninhibit KWin NightLight via D-Bus"""
+        if self.conn is None:
+            return
+        kwin_addr = DBusAddress(
+            "/org/kde/KWin/NightLight",
+            bus_name="org.kde.KWin.NightLight",
+            interface="org.kde.KWin.NightLight",
+        )
         try:
             if not enabled:
-                msg = new_method_call(self.kwin_addr, "inhibit")
+                msg = new_method_call(kwin_addr, "inhibit")
                 reply = self.conn.send_and_get_reply(msg, timeout=2.0)
                 if reply.header.message_type == MessageType.error:
                     raise DBusErrorResponse(reply)
@@ -197,7 +196,7 @@ class Addon:
                     self.inhibit_cookie = reply.body[0]
             elif self.inhibit_cookie is not None:
                 msg = new_method_call(
-                    self.kwin_addr, "uninhibit", "u", (self.inhibit_cookie,)
+                    kwin_addr, "uninhibit", "u", (self.inhibit_cookie,)
                 )
                 reply = self.conn.send_and_get_reply(msg, timeout=2.0)
                 if reply.header.message_type == MessageType.error:
