@@ -12,6 +12,9 @@ RUN apt-get update && \
         cmake \
         gcc \
         python3-dev \
+        libjpeg62-turbo-dev \
+        libwebp-dev \
+        zlib1g-dev \
         libsystemd-dev && \
     rm -rf /var/lib/apt/lists/*
 
@@ -27,6 +30,7 @@ RUN pip --no-cache-dir install \
     flask \
     waitress \
     jeepney \
+    Pillow \
     dbus-mediaplayer \
     dbus-notification \
     dbus-idle \
@@ -49,6 +53,11 @@ WORKDIR /opt/lnxlink
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         dbus \
+        libjpeg62-turbo \
+        libwebp7 \
+        libwebpdemux2 \
+        libwebpmux3 \
+        zlib1g \
         xdg-utils \
         xdotool \
         x11-xserver-utils && \

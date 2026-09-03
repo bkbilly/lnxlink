@@ -2,16 +2,30 @@
 import base64
 import hashlib
 import logging
+import os
 import re
 import shlex
 import subprocess
 import threading
 import traceback
+from io import BytesIO
 from shutil import which
 
 from lnxlink.modules.scripts.helpers import import_install_package, syscommand
 
 logger = logging.getLogger("lnxlink")
+
+# Base64 adds about one third, leaving headroom below 128 KiB broker limits.
+MAX_THUMBNAIL_BYTES = 64 * 1024
+MAX_THUMBNAIL_PIXELS = 16 * 1024 * 1024
+THUMBNAIL_PROFILES = (
+    (512, 85),
+    (384, 80),
+    (256, 70),
+    (128, 60),
+    (96, 55),
+    (64, 50),
+)
 
 
 # pylint: disable=too-many-instance-attributes
@@ -25,6 +39,7 @@ class Addon:
         self.players = []
         self._requirements()
         self.prev_info = {}
+        self.thumbnail_cache = (None, b" ")
         self.playmedia_thread = None
         self.process = None
         self.audio_system = self._get_audio_system()
@@ -83,6 +98,11 @@ class Addon:
         self.dbus_mediaplayer = import_install_package(
             "dbus-mediaplayer", ">=2026.7.0", "dbus_mediaplayer"
         )
+        pillow = import_install_package(
+            "Pillow", ">=9.1.0", ("PIL", ["Image", "ImageOps"])
+        )
+        self.image = pillow.Image
+        self.image_ops = pillow.ImageOps
 
     def exposed_controls(self):
         """Exposes to home assistant"""
@@ -239,12 +259,70 @@ class Addon:
             try:
                 arturl = player["arturl"].replace("file://", "")
                 with open(arturl, "rb") as image_file:
-                    image_thumbnail = base64.b64encode(image_file.read())
-                    return image_thumbnail
+                    file_stat = os.fstat(image_file.fileno())
+                    cache_key = (
+                        arturl,
+                        file_stat.st_dev,
+                        file_stat.st_ino,
+                        file_stat.st_size,
+                        file_stat.st_mtime_ns,
+                    )
+                    if self.thumbnail_cache[0] == cache_key:
+                        return self.thumbnail_cache[1]
+                    image_data = image_file.read(MAX_THUMBNAIL_BYTES + 1)
+                if len(image_data) <= MAX_THUMBNAIL_BYTES:
+                    thumbnail = base64.b64encode(image_data)
+                else:
+                    thumbnail = self._resize_thumbnail(arturl)
+                self.thumbnail_cache = (cache_key, thumbnail)
+                return thumbnail
             except Exception as err:
                 logger.debug(
                     "Can't create thumbnail: %s, %s", err, traceback.format_exc()
                 )
+        return b" "
+
+    def _resize_thumbnail(self, arturl):
+        """Resize and recompress artwork to stay below the MQTT payload limit."""
+        with self.image.open(arturl) as source_image:
+            if source_image.width * source_image.height > MAX_THUMBNAIL_PIXELS:
+                logger.warning(
+                    "Refusing to decode %dx%d media thumbnail: %s",
+                    source_image.width,
+                    source_image.height,
+                    arturl,
+                )
+                return b" "
+            source_image.load()
+            source_image = self.image_ops.exif_transpose(source_image)
+            has_transparency = source_image.mode in ("RGBA", "LA") or (
+                "transparency" in source_image.info
+            )
+            image = source_image.convert("RGBA" if has_transparency else "RGB")
+            for max_dimension, quality in THUMBNAIL_PROFILES:
+                image.thumbnail(
+                    (max_dimension, max_dimension), self.image.Resampling.LANCZOS
+                )
+                output = BytesIO()
+                if has_transparency:
+                    image.save(output, format="PNG", optimize=True)
+                else:
+                    image.save(output, format="JPEG", quality=quality, optimize=True)
+                image_data = output.getvalue()
+                if len(image_data) <= MAX_THUMBNAIL_BYTES:
+                    logger.debug(
+                        "Resized media thumbnail to %dx%d and %d bytes: %s",
+                        image.width,
+                        image.height,
+                        len(image_data),
+                        arturl,
+                    )
+                    return base64.b64encode(image_data)
+        logger.warning(
+            "Can't resize media thumbnail below %d bytes: %s",
+            MAX_THUMBNAIL_BYTES,
+            arturl,
+        )
         return b" "
 
     def stop_playmedia(self):
