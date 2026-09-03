@@ -668,7 +668,7 @@ class MQTT:
             },
             "event": {
                 "automation_type": "trigger",
-                "platform": "device_automation",
+                "topic": state_topic,
                 "type": options.get("event_type", "button_short_press"),
                 "subtype": options.get("event_subtype", "turn_on"),
             },
@@ -689,9 +689,24 @@ class MQTT:
             discovery.pop("json_attributes_topic", None)
             discovery.pop("json_attributes_template", None)
         discovery_prefix = self.config["mqtt"]["discovery"]["prefix"]
+        discovery_component = (
+            "device_automation" if options["type"] == "event" else options["type"]
+        )
+        discovery_unique_id = discovery["unique_id"]
+        if options["type"] == "event":
+            discovery = {
+                key: discovery[key]
+                for key in (
+                    "automation_type",
+                    "device",
+                    "topic",
+                    "type",
+                    "subtype",
+                )
+            }
         discovery_topic = (
-            f"{discovery_prefix}/{options['type']}/lnxlink/"
-            f"{discovery['unique_id']}/config"
+            f"{discovery_prefix}/{discovery_component}/lnxlink/"
+            f"{discovery_unique_id}/config"
         )
         msg_info = self.publish(
             discovery_topic,
