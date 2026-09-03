@@ -55,10 +55,9 @@ class UniqueQueue:
             name, value, retain, force_publish = item
             yield name, (value, retain, force_publish)
 
-    def add_item(
-        self, name, value, retain=True, force_publish=False, coalesce=True
-    ):
+    def add_item(self, name, value, retain=True, force_publish=False, **kwargs):
         """Add an item, replacing its named predecessor unless coalescing is off."""
+        coalesce = kwargs.get("coalesce", True)
         with self._lock:
             key = name
             if not coalesce:
@@ -226,10 +225,9 @@ class LNXlink:
             self.prev_publish.pop(topic, None)
             self.prev_publish_transport.pop(topic, None)
 
-    def run_module(
-        self, name, method, retain=True, force_update=False, coalesce=True
-    ):
+    def run_module(self, name, method, retain=True, force_update=False, **kwargs):
         """Runs the method of a module"""
+        coalesce = kwargs.get("coalesce", True)
         max_failures = 5
         if self.module_failures.get(name, 0) >= max_failures:
             return
@@ -246,7 +244,11 @@ class LNXlink:
                 self.inference_times[name] = diff_time
             self.module_failures[name] = 0
             self.publ_queue.add_item(
-                name, pub_data, retain, force_update, coalesce=coalesce
+                name,
+                pub_data,
+                retain,
+                force_update,
+                coalesce=coalesce,
             )
         except Exception as err:
             self.module_failures[name] = self.module_failures.get(name, 0) + 1
