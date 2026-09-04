@@ -14,10 +14,12 @@ class Addon:
 
     def __init__(self, lnxlink):
         """Setup addon"""
-        self.name = "Session Lock State"
+        self.name = "Session Lock"
         self.lnxlink = lnxlink
         if which("loginctl") is None:
-            raise RuntimeError("loginctl not found, session lock state is not supported")
+            raise RuntimeError(
+                "loginctl not found, session lock state is not supported"
+            )
         # Resolve the session once, at startup, instead of on every read/lock/unlock.
         self.user = os.environ.get("USER") or os.environ.get("LOGNAME")
         self.session_id = self._detect_session_id()
