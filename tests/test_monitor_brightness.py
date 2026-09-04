@@ -19,8 +19,8 @@ def test_unique_name_uses_edid_serial():
 
 
 def test_unique_name_survives_bus_renumbering():
-    # Ядро призначає номер i2c-шини при завантаженні, і він змінюється.
-    # Через це entity_id у Home Assistant "їде" і автоматизації тихо ламаються.
+    # The kernel assigns the i2c bus number at boot, and it can change.
+    # That drifts the entity_id in Home Assistant and silently breaks automations.
     before = DDCIPMonitor("/dev/i2c-14", "AOC", "U34V5C", "1QDQ6HA000243")
     after = DDCIPMonitor("/dev/i2c-4", "AOC", "U34V5C", "1QDQ6HA000243")
     assert before.unique_name == after.unique_name
