@@ -40,6 +40,22 @@
   </categories>
   <icon type="stock">io.github.bkbilly.lnxlink</icon>
   <releases>
+    <release version="2026.9.0" date="2026-09-05">
+      <url type="details">https://github.com/bkbilly/lnxlink/releases/tag/2026.9.0</url>
+      <description>
+        <p>2026.9.0</p>
+        <ul>
+          <li>Fixed command injection security vulnerabilities across multiple modules</li>
+          <li>Added optional username &amp; password protection for the Restful module</li>
+          <li>Added an interactive Swagger documentation page to easily test the REST API in the browser</li>
+          <li>REST API now returns responses in JSON format</li>
+          <li>New DND module to control, and monitor Do Not Disturb</li>
+          <li>New Night Light module to control and monitor the display's blue light filter</li>
+          <li>New Boot Time module to monitor when the system started up</li>
+          <li>New Session Lock module to control and monitor the session lock state</li>
+        </ul>
+      </description>
+    </release>
     <release version="2026.8.0" date="2026-08-08">
       <url type="details">https://github.com/bkbilly/lnxlink/releases/tag/2026.8.0</url>
       <description>
