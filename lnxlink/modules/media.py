@@ -99,7 +99,7 @@ class Addon:
             "dbus-mediaplayer", ">=2026.7.0", "dbus_mediaplayer"
         )
         pillow = import_install_package(
-            "Pillow", ">=9.1.0", ("PIL", ["Image", "ImageOps"])
+            "Pillow", ">=10.4.0", ("PIL", ["Image", "ImageOps"])
         )
         self.image = pillow.Image
         self.image_ops = pillow.ImageOps

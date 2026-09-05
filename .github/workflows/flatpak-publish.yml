@@ -92,7 +92,7 @@ jobs:
             --output /tmp/flatpak-modules-lnxlink \
             --ignore-errors \
             --runtime org.gnome.Sdk//50 \
-            --prefer-wheels=opencv-python-headless,numpy \
+            --prefer-wheels=opencv-python-headless,numpy,Pillow \
             --requirements-file /tmp/requirements_pinned.txt
 
       - name: Validate generated flatpak-modules-lnxlink.yaml
