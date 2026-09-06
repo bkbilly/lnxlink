@@ -1,6 +1,7 @@
 """MQTT methods"""
 
 
+# pylint: disable=import-outside-toplevel
 import asyncio
 import json
 import logging
@@ -11,10 +12,7 @@ import time
 import traceback
 from dataclasses import dataclass
 
-import aiohttp
-import distro
 import paho.mqtt.client as mqtt
-import requests
 
 from lnxlink.modules.scripts import helpers
 
@@ -173,6 +171,8 @@ class HomeAssistantApiClient:
     """MQTT client transport via Home Assistant HTTP and WebSocket APIs."""
 
     def __init__(self, config):
+        import requests
+
         self.config = config
         self._publish_mid = 0
         self._publish_lock = threading.Lock()
@@ -324,6 +324,8 @@ class HomeAssistantApiClient:
 
     async def _websocket_loop(self):
         """Subscribe to command topics through Home Assistant websocket."""
+        import aiohttp
+
         ha_config = self._get_ha_config()
         command_topic = f"{self.config['pref_topic']}/commands/#"
         while not self._stop_event.is_set():
@@ -376,6 +378,8 @@ class HomeAssistantApiClient:
 
     async def _receive_commands(self, websocket):
         """Forward Home Assistant websocket MQTT events to the command handler."""
+        import aiohttp
+
         while not self._stop_event.is_set():
             try:
                 message = await websocket.receive(timeout=1)
@@ -408,6 +412,7 @@ class MQTT:
     def __init__(self, config):
         self.config = config
         self.publish_rc_code = 0
+        self._device_model = None
         self.transport = self.config["mqtt"].get("transport", "mqtt")
         self._on_connect_callback = None
         self._on_message_callback = None
@@ -530,11 +535,16 @@ class MQTT:
     # pylint: disable=too-many-locals
     def setup_discovery_entities(self, addon, service, exp_name, options):
         """Send discovery information on Home Assistant for controls"""
+        if self._device_model is None:
+            import distro
+
+            self._device_model = f"{distro.name()} {distro.version()}"
+
         discovery_template = {
             "device": {
                 "identifiers": [self.config["mqtt"]["clientId"]],
                 "name": self.config["mqtt"]["clientId"],
-                "model": f"{distro.name()} {distro.version()}",
+                "model": self._device_model,
                 "manufacturer": "LNXlink",
                 "sw_version": self.config["version"],
             },

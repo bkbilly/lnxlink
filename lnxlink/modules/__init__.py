@@ -1,12 +1,11 @@
 """Auto load addons/modules"""
+# pylint: disable=import-outside-toplevel
 import glob
 import logging
 import os
 import time
 from importlib import import_module
 from importlib.util import module_from_spec, spec_from_file_location
-
-import requests
 
 logger = logging.getLogger("lnxlink")
 
@@ -41,6 +40,8 @@ def parse_modules(list_modules=None, custom_modules=None, exclude=None):
             try:
                 if module_name.endswith(".py"):
                     if module_name.startswith("http"):
+                        import requests
+
                         logger.info("Downloading custom module: %s", module_name)
                         module_data = requests.get(module_name, timeout=3).content
                         module_basename = os.path.basename(module_name)

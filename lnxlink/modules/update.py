@@ -1,10 +1,9 @@
 """Update LNXlink directly remotely"""
+# pylint: disable=import-outside-toplevel
 import logging
 import re
 import sys
 import time
-
-import requests
 
 from lnxlink.modules.scripts.helpers import find_uv_bin, syscommand
 
@@ -55,6 +54,8 @@ class Addon:
 
     def _latest_version(self):
         """Gets the currently published version of lnxlink"""
+        import requests
+
         url = "https://api.github.com/repos/bkbilly/lnxlink/releases/latest"
         try:
             resp = requests.get(url=url, timeout=5).json()

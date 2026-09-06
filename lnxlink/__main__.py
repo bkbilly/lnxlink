@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Start the LNXlink service"""
+# pylint: disable=import-outside-toplevel
 
 import argparse
 import copy
@@ -14,14 +15,9 @@ import time
 import traceback
 from collections import OrderedDict
 
-from lnxlink import config_setup, modules
-from lnxlink.discovery_registry import DiscoveryRegistry
 from lnxlink.modules.scripts import helpers
-from lnxlink.mqtt import MQTT
-from lnxlink.system_monitor import GracefulKiller, MonitorSuspend
 
 version, path = helpers.get_version()
-INSTALL_METHOD = helpers.get_install_method()
 logger = logging.getLogger("lnxlink")
 
 
@@ -90,14 +86,21 @@ class LNXlink:
 
     version = version
     path = path
-    install_method = INSTALL_METHOD
+    install_method = None
 
     def __init__(self, config):
+        if LNXlink.install_method is None:
+            LNXlink.install_method = helpers.get_install_method()
+        self.install_method = LNXlink.install_method
+
+        from lnxlink.discovery_registry import DiscoveryRegistry
+        from lnxlink.mqtt import MQTT
+
         logger.info(
             "LNXlink %s, Python %s, Install method: %s",
             self.version,
             platform.python_version(),
-            INSTALL_METHOD,
+            self.install_method,
         )
         logger.debug("Path=%s", self.path)
         config["version"] = version
@@ -123,6 +126,8 @@ class LNXlink:
 
     def start(self, exclude_modules_arg):
         """Run each addon included in the modules folder"""
+        from lnxlink import modules
+
         conf_exclude = self.config["exclude"]
         conf_exclude = [] if conf_exclude is None else list(conf_exclude)
         conf_exclude.extend(exclude_modules_arg)
@@ -163,6 +168,8 @@ class LNXlink:
 
     def add_settings(self, name, settings, replace_empty=False):
         """Adds missing configuration under settings"""
+        from lnxlink import config_setup
+
         self.config = config_setup.add_settings(
             self.config, name, settings, replace_empty
         )
@@ -478,6 +485,8 @@ class LNXlink:
 
 def _run_setup_wizard(args, config_path):
     """Handle setup wizard CLI flags"""
+    from lnxlink import config_setup
+
     try:
         log_directory = (
             args.log_directory if args.log_directory else os.path.dirname(config_path)
@@ -584,6 +593,9 @@ def main():
     except KeyboardInterrupt:
         print("\nSetup cancelled.")
         sys.exit(0)
+
+    from lnxlink import config_setup
+    from lnxlink.system_monitor import GracefulKiller, MonitorSuspend
 
     config = config_setup.read_config(config_path)
     if args.registry_path:
