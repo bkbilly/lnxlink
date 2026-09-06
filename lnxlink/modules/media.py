@@ -42,6 +42,8 @@ class Addon:
         self.thumbnail_cache = (None, b" ")
         self.playmedia_thread = None
         self.process = None
+        self.prev_volume = None
+        self.volume_monitor_thread = None
         self.audio_system = self._get_audio_system()
         self.mediavolume = "OFF"
         if self.audio_system is None:
@@ -419,8 +421,51 @@ class Addon:
 
         return None
 
+    def _start_volume_monitor(self):
+        """Start thread to monitor system volume events"""
+        if self.audio_system == "pactl" and (
+            self.volume_monitor_thread is None
+            or not self.volume_monitor_thread.is_alive()
+        ):
+            self.volume_monitor_thread = threading.Thread(
+                target=self._monitor_volume_events,
+                daemon=True,
+            )
+            self.volume_monitor_thread.start()
+
+    def _monitor_volume_events(self):
+        """Listens for real-time audio server volume events"""
+        try:
+            with subprocess.Popen(
+                ["pactl", "subscribe"],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.DEVNULL,
+                text=True,
+            ) as proc:
+                logger.debug("Started monitoring volume events")
+                for line in iter(proc.stdout.readline, ""):
+                    if not line:
+                        break
+                    if "sink" in line.lower() or "server" in line.lower():
+                        prev_vol = self.prev_volume
+                        current_volume = self._get_volume()
+                        if current_volume != prev_vol:
+                            self.lnxlink.run_module(
+                                f"{self.name}/volume", current_volume
+                            )
+        except Exception as err:
+            logger.debug("Error in volume monitor: %s", err)
+
     def _get_volume(self):
         """Get system volume"""
+        logger.debug("Using audio system: %s", self.audio_system)
+        if self.audio_system is None:
+            self.audio_system = self._get_audio_system()
+            if self.audio_system is not None:
+                self.mediavolume = "OFF"
+        if self.audio_system is not None:
+            self._start_volume_monitor()
+
         volume = 100
         if self.audio_system == "pactl":
             result, _, _ = syscommand(
@@ -434,10 +479,18 @@ class Addon:
             match = re.search(r"(\d+)%", result)
             if match:
                 volume = int(match.group(1))
-        return round(volume / 100, 2)
+        self.prev_volume = round(volume / 100, 2)
+        return self.prev_volume
 
     def _set_volume(self, volume):
         """Set system volume"""
+        if self.audio_system is None:
+            self.audio_system = self._get_audio_system()
+            if self.audio_system is not None:
+                self.mediavolume = "OFF"
+        if self.audio_system is not None:
+            self._start_volume_monitor()
+
         if self.mediavolume == "ON":
             self.media_player.control_volume(volume / 100)
         elif self.audio_system == "pactl":
