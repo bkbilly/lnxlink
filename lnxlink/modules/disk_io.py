@@ -1,5 +1,4 @@
 """Measure read/write throughput for each physical disk"""
-import asyncio
 import glob
 from timeit import default_timer as timer
 
@@ -19,26 +18,11 @@ class Addon:
             },
         )
         self.disks = self._get_disks()
-
-        self.stat_items = [
-            "read IOs",
-            "read merges",
-            "read sectors",
-            "read ticks",
-            "write IOs",
-            "write merges",
-            "write sectors",
-            "write ticks",
-            "in_flight",
-            "io_ticks",
-            "time_in_queue",
-            "discard IOs",
-            "discard merges",
-            "discard sectors",
-            "discard ticks",
-            "flush IOs",
-            "flush ticks",
-        ]
+        self.last_stats = {}
+        for disk in self.disks:
+            ticks = self._read_io_ticks(disk)
+            if ticks is not None:
+                self.last_stats[disk] = (ticks, timer())
 
     def exposed_controls(self):
         """Exposes to home assistant"""
@@ -60,22 +44,38 @@ class Addon:
         if self.disks != disks:
             self.disks = disks
             self.lnxlink.setup_discovery("disk_io")
-        loop = asyncio.new_event_loop()
-        try:
-            results = loop.run_until_complete(self._get_info_async())
-        finally:
-            loop.close()
+
+        cur_time = timer()
+        results = {}
+        for disk in self.disks:
+            cur_ticks = self._read_io_ticks(disk)
+            if cur_ticks is None:
+                continue
+            if disk in self.last_stats:
+                last_ticks, last_time = self.last_stats[disk]
+                totaltime = cur_time - last_time
+                if totaltime > 0:
+                    utilization = (cur_ticks - last_ticks) / totaltime / 10
+                    utilization = min(max(0, utilization), 100)
+                    results[disk] = int(round(utilization, 0))
+                else:
+                    results[disk] = 0
+            else:
+                results[disk] = 0
+            self.last_stats[disk] = (cur_ticks, cur_time)
+
         return results
 
-    async def _get_info_async(self):
-        features = []
-        for disk in self.disks:
-            features.append(self._run_check(disk))
-        gathers = await asyncio.gather(*features)
-        results = {}
-        for disk, utilization in gathers:
-            results[disk] = utilization
-        return results
+    def _read_io_ticks(self, disk):
+        """Read io_ticks from /sys/block/{disk}/stat"""
+        try:
+            with open(f"/sys/block/{disk}/stat", encoding="UTF-8") as file:
+                parts = file.read().split()
+                if len(parts) >= 10:
+                    return int(parts[9])
+        except (OSError, ValueError):
+            pass
+        return None
 
     def _get_disks(self):
         """Get a list of all disks"""
@@ -107,20 +107,3 @@ class Addon:
 
             disks.append(disk_name)
         return disks
-
-    async def _run_check(self, disk):
-        with open(f"/sys/block/{disk}/stat", encoding="UTF-8") as file:
-            pout1 = file.read()
-        start = timer()
-        await asyncio.sleep(0.1)
-        with open(f"/sys/block/{disk}/stat", encoding="UTF-8") as file:
-            pout2 = file.read()
-        totaltime = timer() - start
-
-        stats1 = dict(zip(self.stat_items, map(int, pout1.split())))
-        stats2 = dict(zip(self.stat_items, map(int, pout2.split())))
-
-        utilization = (stats2["io_ticks"] - stats1["io_ticks"]) / totaltime / 10
-        utilization = min(utilization, 100)
-        utilization = int(round(utilization, 0))
-        return disk, utilization
