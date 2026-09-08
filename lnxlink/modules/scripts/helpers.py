@@ -205,35 +205,7 @@ def import_install_package(package, req_version="", syspackage=None):
     if current_version is None or needs_update(current_version, req_version):
         package_version = f"{package}{req_version}"
         logger.info("Installing %s...", package_version)
-        uv_bin = find_uv_bin()
-        returncode = -1
-        if uv_bin:
-            args = [
-                uv_bin,
-                "pip",
-                "install",
-                "--python",
-                sys.executable,
-                "--break-system-packages",
-                "-U",
-                "--quiet",
-                package_version,
-            ]
-            _, _, returncode = syscommand(args, ignore_errors=True, timeout=None)
-
-        if returncode != 0:
-            args = [
-                sys.executable,
-                "-m",
-                "pip",
-                "install",
-                "--break-system-packages",
-                "-U",
-                "--quiet",
-                package_version,
-            ]
-            _, _, returncode = syscommand(args, ignore_errors=True, timeout=None)
-        if returncode != 0:
+        if not install_package(package_version, upgrade=True, quiet=True):
             try:
                 if isinstance(syspackage, tuple):
                     return __import__(syspackage[0], fromlist=syspackage[1])
@@ -249,6 +221,55 @@ def import_install_package(package, req_version="", syspackage=None):
     except Exception as err:
         logger.error("Can't import package %s: %s", package, err)
         return None
+
+
+def install_package(package, upgrade=True, editable=False, quiet=True, timeout=None):
+    """Installs or upgrades a Python package using uv or pip with fallback"""
+    uv_bin = find_uv_bin()
+    returncode = -1
+
+    flags = []
+    if editable:
+        flags.append("-e")
+    if upgrade:
+        flags.append("-U")
+    if quiet:
+        flags.append("--quiet")
+
+    if uv_bin:
+        args = (
+            [
+                uv_bin,
+                "pip",
+                "install",
+                "--python",
+                sys.executable,
+                "--break-system-packages",
+            ]
+            + flags
+            + [package]
+        )
+        _, _, returncode = syscommand(args, ignore_errors=True, timeout=timeout)
+
+    if returncode != 0:
+        args = (
+            [
+                sys.executable,
+                "-m",
+                "pip",
+                "install",
+                "--break-system-packages",
+            ]
+            + flags
+            + [package]
+        )
+        _, _, returncode = syscommand(args, ignore_errors=True, timeout=timeout)
+
+    if returncode != 0:
+        args = [sys.executable, "-m", "pip", "install"] + flags + [package]
+        _, _, returncode = syscommand(args, ignore_errors=True, timeout=timeout)
+
+    return returncode == 0
 
 
 def needs_update(current_version, request_version):

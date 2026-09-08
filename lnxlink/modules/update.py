@@ -2,10 +2,9 @@
 # pylint: disable=import-outside-toplevel
 import logging
 import re
-import sys
 import time
 
-from lnxlink.modules.scripts.helpers import find_uv_bin, syscommand
+from lnxlink.modules.scripts.helpers import find_uv_bin, install_package, syscommand
 
 logger = logging.getLogger("lnxlink")
 
@@ -94,9 +93,7 @@ class Addon:
         elif method == "aur":
             return self._update_aur()
         elif method in ("pip", "system"):
-            _, _, returncode = syscommand(
-                f"{sys.executable} -m pip install -U lnxlink", timeout=120
-            )
+            return install_package("lnxlink", upgrade=True, quiet=False, timeout=120)
         else:
             logger.warning("Update not supported for install method: %s", method)
             return False
@@ -105,25 +102,21 @@ class Addon:
     def _update_edit(self, method):
         """Handle update for editable installations"""
         _, _, returncode = syscommand(
-            f"git -c safe.directory=* -C {self.lnxlink.path} pull", timeout=15
+            ["git", "-c", "safe.directory=*", "-C", self.lnxlink.path, "pull"],
+            timeout=15,
         )
         if returncode != 0:
             return False
-        if "pip" in method:
-            _, _, returncode = syscommand(
-                f"{sys.executable} -m pip install -e {self.lnxlink.path}",
+        if any(m in method for m in ("pip", "system", "uv")):
+            return install_package(
+                self.lnxlink.path,
+                upgrade=False,
+                editable=True,
+                quiet=False,
                 timeout=120,
             )
-        elif "uv" in method:
-            uv_bin = find_uv_bin() or "uv"
-            _, _, returncode = syscommand(
-                f"{uv_bin} pip install --python {sys.executable} -e {self.lnxlink.path}",
-                timeout=120,
-            )
-        else:
-            logger.warning("Update not supported for install method: %s", method)
-            return False
-        return returncode == 0
+        logger.warning("Update not supported for install method: %s", method)
+        return False
 
     def _update_aur(self):
         """Handle update for AUR installations"""
