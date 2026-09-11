@@ -1,5 +1,6 @@
 """A collection of helper functions"""
 import importlib.metadata
+import inspect
 import logging
 import os
 import shutil
@@ -68,10 +69,23 @@ def get_version():
     return version, path
 
 
+def _get_caller_file():
+    """Find the filename of the caller outside helpers.py"""
+    frame = inspect.currentframe()
+    current_file = globals().get("__file__")
+    while frame:
+        if frame.f_code.co_filename != current_file:
+            return os.path.basename(frame.f_code.co_filename)
+        frame = frame.f_back
+    return ""
+
+
 # pylint: disable=consider-using-with
 def syscommand(command, ignore_errors=False, timeout=3, background=False, stdin=None):
     """Global subprocess command"""
-    logger.debug("Executing command: %s", command)
+    caller = _get_caller_file()
+    prefix = f"[{caller}] " if caller else ""
+    logger.debug("%sExecuting command: %s", prefix, command)
 
     shell = not isinstance(command, list)
 
@@ -136,9 +150,9 @@ def syscommand(command, ignore_errors=False, timeout=3, background=False, stdin=
 
     if returncode != 0 and ignore_errors is False:
         if timed_out:
-            logger.error("Timeout with command: %s (%s)", command, stderr)
+            logger.error("%sTimeout with command: %s (%s)", prefix, command, stderr)
         else:
-            logger.error("Error with command: %s (%s)", command, stderr)
+            logger.error("%sError with command: %s (%s)", prefix, command, stderr)
 
     return stdout, stderr, returncode
 
