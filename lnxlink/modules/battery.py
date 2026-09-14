@@ -1,10 +1,32 @@
 """Track battery levels for all connected devices"""
+import time
 from xml.etree import ElementTree
 
 from jeepney import DBusAddress, new_method_call
 from jeepney.io.blocking import open_dbus_connection
 
+from lnxlink.modules.scripts import hidpp
+
 UPOWER_DEVICE_TYPE_LINE_POWER = 1
+UPOWER_DEVICE_TYPE_BATTERY = 2
+UPOWER_DEVICE_TYPE_MOUSE = 5
+UPOWER_DEVICE_TYPE_KEYBOARD = 6
+
+# HID++ device type code -> UPower device type
+HIDPP_DEVICE_TYPES = {
+    0: UPOWER_DEVICE_TYPE_KEYBOARD,
+    2: UPOWER_DEVICE_TYPE_KEYBOARD,  # numpad
+    3: UPOWER_DEVICE_TYPE_MOUSE,
+    4: UPOWER_DEVICE_TYPE_MOUSE,  # touchpad
+    5: UPOWER_DEVICE_TYPE_MOUSE,  # trackball
+}
+# HID++ charge state code -> UPower battery state
+HIDPP_CHARGE_STATES = {
+    0: 2,  # discharging
+    1: 1,  # charging
+    2: 1,  # charging slowly
+    3: 4,  # fully charged
+}
 
 
 class Addon:
@@ -20,8 +42,12 @@ class Addon:
             {
                 "include_batteries": [],
                 "exclude_batteries": [],
+                "hidpp": True,
+                "hidpp_interval": 300,
             },
         )
+        self.hidpp_batteries = []
+        self.hidpp_checked = 0
         self.devices = self._get_devices()
 
     def exposed_controls(self):
@@ -76,7 +102,7 @@ class Addon:
             6: "pending discharge",
         }
 
-        for device in self.get_batteries():
+        for device in self.get_batteries() + self.get_hidpp_batteries():
             if battery_includes:
                 if not any(device["Model"].startswith(x) for x in battery_includes):
                     continue
@@ -113,6 +139,43 @@ class Addon:
                     },
                 }
         return devices
+
+    def get_hidpp_batteries(self):
+        """Gets the Logitech devices which the kernel doesn't report to UPower
+
+        Their battery is read straight from /dev/hidraw, and a receiver answers
+        for up to six slots, which is slow enough that this gets an interval of
+        its own instead of running on every update.
+        """
+        settings = self.lnxlink.config["settings"].get("battery", {})
+        if not settings.get("hidpp", True):
+            return []
+        if time.time() - self.hidpp_checked < settings.get("hidpp_interval", 300):
+            return self.hidpp_batteries
+        self.hidpp_checked = time.time()
+
+        batteries = []
+        for device in hidpp.get_batteries():
+            name = device["name"] or f"{device['node']} slot {device['slot']}"
+            batteries.append(
+                {
+                    "Model": name,
+                    "NativePath": f"hidpp_{device['node']}_{device['slot']}",
+                    "Percentage": float(device["percent"]),
+                    "Serial": "",
+                    "Type": HIDPP_DEVICE_TYPES.get(
+                        device["device_type"], UPOWER_DEVICE_TYPE_BATTERY
+                    ),
+                    "IconName": "battery",
+                    "IsRechargeable": True,
+                    "Vendor": "Logitech",
+                    "State": HIDPP_CHARGE_STATES.get(device["charge_state"], 0),
+                    "TimeToEmpty": 0,
+                    "TimeToFull": 0,
+                }
+            )
+        self.hidpp_batteries = batteries
+        return batteries
 
     def dbus_paths(self, service, object_path, paths):
         """Recursively get all child object paths via introspection"""
