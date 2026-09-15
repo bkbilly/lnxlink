@@ -3,6 +3,7 @@
 import json
 import logging
 import os
+import subprocess
 
 from jeepney import DBusAddress, new_method_call
 from jeepney.io.blocking import open_dbus_connection
@@ -58,11 +59,17 @@ class Addon:
 
             self.get_window = self._get_wayland_gnome
 
-        elif session_type == "wayland" and ("kde" in desktop_env or "plasma" in desktop_env):
-            if not self._kdotool_available():
+        elif session_type == "wayland" and (
+            "kde" in desktop_env or "plasma" in desktop_env
+        ):
+            _, stderr, returncode = syscommand(
+                ["kdotool", "--version"], ignore_errors=True
+            )
+            if returncode != 0:
                 raise SystemError(
-                    "KDE Wayland requires kdotool. "
-                    "Please install it from https://github.com/jinliu/kdotool"
+                    f"Cannot run kdotool in this KDE session: {stderr}. "
+                    "Check the supported Plasma version and installation: "
+                    "https://github.com/jinliu/kdotool"
                 )
             self.get_window = self._get_wayland_kde
 
@@ -111,20 +118,22 @@ class Addon:
             logger.debug("Error getting Wayland window: %s", err)
         return None
 
-    @staticmethod
-    def _kdotool_available():
-        """Check that the KDE Wayland window query tool is installed."""
-        _, _, returncode = syscommand(["kdotool", "--version"], ignore_errors=True)
-        return returncode == 0
-
     def _get_wayland_kde(self):
         """Read the native KWin active-window caption through kdotool."""
-        stdout, stderr, returncode = syscommand(
-            ["kdotool", "getactivewindow", "getwindowname"],
-            ignore_errors=True,
-        )
-        if returncode == 0 and stdout:
-            return stdout
+        try:
+            stdout, stderr, returncode = syscommand(
+                ["kdotool", "getactivewindow", "getwindowname"],
+                ignore_errors=True,
+                # kdotool bounds its D-Bus calls and must unload its KWin script.
+                timeout=None,
+            )
+        except (OSError, subprocess.SubprocessError) as err:
+            logger.debug("Error getting KDE Wayland window: %s", err)
+            return ""
+        if returncode == 0:
+            # Home Assistant sensor states are limited to 255 characters.
+            return stdout[:255]
         if stderr:
             logger.debug("Error getting KDE Wayland window: %s", stderr)
-        return None
+        # None skips publishing and would retain the previous window title.
+        return ""
