@@ -30,6 +30,10 @@ To get started with LNXlink, follow these simple steps:
  - Install and configure on Home Assistant the [hass-mqtt-mediaplayer](https://github.com/bkbilly/hass-mqtt-mediaplayer) integration.
  - Enjoy real-time monitoring and control of your Linux machine from your Home Assistant dashboard.
 
+On KDE Plasma Wayland, the Active Window sensor requires [kdotool](https://github.com/jinliu/kdotool),
+which queries the focused native Wayland window through KWin. Install it separately before enabling
+the `active_window` module.
+
 For detailed installation instructions, please refer to the documentation page: [bkbilly.gitbook.io/lnxlink](https://bkbilly.gitbook.io/lnxlink).
 
 # Benefits
