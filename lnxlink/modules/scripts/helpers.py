@@ -89,24 +89,20 @@ def syscommand(command, ignore_errors=False, timeout=3, background=False, stdin=
 
     shell = not isinstance(command, list)
 
-    stdin_bytes = None
-    if stdin is not None:
-        if isinstance(stdin, str):
-            stdin_bytes = stdin.encode("UTF-8")
-        else:
-            stdin_bytes = stdin
+    if isinstance(stdin, str):
+        stdin = stdin.encode("UTF-8")
 
     if background:
         proc = subprocess.Popen(
             command,
             shell=shell,
-            stdin=subprocess.PIPE if stdin_bytes is not None else subprocess.DEVNULL,
+            stdin=subprocess.PIPE if stdin is not None else subprocess.DEVNULL,
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
         )
-        if stdin_bytes is not None:
+        if stdin is not None:
             try:
-                proc.stdin.write(stdin_bytes)
+                proc.stdin.write(stdin)
                 proc.stdin.close()
             except Exception:
                 pass
@@ -120,7 +116,7 @@ def syscommand(command, ignore_errors=False, timeout=3, background=False, stdin=
     try:
         result = subprocess.run(
             command,
-            input=stdin_bytes,
+            input=stdin,
             shell=shell,
             check=False,
             capture_output=True,
@@ -145,8 +141,7 @@ def syscommand(command, ignore_errors=False, timeout=3, background=False, stdin=
     stderr = stderr.decode("UTF-8", errors="replace").strip()
 
     if timed_out:
-        timeout_msg = f"Command timed out after {timeout} seconds"
-        stderr = f"{stderr}\n{timeout_msg}".strip()
+        stderr = f"{stderr}\nCommand timed out after {timeout} seconds".strip()
 
     if returncode != 0 and ignore_errors is False:
         if timed_out:

@@ -3,11 +3,16 @@
 import json
 import logging
 import os
+import subprocess
 
 from jeepney import DBusAddress, new_method_call
 from jeepney.io.blocking import open_dbus_connection
 
-from lnxlink.modules.scripts.helpers import get_display_variable, import_install_package
+from lnxlink.modules.scripts.helpers import (
+    get_display_variable,
+    import_install_package,
+    syscommand,
+)
 
 logger = logging.getLogger("lnxlink")
 
@@ -54,6 +59,20 @@ class Addon:
 
             self.get_window = self._get_wayland_gnome
 
+        elif session_type == "wayland" and (
+            "kde" in desktop_env or "plasma" in desktop_env
+        ):
+            _, stderr, returncode = syscommand(
+                ["kdotool", "--version"], ignore_errors=True
+            )
+            if returncode != 0:
+                raise SystemError(
+                    f"Cannot run kdotool in this KDE session: {stderr}. "
+                    "Check the supported Plasma version and installation: "
+                    "https://github.com/jinliu/kdotool"
+                )
+            self.get_window = self._get_wayland_kde
+
         else:
             raise SystemError(f"Session type '{session_type}' not supported")
 
@@ -98,3 +117,23 @@ class Addon:
         except Exception as err:
             logger.debug("Error getting Wayland window: %s", err)
         return None
+
+    def _get_wayland_kde(self):
+        """Read the native KWin active-window caption through kdotool."""
+        try:
+            stdout, stderr, returncode = syscommand(
+                ["kdotool", "getactivewindow", "getwindowname"],
+                ignore_errors=True,
+                # kdotool bounds its D-Bus calls and must unload its KWin script.
+                timeout=None,
+            )
+        except (OSError, subprocess.SubprocessError) as err:
+            logger.debug("Error getting KDE Wayland window: %s", err)
+            return ""
+        if returncode == 0:
+            # Home Assistant sensor states are limited to 255 characters.
+            return stdout[:255]
+        if stderr:
+            logger.debug("Error getting KDE Wayland window: %s", stderr)
+        # None skips publishing and would retain the previous window title.
+        return ""
