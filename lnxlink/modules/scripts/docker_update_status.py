@@ -229,8 +229,18 @@ class DockerUpdateStatus:
             registry, repo, tag = RegistryClient.parse_repo_name(full_tag)
             local_digest = ""
             if repo_digests:
+                # Docker Engine often reports RepoDigests without the
+                # registry/"library/" prefix that parse_repo_name() adds for
+                # official images (e.g. "nginx@sha256:..." instead of
+                # "library/nginx@sha256:..."), so also match on the bare
+                # repo name to avoid a permanent false positive for those.
+                short_repo = repo.split("/")[-1]
                 for d in repo_digests:
-                    if d.startswith(repo) or d.startswith(f"{registry}/{repo}"):
+                    if (
+                        d.startswith(repo)
+                        or d.startswith(f"{registry}/{repo}")
+                        or d.startswith(f"{short_repo}@")
+                    ):
                         local_digest = d.split("@")[1]
                         break
             if not local_digest:
