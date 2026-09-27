@@ -27,13 +27,13 @@ class Addon:
                 "wait_active": 3,
             },
         )
-        
+
         self.stop_event = threading.Event()
         threading.Thread(target=self._monitor_loop, daemon=True).start()
 
     def _requirements(self):
         self.lib = {
-            "dbus_idle": import_install_package("dbus-idle", ">=2026.8.0", "dbus_idle"),
+            "dbus_idle": import_install_package("dbus-idle", ">=2026.9.0", "dbus_idle"),
         }
 
     def _monitor_loop(self):

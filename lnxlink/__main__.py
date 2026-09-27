@@ -33,6 +33,7 @@ class UniqueQueue:
         self.queue = OrderedDict()
         self.max_size = max_size
         self._lock = threading.Lock()
+        self._condition = threading.Condition(self._lock)
         self._sequence = 0
 
     def __repr__(self):
@@ -41,10 +42,10 @@ class UniqueQueue:
 
     def __iter__(self):
         """Returns an iterator that yields and removes items from the queue in FIFO order"""
-        with self._lock:
+        with self._condition:
             remaining = len(self.queue)
         for _ in range(remaining):
-            with self._lock:
+            with self._condition:
                 if not self.queue:
                     break
                 _, item = self.queue.popitem(last=False)
@@ -54,7 +55,7 @@ class UniqueQueue:
     def add_item(self, name, value, retain=True, force_publish=False, **kwargs):
         """Add an item, replacing its named predecessor unless coalescing is off."""
         coalesce = kwargs.get("coalesce", True)
-        with self._lock:
+        with self._condition:
             key = name
             if not coalesce:
                 self._sequence += 1
@@ -64,19 +65,27 @@ class UniqueQueue:
             elif len(self.queue) >= self.max_size:
                 self.queue.popitem(last=False)
             self.queue[key] = (name, value, retain, force_publish)
+            self._condition.notify()
 
-    def get_item(self):
+    def get_item(self, timeout=None):
         """Retrieves and removes the next item from the queue (FIFO)"""
-        with self._lock:
+        with self._condition:
+            if not self.queue and timeout is not None:
+                self._condition.wait(timeout=timeout)
             if self.queue:
                 _, item = self.queue.popitem(last=False)
                 name, value, retain, force_publish = item
                 return name, (value, retain, force_publish)
         return None, None
 
+    def notify_all(self):
+        """Wakes up all threads waiting on the queue"""
+        with self._condition:
+            self._condition.notify_all()
+
     def clear(self):
         """Clears all items from the queue"""
-        with self._lock:
+        with self._condition:
             self.queue.clear()
 
 
@@ -317,14 +326,14 @@ class LNXlink:
         """Loop through the queue list and publish data to MQTT broker"""
         while not self.stop_event.is_set():
             if not self.kill:
-                time.sleep(0.01)
-                for name, queue_data in self.publ_queue:
+                name, queue_data = self.publ_queue.get_item(timeout=0.5)
+                if name is not None and queue_data is not None:
                     pub_data, retain, force_publish = queue_data
                     self.publish_monitor_data(name, pub_data, retain, force_publish)
-                    time.sleep(0.01)
-            if self.stop_event.wait(timeout=0.2):
-                self.mqtt.send_lwt("OFF")
-                break
+            else:
+                if self.stop_event.wait(timeout=0.2):
+                    break
+        self.mqtt.send_lwt("OFF")
         logger.info("Stopped monitor_queue")
 
     def on_connect(self, client, userdata, flags, rcode, *args):
@@ -337,12 +346,14 @@ class LNXlink:
         if self.config["mqtt"]["discovery"]["enabled"]:
             self.setup_discovery()
         self.kill = False
+        self.publ_queue.notify_all()
 
     def disconnect(self, *args):
         """Service has stopped"""
         self.kill = True
         self.mqtt.disconnect()
         self.stop_event.set()
+        self.publ_queue.notify_all()
 
     def replace_values_with_none(self, data):
         """Replaces specified values with None recursively"""
@@ -390,6 +401,7 @@ class LNXlink:
             if self.kill:
                 self.kill = False
             self.mqtt.send_lwt("ON")
+            self.publ_queue.notify_all()
 
     def on_message(self, client, userdata, msg):
         """MQTT message is received with a module command to execute"""
