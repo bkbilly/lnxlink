@@ -50,7 +50,7 @@ elif command -v apk >/dev/null 2>&1; then
     installcommand='apk add'
     system='alpine'
     sudo apk update
-elif [ -f /etc/SuSE-release ]; then
+elif [ -f /etc/os-release ]; then
     installcommand='zypper install -y'
     system='suse/opensuse'
     echo -e "\e[35mUpdating package manager...\e[0m"
@@ -90,6 +90,9 @@ if [ "$system" != "nixos" ]; then
         if [ "$system" == "arch/manjaro" ]; then
             sudo $installcommand python-pipx
             pipx ensurepath
+        elif [ "$system" == "suse/opensuse" ]; then
+            sudo $installcommand python314-pipx
+            pipx ensurepath
         else
             sudo $installcommand pipx
             pipx ensurepath
@@ -108,7 +111,7 @@ if [ "$system" != "nixos" ]; then
     elif [ "$system" == "arch/manjaro" ]; then
         sudo $installcommand linux-headers python-pyaudio portaudio python-pyaudio
     elif [ "$system" == "suse/opensuse" ]; then
-        sudo $installcommand python3-devel gcc-c++ make
+        sudo $installcommand python314-devel gcc-c++ make
     elif [ "$system" == "gentoo" ]; then
         sudo $installcommand dev-lang/python dev-python/pip dev-util/cmake
     elif [ "$system" == "void" ]; then
