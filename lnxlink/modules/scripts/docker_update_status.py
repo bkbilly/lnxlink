@@ -133,11 +133,18 @@ class QuayClient(RegistryClient):
         if QUAY_TOKEN:
             headers["Authorization"] = f"Bearer {QUAY_TOKEN}"
         try:
-            url = f"{self.base_url}/repository/{self.repo}/tag/{tag}"
-            async with self.session.get(url, headers=headers) as response:
+            # Quay has no GET on /tag/{tag}; look the tag up in the tag list
+            url = f"{self.base_url}/repository/{self.repo}/tag/"
+            params = {"specificTag": tag, "onlyActiveTags": "true"}
+            async with self.session.get(
+                url, headers=headers, params=params
+            ) as response:
                 response.raise_for_status()
                 data = await response.json()
-                return data.get("manifest_digest")
+                for tag_info in data.get("tags", []):
+                    if tag_info.get("name") == tag:
+                        return tag_info.get("manifest_digest")
+                return None
         except aiohttp.ClientError:
             return None
 
