@@ -161,6 +161,7 @@ class Addon:
             },
         }
 
+    # pylint: disable=too-many-branches
     def start_control(self, topic, data):
         """Control system"""
         if topic[-1] in ["set_volume", "volume_set"]:
@@ -186,6 +187,12 @@ class Addon:
             self.media_player.control_media("Next")
         elif topic[-1] == "play_media":
             self.play_media(data)
+        elif len(self.players) > 0 and topic[-1] in ["seek", "set_position"]:
+            try:
+                position = round(float(data))
+                self.media_player.control_setposition(position)
+            except (ValueError, TypeError):
+                logger.error("Invalid seek position value: %s", data)
         elif topic[-1] in ["stop_media", "pause"]:
             self.stop_playmedia()
         elif topic[-1] == "media_volume":

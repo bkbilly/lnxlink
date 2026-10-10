@@ -678,6 +678,7 @@ class MQTT:
                 "command_previous_topic": f"{command_topic}/previous",
                 "command_previous_payload": "Previous",
                 "command_playmedia_topic": f"{command_topic}/play_media",
+                "command_seek_topic": f"{command_topic}/seek",
             },
             "notify": {
                 "command_topic": command_topic,
