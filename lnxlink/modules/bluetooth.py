@@ -84,7 +84,7 @@ class Addon:
             device_icon = self._device_icon(
                 device_info.get("attributes", {}).get("icon")
             )
-            attr_templ = f"{{{{ value_json.devices.get('{mac}', {{}}).get('attributes') | tojson }}}}"
+            attr_templ = f"{{{{ value_json.devices.get('{mac}', {{}}).get('attributes', {{}}) | tojson }}}}"
             discovery_info[f"Bluetooth Device {device_name} {mac_clean}"] = {
                 "type": "switch",
                 "icon": device_icon,
