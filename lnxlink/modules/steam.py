@@ -5,6 +5,7 @@ import logging
 import os
 import re
 import struct
+import time
 from shutil import which
 
 import psutil
@@ -52,9 +53,13 @@ class Addon:
         """Gather information from the system"""
         games = self._get_games()
         if self.games != games:
+            self.games = games
             self.lnxlink.setup_discovery("steam")
-        self.games = games
-        return self._get_current_game()
+            time.sleep(0.2)
+        current_game = self._get_current_game()
+        if current_game != "Stopped" and current_game not in self.games.values():
+            return "Stopped"
+        return current_game
 
     def start_control(self, topic, data):
         """Control system"""
@@ -89,6 +94,16 @@ class Addon:
             if game is None:
                 long_app_id = int(app_id) << 32 | 0x02000000
                 game = self.games.get(long_app_id)
+            if game is None:
+                # Refresh games in case a game was newly launched/installed
+                new_games = self._get_games()
+                if self.games != new_games:
+                    self.games = new_games
+                    self.lnxlink.setup_discovery("steam")
+                    time.sleep(0.2)
+                game = self.games.get(app_id)
+                if game is None:
+                    game = self.games.get(long_app_id)
             if game is not None:
                 return game
             logger.error("Can't find game app id: %s", app_id)
@@ -117,21 +132,30 @@ class Addon:
     # pylint: disable=too-many-locals
     def _get_games(self):
         """Gets a dictionary of the game_ids and their names"""
-        with open(self.steam_config, encoding="UTF-8") as file:
-            libraries = self.vdf.load(file)
+        try:
+            with open(self.steam_config, encoding="UTF-8") as file:
+                libraries = self.vdf.load(file)
+        except Exception as err:
+            logger.debug("Error loading steam config: %s", err)
+            return self.games
 
         # Steam Games
         games = {}
-        for num in libraries["libraryfolders"].values():
-            for app_id in num["apps"].keys():
+        for num in libraries.get("libraryfolders", {}).values():
+            apps = num.get("apps", {})
+            path = num.get("path", "")
+            for app_id in apps.keys():
                 if app_id not in self.games:
                     acf_path = os.path.join(
-                        num["path"], f"steamapps/appmanifest_{app_id}.acf"
+                        path, f"steamapps/appmanifest_{app_id}.acf"
                     )
                     if os.path.exists(acf_path):
-                        with open(acf_path, encoding="UTF-8") as file:
-                            game_properties = self.vdf.load(file)
-                        games[app_id] = game_properties["AppState"]["name"]
+                        try:
+                            with open(acf_path, encoding="UTF-8") as file:
+                                game_properties = self.vdf.load(file)
+                            games[app_id] = game_properties["AppState"]["name"]
+                        except Exception as err:
+                            logger.debug("Error reading manifest for %s: %s", app_id, err)
                 else:
                     games[app_id] = self.games[app_id]
 
@@ -140,16 +164,21 @@ class Addon:
             f"{self.steam_config}/../../userdata/*/config/shortcuts.vdf"
         )
         for shortcut_dir in glob.glob(shortcut_dirs):
-            with open(shortcut_dir, "rb") as file:
-                shortcuts_dict = self.vdf.binary_loads(file.read())
-            for shortcut in shortcuts_dict["shortcuts"].values():
-                # Convert to HEX
-                bin_appid = struct.Struct("<i").pack(shortcut["appid"])
-                hex_appid = binascii.hexlify(bin_appid).decode("UTF-8")
+            try:
+                with open(shortcut_dir, "rb") as file:
+                    shortcuts_dict = self.vdf.binary_loads(file.read())
+                for shortcut in shortcuts_dict.get("shortcuts", {}).values():
+                    # Convert to HEX
+                    bin_appid = struct.Struct("<i").pack(shortcut["appid"])
+                    hex_appid = binascii.hexlify(bin_appid).decode("UTF-8")
 
-                # Convert to long_appid
-                reversed_hex = bytes.fromhex(hex_appid)[::-1].hex()
-                long_app_id = int(reversed_hex, 16) << 32 | 0x02000000
-                games[long_app_id] = shortcut["AppName"]
+                    # Convert to long_appid
+                    reversed_hex = bytes.fromhex(hex_appid)[::-1].hex()
+                    long_app_id = int(reversed_hex, 16) << 32 | 0x02000000
+                    name = shortcut.get("AppName") or shortcut.get("appname")
+                    if name:
+                        games[long_app_id] = name
+            except Exception as err:
+                logger.debug("Error reading shortcuts from %s: %s", shortcut_dir, err)
 
         return games
