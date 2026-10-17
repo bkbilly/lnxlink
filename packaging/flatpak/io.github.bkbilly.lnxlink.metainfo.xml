@@ -40,6 +40,22 @@
   </categories>
   <icon type="stock">io.github.bkbilly.lnxlink</icon>
   <releases>
+    <release version="2026.10.0" date="2026-10-17">
+      <url type="details">https://github.com/bkbilly/lnxlink/releases/tag/2026.10.0</url>
+      <description>
+        <p>2026.10.0</p>
+        <ul>
+          <li>Option to report network upload and download speeds per network interface</li>
+          <li>Support for media seek to jump to a specific playback position</li>
+          <li>Support for active window detection on KDE Wayland</li>
+          <li>Instant volume updates when system volume changes</li>
+          <li>Faster and more responsive idle sensor updates</li>
+          <li>Reduced memory usage and faster startup time</li>
+          <li>Performance improvements for DiskIO and Power Profile modules</li>
+          <li>Fixed MQTT connection falling back to unencrypted communication when certificate verification fails</li>
+        </ul>
+      </description>
+    </release>
     <release version="2026.9.0" date="2026-09-05">
       <url type="details">https://github.com/bkbilly/lnxlink/releases/tag/2026.9.0</url>
       <description>
