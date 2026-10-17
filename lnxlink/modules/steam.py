@@ -146,16 +146,16 @@ class Addon:
             path = num.get("path", "")
             for app_id in apps.keys():
                 if app_id not in self.games:
-                    acf_path = os.path.join(
-                        path, f"steamapps/appmanifest_{app_id}.acf"
-                    )
+                    acf_path = os.path.join(path, f"steamapps/appmanifest_{app_id}.acf")
                     if os.path.exists(acf_path):
                         try:
                             with open(acf_path, encoding="UTF-8") as file:
                                 game_properties = self.vdf.load(file)
                             games[app_id] = game_properties["AppState"]["name"]
                         except Exception as err:
-                            logger.debug("Error reading manifest for %s: %s", app_id, err)
+                            logger.debug(
+                                "Error reading manifest for %s: %s", app_id, err
+                            )
                 else:
                     games[app_id] = self.games[app_id]
 
