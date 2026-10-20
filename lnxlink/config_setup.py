@@ -3,6 +3,7 @@
 # pylint: disable=import-outside-toplevel
 import copy
 import errno
+import inspect
 import logging
 import os
 import shutil
@@ -178,9 +179,11 @@ def setup_modules(config_path):
         for module in modules
     ]
     initial_ticked = [num for num, module in enumerate(modules) if module["is_enabled"]]
-    selected_formatted = beaupy.select_multiple(
-        options, ticked_indices=initial_ticked, pagination=True, page_size=18
-    )
+    select_kwargs = {"ticked_indices": initial_ticked, "page_size": 18}
+    if "pagination" in inspect.signature(beaupy.select_multiple).parameters:
+        # beaupy 4 paginates on its own and no longer accepts this argument
+        select_kwargs["pagination"] = True
+    selected_formatted = beaupy.select_multiple(options, **select_kwargs)
     selected_names = [
         opt.split(" - ")[0].replace("[bold]", "").replace("[/bold]", "")
         for opt in selected_formatted
