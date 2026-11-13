@@ -28,6 +28,15 @@ class Addon:
                 "value_template": "{{ value_json.used }}",
                 "enabled": False,
             },
+            "Memory Total": {
+                "type": "sensor",
+                "icon": "mdi:memory",
+                "unit": "MB",
+                "state_class": "measurement",
+                "device_class": "data_size",
+                "value_template": "{{ value_json.total }}",
+                "enabled": False,
+            },
             "Memory Available": {
                 "type": "sensor",
                 "icon": "mdi:memory",
@@ -44,6 +53,7 @@ class Addon:
         vmem = psutil.virtual_memory()
         return {
             "percent": round(vmem.percent, 0),
+            "total": round(vmem.total / 1024**2, 0),
             "used": round(vmem.used / 1024**2, 0),
             "available": round(vmem.available / 1024**2, 0),
         }
