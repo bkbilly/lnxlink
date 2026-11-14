@@ -486,7 +486,9 @@ class Addon:
             match = re.search(r"(\d+)%", result)
             if match:
                 volume = int(match.group(1))
-        self.prev_volume = round(volume / 100, 2)
+        # The sink can be over-amplified (up to 150%), but the Volume Set
+        # entity and _set_volume() only accept 0-100%.
+        self.prev_volume = round(min(volume, 100) / 100, 2)
         return self.prev_volume
 
     def _set_volume(self, volume):
