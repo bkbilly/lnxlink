@@ -1,4 +1,6 @@
 """Monitor real-time CPU load and performance"""
+import os
+
 import psutil
 
 from lnxlink.modules.scripts.helpers import syscommand
@@ -13,6 +15,24 @@ class Addon:
         self.lnxlink = lnxlink
         self.cpuinfo = self._cpuinfo()
         self.cores = psutil.cpu_count() or 1
+        self.physical_cores = psutil.cpu_count(logical=False)
+        self.numa_nodes = self._numa_nodes()
+
+    @staticmethod
+    def _numa_nodes():
+        """Return the number of NUMA nodes
+
+        Kernels built without NUMA support have no node directory, the whole
+        memory is then a single node.
+        """
+        try:
+            nodes = os.listdir("/sys/devices/system/node")
+        except OSError:
+            return 1
+        return (
+            len([node for node in nodes if node[:4] == "node" and node[4:].isdigit()])
+            or 1
+        )
 
     def get_info(self):
         """Gather information from the system"""
@@ -27,6 +47,8 @@ class Addon:
             "attributes": {
                 "CPU Info": self.cpuinfo,
                 "Cores": self.cores,
+                "Physical Cores": self.physical_cores,
+                "NUMA Nodes": self.numa_nodes,
                 "Load 1m": load[0],
                 "Load 5m": load[1],
                 "Load 15m": load[2],
