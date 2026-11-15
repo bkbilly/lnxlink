@@ -127,15 +127,17 @@ def _compatible_name(compatible):
     return f"{vendor} {model}"
 
 
-def _sysfs_cores(cpu_path):
+def _sysfs_cores():
     """Core names from the device tree, as exposed in /sys/devices/system/cpu/cpu*/uevent
 
     Unlike /proc/device-tree (a link to /sys/firmware), this is visible inside
     Docker containers too.
     """
     names = []
-    paths = glob.glob(os.path.join(cpu_path, "cpu[0-9]*", "uevent"))
-    for path in sorted(paths, key=lambda p: int(os.path.basename(os.path.dirname(p))[3:])):
+    paths = glob.glob("/sys/devices/system/cpu/cpu[0-9]*/uevent")
+    for path in sorted(
+        paths, key=lambda p: int(os.path.basename(os.path.dirname(p))[3:])
+    ):
         for line in _read(path).splitlines():
             if line.startswith("OF_COMPATIBLE_0="):
                 names.append(_compatible_name(line.split("=", 1)[1]))
@@ -160,17 +162,17 @@ def _lscpu_models():
     return _unique(models)
 
 
-def get_cpu_name(cpuinfo_path="/proc/cpuinfo", cpu_path="/sys/devices/system/cpu", lscpu=True):
+def get_cpu_name():
     """Get a human readable CPU name, or an empty string if it is unknown
 
     x86 exposes "model name" in /proc/cpuinfo, but ARM64 kernels don't,
     so the core names are taken from the device tree, then from lscpu.
     """
-    cpuinfo = _read(cpuinfo_path)
+    cpuinfo = _read("/proc/cpuinfo")
     names = (
         _cpuinfo_values(cpuinfo, "model name")
-        or _sysfs_cores(cpu_path)
-        or (_lscpu_models() if lscpu else [])
+        or _sysfs_cores()
+        or _lscpu_models()
         or _cpuinfo_values(cpuinfo, "hardware")
         or _cpuinfo_values(cpuinfo, "model")
     )
