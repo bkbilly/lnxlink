@@ -15,7 +15,7 @@ class Addon:
         """Setup addon"""
         self.name = "CPU Usage"
         self.lnxlink = lnxlink
-        self.cpuinfo = self._cpuinfo()
+        self.cpuinfo = get_cpu_name()
         self.cores = psutil.cpu_count() or 1
         self.physical_cores = psutil.cpu_count(logical=False)
         self.numa_nodes = self._numa_nodes()
@@ -81,10 +81,6 @@ class Addon:
                 "attributes_template": "{{ value_json.get('attributes', {}) | tojson }}",
             },
         }
-
-    def _cpuinfo(self):
-        """Return a human readable CPU name"""
-        return get_cpu_name()
 
 
 def _read(path):
