@@ -18,6 +18,7 @@ class Addon:
             },
         )
         self.disks = self._get_disks()
+        self.disk_info = {disk: _disk_info(disk) for disk in self.disks}
         self.last_stats = {}
         for disk in self.disks:
             ticks = self._read_io_ticks(disk)
@@ -35,6 +36,10 @@ class Addon:
                 "entity_category": "diagnostic",
                 "state_class": "measurement",
                 "value_template": f"{{{{ value_json.get('{disk}') }}}}",
+                "attributes_template": (
+                    f"{{{{ value_json.get('attributes', {{}}).get('{disk}', {{}})"
+                    " | tojson }}"
+                ),
             }
         return discovery_info
 
@@ -43,6 +48,7 @@ class Addon:
         disks = self._get_disks()
         if self.disks != disks:
             self.disks = disks
+            self.disk_info = {disk: _disk_info(disk) for disk in self.disks}
             self.lnxlink.setup_discovery("disk_io")
 
         cur_time = timer()
@@ -64,6 +70,7 @@ class Addon:
                 results[disk] = 0
             self.last_stats[disk] = (cur_ticks, cur_time)
 
+        results["attributes"] = self.disk_info
         return results
 
     def _read_io_ticks(self, disk):
@@ -107,3 +114,66 @@ class Addon:
 
             disks.append(disk_name)
         return disks
+
+
+def _read(path):
+    """Read a sysfs text file with collapsed whitespace, or "" when missing"""
+    try:
+        with open(path, encoding="utf-8", errors="replace") as file:
+            return " ".join(file.read().split())
+    except OSError:
+        return ""
+
+
+def _vpd_serial(path):
+    """Serial number from the SCSI VPD page 0x80 (4-byte header, then serial)"""
+    try:
+        with open(path, "rb") as file:
+            data = file.read()
+    except OSError:
+        return ""
+    if len(data) < 4:
+        return ""
+    serial = data[4 : 4 + data[3]].decode("ascii", errors="replace")
+    return " ".join(serial.split())
+
+
+def _format_size(num_bytes):
+    """Format bytes using decimal units, as disk vendors do (e.g. 18 TB)"""
+    size = float(num_bytes)
+    for unit in ["B", "KB", "MB", "GB", "TB", "PB"]:
+        if size < 1000 or unit == "PB":
+            break
+        size /= 1000
+    size = round(size, 1)
+    if size.is_integer():
+        size = int(size)
+    return f"{size} {unit}"
+
+
+def _disk_info(disk):
+    """Static information about a disk from /sys/block/{disk}
+
+    Keys that are not available for the device are left out:
+    NVMe has no vendor, SD cards use name/fwrev, SCSI/SATA disks
+    expose the serial number only through the VPD page 0x80.
+    """
+    base = f"/sys/block/{disk}"
+    device = f"{base}/device"
+    try:
+        # /sys/block/*/size is always in 512-byte sectors
+        size_bytes = int(_read(f"{base}/size")) * 512
+    except ValueError:
+        size_bytes = 0
+    info = {
+        "Vendor": _read(f"{device}/vendor"),
+        "Model": _read(f"{device}/model") or _read(f"{device}/name"),
+        "Size": _format_size(size_bytes) if size_bytes > 0 else "",
+        "Serial": _read(f"{device}/serial") or _vpd_serial(f"{device}/vpd_pg80"),
+        "Firmware": (
+            _read(f"{device}/firmware_rev")
+            or _read(f"{device}/rev")
+            or _read(f"{device}/fwrev")
+        ),
+    }
+    return {key: value for key, value in info.items() if value}
