@@ -34,6 +34,7 @@ class Addon:
 
         self.client = self._get_client()
         self.prev_update = 0
+        self.checked_images = {}
         self.images_remoteinfo = []
         self.updating_containers = set()
         self.containers = self._get_containers()
@@ -110,6 +111,7 @@ class Addon:
         exclude = self.lnxlink.config["settings"].get("docker", {}).get("exclude", [])
         containers = {}
         images = []
+        current_images = {}
         for container in self.client.containers.list(all=True):
             if len(include) > 0 and container.name not in include:
                 continue
@@ -117,13 +119,24 @@ class Addon:
                 continue
             name_id = container.name.lower().replace(" ", "_")
             images.append(container.image)
+            current_images[name_id] = container.image.id
             containers[name_id] = self._container_info(container)
 
         cur_time = time.time() / 60 / 60
         check_update = self.lnxlink.config["settings"]["docker"]["check_update"]
         if check_update is not None:
-            if force_update or cur_time - self.prev_update > check_update:
+            # Also check right away when a container appears or is recreated
+            # with another image. Otherwise the cached result of the last
+            # check (up to `check_update` hours old) is shown: new containers
+            # have no update info and recreated ones keep the old version.
+            images_changed = current_images != self.checked_images
+            if (
+                force_update
+                or images_changed
+                or cur_time - self.prev_update > check_update
+            ):
                 self.prev_update = cur_time
+                self.checked_images = current_images
                 docker_update_status = DockerUpdateStatus()
                 self.images_remoteinfo = docker_update_status.get_updates_sync(images)
 
