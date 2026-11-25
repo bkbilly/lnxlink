@@ -6,6 +6,7 @@ import os
 import time
 from importlib import import_module
 from importlib.util import module_from_spec, spec_from_file_location
+from tempfile import mkdtemp
 
 logger = logging.getLogger("lnxlink")
 
@@ -45,9 +46,11 @@ def parse_modules(list_modules=None, custom_modules=None, exclude=None):
                         logger.info("Downloading custom module: %s", module_name)
                         module_data = requests.get(module_name, timeout=3).content
                         module_basename = os.path.basename(module_name)
-                        module_name = f"/tmp/{module_basename}"
-                        with open(module_name, "wb") as handler:
+                        module_dir = mkdtemp(prefix="lnxlink-addon-")
+                        module_path = os.path.join(module_dir, module_basename)
+                        with open(module_path, "xb") as handler:
                             handler.write(module_data)
+                        module_name = module_path
                     if os.path.isfile(module_name):
                         spec = spec_from_file_location("Addon", module_name)
                         module_spec = module_from_spec(spec)
